@@ -17,6 +17,8 @@ Official reference: <https://platform.dhis2.nu/>.
 | `yarn i18n:extract` | `d2-app-scripts i18n extract` | Updates `i18n/en.pot` from `i18n.t(...)` calls. |
 | `yarn i18n:generate` | `d2-app-scripts i18n generate` | Builds runtime locale bundles (`src/locales/`, git-ignored). |
 
+> 📖 **Reference:** App Platform CLI scripts — [`build`](https://developers.dhis2.org/docs/app-platform/scripts/build/), [`start`](https://developers.dhis2.org/docs/app-platform/scripts/start/), [`test`](https://developers.dhis2.org/docs/app-platform/scripts/test/), [`deploy`](https://developers.dhis2.org/docs/app-platform/scripts/deploy/).
+
 ## 9.2 Development: `yarn start`
 
 Starts a local server that compiles the app, serves it, and reloads the browser
@@ -48,9 +50,9 @@ Two phases:
 
 ## 9.4 Tests: `yarn test`
 
-Runs Jest. Today the suite is the smoke test in `src/App.test.tsx`, which renders
-`<App>` with fake data (a `CustomDataProvider` and a stubbed `fetch`) and asserts it
-mounts without throwing. It's deliberately minimal but is the template for adding
+Runs [Jest](https://jestjs.io/). Today the suite is the smoke test in
+`src/App.test.tsx`, which renders `<App>` with fake data (a `CustomDataProvider`
+and a stubbed `fetch`) and asserts it mounts without throwing. It's deliberately minimal but is the template for adding
 component tests: provide mock data through the runtime's test provider, render,
 assert.
 

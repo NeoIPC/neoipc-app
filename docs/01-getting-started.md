@@ -18,6 +18,8 @@ guide has more detail; this one is the happy-path quickstart.
 > the *exact* versions that were resolved, so a teammate who runs `yarn install`
 > later gets a byte-for-byte identical dependency tree.
 
+> 📖 **Reference:** [Node.js](https://nodejs.org/en/about) · [Yarn Classic (v1)](https://classic.yarnpkg.com/en/docs) · [DHIS2 App Platform — Installation](https://developers.dhis2.org/docs/app-platform/installation/)
+
 Check what you have:
 
 ```bash
@@ -69,8 +71,8 @@ user, organisation units, reference datasets). The App Platform handles this wit
 a **proxy**: you point it at a DHIS2 server and it forwards API calls there while
 serving your local code. The platform will prompt you for a server URL and
 credentials, or you can configure them; see the App Platform docs on
-[the dev server](https://platform.dhis2.nu/#/usage/getting-started) for the exact
-flags.
+[getting started / the dev server](https://developers.dhis2.org/docs/app-platform/getting-started/)
+for the exact flags.
 
 > **Why does it need a live server?** Almost every screen in this app reads data
 > from DHIS2 (`useDataQuery`) or from the NeoIPC-Reporting service. There is no

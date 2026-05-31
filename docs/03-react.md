@@ -5,6 +5,10 @@ keeps the screen in sync as that data changes. This guide explains the React
 concepts used in `neoipc-app`. The official docs are excellent and beginner-friendly
 — when in doubt, read them: <https://react.dev/>.
 
+> The 📖 lines below link straight to the matching page on react.dev. The
+> [Learn](https://react.dev/learn) section is tutorial-style; the
+> [Reference](https://react.dev/reference/react) section is the precise API docs.
+
 ## 3.1 The core idea
 
 You describe **what the UI should look like for a given state**, and React figures
@@ -13,6 +17,8 @@ the state changes, React re-runs your description and efficiently updates only w
 differs. (The one deliberate exception in this app — directly poking the DOM — is
 `InlineHtmlReport`, explained in [guide 6](./06-annotated-codebase-tour.md), and it
 exists precisely *because* the content is opaque HTML React can't manage.)
+
+> 📖 **Reference:** [Quick Start](https://react.dev/learn) · [Thinking in React](https://react.dev/learn/thinking-in-react)
 
 ## 3.2 Components
 
@@ -40,6 +46,8 @@ Components compose: `PartnerReportPage` renders `PartnerReportForm`, which rende
 `DateField`, `NumberRangeField`, etc. The whole app is a tree of components rooted
 at `App` (`src/App.tsx`).
 
+> 📖 **Reference:** [Your First Component](https://react.dev/learn/your-first-component) · [Importing and Exporting Components](https://react.dev/learn/importing-and-exporting-components)
+
 ## 3.3 JSX
 
 The HTML-looking syntax inside the `return` is **JSX**. It is not HTML and not a
@@ -63,6 +71,8 @@ compiles into function calls. A few rules that trip up newcomers:
   ))}                                          // src/shell/ContentArea.tsx:28
   ```
 
+> 📖 **Reference:** [Writing Markup with JSX](https://react.dev/learn/writing-markup-with-jsx) · [JavaScript in JSX with Curly Braces](https://react.dev/learn/javascript-in-jsx-with-curly-braces) · [Rendering Lists (keys)](https://react.dev/learn/rendering-lists) · [`<Fragment>` (`<>`)](https://react.dev/reference/react/Fragment)
+
 ## 3.4 Props
 
 **Props** are the inputs to a component — the attributes you pass when you use it.
@@ -79,8 +89,10 @@ const LeftNav: FC<LeftNavProps> = ({ categories }) => { … }   // src/shell/Lef
 
 Here the parent (`AppShell`) passes `<LeftNav categories={categories} />` and
 `LeftNav` receives that array as a prop. Note the destructuring `({ categories })`
-— that's just pulling the `categories` field out of the props object (see
-[JS/TS guide §2.6](./02-javascript-and-typescript.md#26-objects-arrays-and-destructuring)).
+— that's parameter destructuring, the "Form 2" pattern from
+[the JS/TS guide §2.6](./02-javascript-and-typescript.md#26-objects-arrays-and-destructuring):
+the component is handed one `props` object and unpacks it right in the parameter
+list.
 
 A common prop type is a **callback** — the parent passes a function the child calls
 when something happens:
@@ -93,6 +105,8 @@ The form doesn't know *what* happens on submit; it just calls `onSubmit(values)`
 and lets the parent page decide. This keeps the form reusable and the page in
 control.
 
+> 📖 **Reference:** [Passing Props to a Component](https://react.dev/learn/passing-props-to-a-component) · [Responding to Events](https://react.dev/learn/responding-to-events)
+
 ## 3.5 Hooks
 
 **Hooks** are special functions whose names start with `use`. They let a function
@@ -101,6 +115,8 @@ component "hook into" React features like state and lifecycle. Two rules:
 1. Only call hooks at the **top level** of a component (never inside an `if` or a
    loop).
 2. Only call them from components or from other hooks.
+
+> 📖 **Reference:** [Built-in React Hooks](https://react.dev/reference/react/hooks) · [Rules of Hooks](https://react.dev/reference/rules/rules-of-hooks)
 
 ### `useState` — remembering values across renders
 
@@ -124,6 +140,8 @@ setValues((prev) => ({ ...prev, [key]: value }))
 
 The `prev =>` form (passing a function to the setter) is the safe way to compute
 new state from the old state.
+
+> 📖 **Reference:** [`useState`](https://react.dev/reference/react/useState) · [State: A Component's Memory](https://react.dev/learn/state-a-components-memory) · [Updating Objects in State](https://react.dev/learn/updating-objects-in-state)
 
 ### `useEffect` — running code after render / talking to the outside world
 
@@ -158,6 +176,8 @@ Three things to understand here, because this pattern recurs:
 job — tearing down its elapsed-time timer when the page unmounts
 (`useEffect(() => stopTimer, [stopTimer])` at line 55).
 
+> 📖 **Reference:** [`useEffect`](https://react.dev/reference/react/useEffect) · [Synchronizing with Effects](https://react.dev/learn/synchronizing-with-effects) · [You Might Not Need an Effect](https://react.dev/learn/you-might-not-need-an-effect)
+
 ### `useCallback` and `useMemo` — stable references
 
 React re-creates everything inside a component on each render, including functions
@@ -177,6 +197,8 @@ these two do:
 > them when a value is a *dependency* of `useEffect`/`useDataQuery`/another
 > callback and you need it to stay stable, which is exactly the cases above.
 
+> 📖 **Reference:** [`useCallback`](https://react.dev/reference/react/useCallback) · [`useMemo`](https://react.dev/reference/react/useMemo)
+
 ### `useRef` — a value that survives renders but doesn't trigger them
 
 `useRef` gives you a mutable box (`.current`) that persists across renders *without*
@@ -186,6 +208,8 @@ causing a re-render when you change it. Two uses in this app:
   (`intervalRef` in `src/render/useReportRender.ts:46`).
 - Getting a handle to a real DOM node
   (`containerRef` in `src/render/InlineHtmlReport.tsx:40`, used to inject HTML).
+
+> 📖 **Reference:** [`useRef`](https://react.dev/reference/react/useRef) · [Manipulating the DOM with Refs](https://react.dev/learn/manipulating-the-dom-with-refs)
 
 ### Custom hooks — bundling logic for reuse
 
@@ -201,6 +225,8 @@ You can write your own hook by composing the built-in ones. This app has three:
 The payoff: `PartnerReportPage` and `ReferenceReportPage` are nearly identical and
 tiny, because all the messy async/loading/error logic lives once in
 `useReportRender`.
+
+> 📖 **Reference:** [Reusing Logic with Custom Hooks](https://react.dev/learn/reusing-logic-with-custom-hooks)
 
 ## 3.6 Context — app-wide data without "prop drilling"
 
@@ -227,6 +253,8 @@ The `useAppContext` hook even throws a clear error if used outside the provider
 (`src/AppContext.tsx:48-56`) — a guardrail so a misplaced component fails loudly
 instead of silently getting `null`.
 
+> 📖 **Reference:** [`createContext`](https://react.dev/reference/react/createContext) · [`useContext`](https://react.dev/reference/react/useContext) · [Passing Data Deeply with Context](https://react.dev/learn/passing-data-deeply-with-context)
+
 ## 3.7 Lazy loading and `Suspense` — splitting the bundle
 
 By default all your code ships to the browser in one big file. `React.lazy` lets
@@ -248,6 +276,8 @@ which shows the fallback (here a spinner) while the chunk downloads:
 The result: opening the app downloads only the shell; each report/admin page's
 code arrives the first time you navigate to it.
 
+> 📖 **Reference:** [`lazy`](https://react.dev/reference/react/lazy) · [`<Suspense>`](https://react.dev/reference/react/Suspense)
+
 ## 3.8 Routing (React Router)
 
 The app has multiple "pages" but is a **single-page application** — the browser
@@ -265,7 +295,10 @@ to the first page. Navigation happens in `LeftNav` via the `useNavigate` hook
 (`src/shell/LeftNav.tsx:32`), and the current location (to highlight the active menu
 item) comes from `useLocation`.
 
-> See [guide 5](./05-architecture-overview.md) for how routing, the menu, and
+> 📖 **Reference:** [React Router docs](https://reactrouter.com/). This repo pins
+> `react-router-dom` v6 (`package.json`), so look up `HashRouter`, `Routes`,
+> `Route`, `Navigate`, `useNavigate`, and `useLocation` for that major version.
+> See also [guide 5](./05-architecture-overview.md) for how routing, the menu, and
 > authority-based filtering fit together.
 
 ---

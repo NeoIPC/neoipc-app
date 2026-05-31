@@ -284,6 +284,8 @@ the fix (Shadow DOM) and points at this file as the boundary. This is a great
 example of a comment that earns its place by recording *why* the unusual approach
 is necessary.
 
+> 📖 **Reference:** MDN — [`Element.innerHTML`](https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML) · [the `<script>` element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/script) · [Using shadow DOM](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM). The report HTML itself is produced by [Quarto](https://quarto.org/).
+
 ### `src/render/report-theme.css`
 
 Plain (non-module) CSS, imported once in `App.tsx`. It styles the injected report
@@ -359,6 +361,8 @@ The richest API file. It defines:
 
 The doc comments cite specific backend source lines for each rule — that's the
 contract this file implements.
+
+> 📖 **Reference:** MDN — [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Window/fetch) · [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) · [`Blob`](https://developer.mozilla.org/en-US/docs/Web/API/Blob) · [`Content-Disposition` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition). The error body format is [RFC 7807 — Problem Details for HTTP APIs](https://www.rfc-editor.org/rfc/rfc7807).
 
 ### `src/api/admin.ts`
 

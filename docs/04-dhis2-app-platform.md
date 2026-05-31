@@ -4,12 +4,13 @@ You now know JavaScript/TypeScript and React. This guide explains the layer that
 makes this a *DHIS2 app* rather than a generic React app: the **DHIS2 App
 Platform** and its companion libraries.
 
-Authoritative docs:
+Authoritative docs (the DHIS2 **Developer Portal**, `developers.dhis2.org`, is the
+current canonical home):
 
-- App Platform (build tooling, `d2.config.js`): <https://platform.dhis2.nu/>
-- App Runtime (`@dhis2/app-runtime`, data access): <https://runtime.dhis2.nu/>
-- UI library (`@dhis2/ui`): <https://ui.dhis2.nu/>
-- DHIS2 Web API (the server endpoints): <https://developers.dhis2.org/docs/>
+- App Platform (build tooling, `d2.config.js`): <https://developers.dhis2.org/docs/app-platform/getting-started/>
+- App Runtime (`@dhis2/app-runtime`, data access): <https://developers.dhis2.org/docs/app-runtime/getting-started/>
+- UI library (`@dhis2/ui`): <https://developers.dhis2.org/docs/tutorials/ui-library/> (live component browser: <https://ui.dhis2.nu/>)
+- DHIS2 Web API (the server endpoints): <https://docs.dhis2.org/en/develop/develop.html>
 
 ## 4.1 What is DHIS2, and what is a "DHIS2 app"?
 
@@ -32,6 +33,8 @@ The big consequences for how this code is written:
 - **Permissions come from DHIS2.** "Authorities" assigned to the user's DHIS2 role
   decide what they can see — see [guide 8](./08-styling-i18n-and-authorities.md).
 
+> 📖 **Reference:** [DHIS2 Developer Portal](https://developers.dhis2.org/) · [DHIS2 Web API documentation](https://docs.dhis2.org/en/develop/using-the-api/dhis-core-version-master/introduction.html)
+
 ## 4.2 The App Platform: build tooling you don't have to assemble
 
 A modern React app normally needs you to configure a bundler, a dev server, a test
@@ -39,6 +42,8 @@ runner, a translation pipeline, and a packaging step. The **App Platform** bundl
 all of that into one CLI, **`d2-app-scripts`**, so you don't maintain that
 configuration yourself. The `package.json` scripts are all thin wrappers around it
 (see [guide 1](./01-getting-started.md) and [guide 9](./09-build-test-deploy.md)).
+
+> 📖 **Reference:** [App Platform — Getting Started](https://developers.dhis2.org/docs/app-platform/getting-started/) · [Installation](https://developers.dhis2.org/docs/app-platform/installation/)
 
 ### `d2.config.js` — the app manifest
 
@@ -71,6 +76,8 @@ of app this is and how it should be installed into DHIS2. The important fields:
   file explains the one tweak here: raising the chunk-size warning threshold
   because `@dhis2/ui` is legitimately large.
 
+> 📖 **Reference:** [`d2.config.js` Configuration File Reference](https://developers.dhis2.org/docs/app-platform/config/d2-config-js-reference/) · Vite (the underlying bundler): <https://vite.dev/>
+
 ## 4.3 `@dhis2/app-runtime` — talking to DHIS2
 
 This library is how the app reads its environment and queries the DHIS2 Web API.
@@ -92,6 +99,8 @@ const { baseUrl } = useConfig()                // src/App.tsx:35
 
 Gives you the DHIS2 server's base URL. The API helpers need it to build absolute
 URLs to the NeoIPC-Reporting service (`src/api/neoipcReporting.ts:11`).
+
+> 📖 **Reference:** [`useConfig` hook](https://developers.dhis2.org/docs/app-runtime/hooks/useconfig/)
 
 ### `useDataQuery()` — declarative reads from the DHIS2 Web API
 
@@ -119,7 +128,9 @@ org units for a given hierarchy level
 > `app-runtime`; reporting-service calls go through our own `fetch` wrapper.
 
 The `<MeQueryResult>` generic types the response — without it, `data` would be
-loosely typed. Read more at <https://runtime.dhis2.nu/>.
+loosely typed.
+
+> 📖 **Reference:** [`useDataQuery` hook](https://developers.dhis2.org/docs/app-runtime/hooks/usedataquery/) · [Tutorial: Fetching data with useDataQuery](https://developers.dhis2.org/docs/tutorials/app-runtime-query/) · [Query type / data queries](https://developers.dhis2.org/docs/app-runtime/types/query/)
 
 ## 4.4 `@dhis2/ui` — the design system
 
@@ -151,7 +162,7 @@ latter exposes DHIS2's design tokens (colours, spacing) as CSS variables like
 `--colors-grey300` and `--spacers-dp16`, which the app's own CSS then uses (see
 `src/shell/Shell.module.css` and [guide 8](./08-styling-i18n-and-authorities.md)).
 
-Browse every component with live examples and props at <https://ui.dhis2.nu/>.
+> 📖 **Reference:** [Tutorial: the DHIS2 UI Library](https://developers.dhis2.org/docs/tutorials/ui-library/) · [About the DHIS2 design system](https://developers.dhis2.org/design-system/) · live component browser with props & examples: <https://ui.dhis2.nu/>
 
 ## 4.5 `@dhis2/d2-i18n` — translation
 
@@ -169,6 +180,8 @@ strings are written in the code — they must be *literal* arguments to `i18n.t`
 variables — which is why labels are thunks and enum labels use big `switch`
 statements. The full explanation is in
 [guide 8](./08-styling-i18n-and-authorities.md).
+
+> 📖 **Reference:** [Guide: How to add translation support to an application](https://developers.dhis2.org/docs/guides/translation-support/)
 
 ## 4.6 Putting the libraries together
 

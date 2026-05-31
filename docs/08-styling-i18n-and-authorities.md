@@ -54,6 +54,8 @@ report when the user prints. It uses `visibility: hidden` rather than `display:
 none` so the print engine can still measure layout. This is the kind of detail
 worth knowing exists before you "tidy up" the CSS.
 
+> 📖 **Reference:** MDN — [Using CSS custom properties (variables)](https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties) · [`@media`](https://developer.mozilla.org/en-US/docs/Web/CSS/@media). CSS Modules: the [css-modules spec](https://github.com/css-modules/css-modules) and [Vite's CSS Modules support](https://vite.dev/guide/features.html#css-modules).
+
 ## 8.2 Internationalisation (i18n)
 
 DHIS2 runs worldwide, so **every** user-facing string must be translatable. The
@@ -103,6 +105,8 @@ This single constraint explains several otherwise-odd patterns in the codebase:
 
 If you ever write `i18n.t(someVariable)`, the string won't be translated. That's
 the one i18n mistake to watch for.
+
+> 📖 **Reference:** [Guide: How to add translation support to an application](https://developers.dhis2.org/docs/guides/translation-support/) · [`@dhis2/d2-i18n` on npm](https://www.npmjs.com/package/@dhis2/d2-i18n)
 
 ## 8.3 Authorities (access control)
 
@@ -158,6 +162,8 @@ every request. That's why `App.tsx` treats a 401/403 from the reference-data
 endpoint as "no access" (an expected outcome) rather than a crash: the server is
 the final authority, and the UI adapts to what it says. Never assume hiding a menu
 item is sufficient protection — the server check is what actually protects data.
+
+> 📖 **Reference:** DHIS2 — [Configuring authorities for user roles](https://docs.dhis2.org/en/use/user-guides/dhis-core-version-master/configuring-the-system/users-roles-and-groups.html) · App-level custom authorities are declared via [`customAuthorities` in `d2.config.js`](https://developers.dhis2.org/docs/app-platform/config/d2-config-js-reference/).
 
 ---
 

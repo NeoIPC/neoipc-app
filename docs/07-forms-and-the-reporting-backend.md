@@ -75,6 +75,8 @@ is exactly the `??`-vs-`||` distinction from
 The response is decoded by `readRenderResult`: HTML → `await response.text()`;
 PDF → `await response.blob()` plus a filename parsed from `Content-Disposition`.
 
+> 📖 **Reference:** MDN — [`URLSearchParams`](https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams) · [HTTP request methods](https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods) · [`Accept` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept) · [`Response`](https://developer.mozilla.org/en-US/docs/Web/API/Response) · [`Content-Disposition`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition)
+
 ## 7.4 The wire contract, and why it's fragile
 
 The form's field names, the query-parameter names, and the **backend's accepted

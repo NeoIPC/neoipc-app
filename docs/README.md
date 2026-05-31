@@ -63,10 +63,16 @@ sends them to that backend, and displays the result.
 | TypeScript | <https://www.typescriptlang.org/docs/> |
 | React | <https://react.dev/> |
 | React Router | <https://reactrouter.com/> |
-| DHIS2 App Platform | <https://platform.dhis2.nu/> |
-| DHIS2 App Runtime (`@dhis2/app-runtime`) | <https://runtime.dhis2.nu/> |
-| DHIS2 UI library (`@dhis2/ui`) | <https://ui.dhis2.nu/> |
-| DHIS2 developer portal (Web API, etc.) | <https://developers.dhis2.org/> |
+| DHIS2 Developer Portal (home for all of the below) | <https://developers.dhis2.org/> |
+| DHIS2 App Platform | <https://developers.dhis2.org/docs/app-platform/getting-started/> |
+| DHIS2 App Runtime (`@dhis2/app-runtime`) | <https://developers.dhis2.org/docs/app-runtime/getting-started/> |
+| DHIS2 UI library (`@dhis2/ui`) | <https://developers.dhis2.org/docs/tutorials/ui-library/> · live demos <https://ui.dhis2.nu/> |
+| DHIS2 Web API | <https://docs.dhis2.org/en/develop/develop.html> |
+
+> **The 📖 convention:** inside the concept guides (2–4 especially), a 📖 line
+> after each topic links straight to the official documentation for it. Follow
+> those when you want the complete reference — the guides only cover the slice this
+> codebase uses.
 
 ## A note for maintainers of this guide
 
