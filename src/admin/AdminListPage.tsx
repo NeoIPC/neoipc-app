@@ -46,6 +46,11 @@ interface AdminListPageProps<T extends AdminResourceMetadata> {
  * Errors surface inline as `<NoticeBox>` and are non-blocking — the
  * existing list stays visible so the operator can keep working.
  */
+// LEARN: ONE generic component renders BOTH admin screens. The differences
+// (URL segment, labels, accepted file types, extra columns) come in as the
+// `resource` config object — see src/admin/AdminResourceType.ts and the two
+// concrete configs. Adding a third admin resource = write one more config, no new
+// page code. This is the payoff of generics (docs/02 §2.9, docs/05 §5.5).
 function AdminListPage<T extends AdminResourceMetadata>({
     resource,
 }: AdminListPageProps<T>): ReturnType<FC> {

@@ -1,3 +1,9 @@
+// LEARN: This is the ROOT component — the top of the whole app (declared as the
+// entry point in d2.config.js). Its job is "startup gating": fetch the two things
+// the rest of the app assumes exist (the current user, the reference datasets),
+// show a spinner/error until they arrive, then mount everything else.
+// New here? Read docs/06-annotated-codebase-tour.md ("The entry point") alongside
+// this file, and docs/05-architecture-overview.md §5.2 for the startup sequence.
 import { useConfig, useDataQuery } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
 import {
@@ -24,6 +30,11 @@ interface MeQueryResult {
     me: MeData
 }
 
+// LEARN: A `useDataQuery` request is DECLARED as a plain object, not written as a
+// fetch() call. This describes `GET /api/me?fields=id,authorities` against the
+// DHIS2 Web API. The runtime runs it and hands back loading/error/data for us.
+// (DHIS2 reads go through useDataQuery; the *separate* NeoIPC-Reporting service is
+// reached with our own fetch wrapper in src/api/. See docs/04 §4.3.)
 const meQuery = {
     me: {
         resource: 'me',
@@ -44,6 +55,11 @@ const App: FC = () => {
     >(null)
     const [refDataError, setRefDataError] = useState<Error | null>(null)
 
+    // LEARN: useEffect runs a side-effect (here: a network fetch) AFTER render.
+    // The `[baseUrl]` at the bottom is the dependency array — re-run only if it
+    // changes. The returned function is cleanup; React calls it if the component
+    // disappears mid-fetch, flipping `cancelled` so a late result is ignored.
+    // This cancel-flag pattern is standard React; see docs/03-react.md §3.5.
     useEffect(() => {
         let cancelled = false
         loadReferenceDataSets(baseUrl)
@@ -94,6 +110,10 @@ const App: FC = () => {
                     </NoticeBox>
                 </Center>
             ) : (
+                // LEARN: Order matters here. AppContextProvider makes the fetched
+                // data readable by any descendant via useAppContext() (no
+                // "prop drilling"); HashRouter enables URL routing below it. Both
+                // must wrap the components that use them. See docs/03 §3.6 & §3.8.
                 <AppContextProvider
                     value={{
                         me: meData.me,

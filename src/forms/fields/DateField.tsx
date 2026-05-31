@@ -1,3 +1,7 @@
+// LEARN: A small reusable "field" component that wraps a @dhis2/ui widget and
+// adapts it to the shape our forms want (here: a plain 'YYYY-MM-DD' string). The
+// fields/ folder holds these adapters so the big forms stay readable. The
+// `?` on optional props in the interface = "may be omitted" (docs/02 §2.9).
 import { CalendarInput } from '@dhis2/ui'
 import React, { FC } from 'react'
 

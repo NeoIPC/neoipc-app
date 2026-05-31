@@ -1,6 +1,10 @@
 import i18n from '@dhis2/d2-i18n'
 import { Center, CircularLoader, NoticeBox } from '@dhis2/ui'
 import React, { FC } from 'react'
+// LEARN: A purely "presentational" component — it holds no state and contains no
+// logic beyond choosing what to show: a spinner while loading, an error box, the
+// rendered HTML, or nothing (the PDF case is a download handled elsewhere). It
+// receives everything it needs as props from the page. docs/06 ("The render layer").
 import InlineHtmlReport from './InlineHtmlReport'
 
 interface ReportResultPanelProps {

@@ -1,3 +1,8 @@
+// LEARN: ALL network calls in this app live under src/api/ — UI components never
+// call fetch() directly. This file is the foundation for talking to the
+// NeoIPC-Reporting service (a SEPARATE backend from DHIS2; docs/05 §5.6). Every
+// other api/*.ts file builds on fetchNeoipcReporting below. `async`/`await` and
+// Promises are explained in docs/02 §2.8.
 import { NEOIPC_REPORTING_BASE } from '../config/dhis2Constants'
 
 /**
@@ -37,6 +42,9 @@ export const fetchNeoipcReporting = async (
     path: string,
     init?: RequestInit
 ): Promise<Response> => {
+    // LEARN: `credentials: 'include'` sends the DHIS2 session cookie so the
+    // reporting service knows who we are (auth is inherited from DHIS2; docs/04 §4.1).
+    // `...init` spreads the caller's options on top of our defaults (docs/02 §2.6).
     const response = await fetch(neoipcReportingUrl(baseUrl, path), {
         credentials: 'include',
         ...init,

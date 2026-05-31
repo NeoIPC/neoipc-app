@@ -1,3 +1,9 @@
+// LEARN: Despite the `.spec` name, this is NOT a Jest test — it's a "contract"
+// file. It lists the exact wire-parameter names the form sends to the backend, and
+// the `_wireFieldExhaustiveness` line at the bottom is a TEST WRITTEN IN THE TYPE
+// SYSTEM: it stops compiling if you add a form field but forget to list it here (or
+// exclude it as form-only). The build-time drift script reads this list too. The
+// whole safety net is explained in docs/07 §7.5.
 import type { PartnerReportFormValues } from './PartnerReportForm'
 
 /**

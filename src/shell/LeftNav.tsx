@@ -3,6 +3,9 @@ import React, { FC } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import type { MenuCategory } from '../menu/categories'
 
+// LEARN: `categories` is a "prop" — an input passed in by the parent (AppShell).
+// Props flow down and are read-only inside this component. The interface below
+// declares the exact shape this component expects. See docs/03-react.md §3.4.
 interface LeftNavProps {
     categories: MenuCategory[]
 }

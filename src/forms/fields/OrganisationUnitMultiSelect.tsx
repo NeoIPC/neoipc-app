@@ -64,6 +64,10 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
     disabled,
     required,
 }) => {
+    // LEARN: useMemo returns the SAME object until `level` changes. Without it, a
+    // fresh query object every render would make useDataQuery think the query
+    // changed and re-fetch endlessly. This is the main reason to reach for useMemo
+    // (docs/03 §3.5). The query reads org units from the DHIS2 Web API (docs/04 §4.3).
     const query = useMemo(
         () => ({
             ous: {

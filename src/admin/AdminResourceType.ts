@@ -1,3 +1,7 @@
+// LEARN: This interface is the "config shape" that drives the generic
+// AdminListPage. Each admin screen supplies one of these objects (see
+// referenceDataResource.ts / validationExceptionsResource.ts) instead of writing
+// its own page. This data-driven approach is explained in docs/06 ("The admin layer").
 import type { ReactNode } from 'react'
 import type { AdminResourceMetadata } from '../api/admin'
 

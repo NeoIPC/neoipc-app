@@ -1,3 +1,6 @@
+// LEARN: A tiny API module. `response.json() as PublicReferenceDataMetadata[]`
+// asserts the decoded JSON's shape — TypeScript trusts us here with no runtime
+// check (docs/02 §2.9). This is run once at startup by App.tsx.
 import type { PublicReferenceDataMetadata } from '../AppContext'
 import { fetchNeoipcReporting } from './neoipcReporting'
 

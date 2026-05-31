@@ -1,3 +1,8 @@
+// LEARN: This custom hook is the shared "brain" of both report pages. It owns the
+// whole submit → loading → result/error lifecycle so the pages stay tiny. It's a
+// good tour of the less-common hooks: useRef (a value that survives renders without
+// causing one — here a timer id) and useCallback (a stable function identity).
+// Walk-through: docs/06 ("The render layer"); hooks recap: docs/03 §3.5.
 import { useConfig } from '@dhis2/app-runtime'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { NeoipcReportingError } from '../api/neoipcReporting'
@@ -80,6 +85,9 @@ export const useReportRender = <TValues>(
             try {
                 const rendered = await render(baseUrl, values)
                 stopTimer()
+                // LEARN: `rendered` is a discriminated union (docs/02 §2.9). After
+                // this `=== 'pdf'` check TypeScript KNOWS `rendered` has .blob and
+                // .suggestedFileName; in the else branch it knows .fragmentHtml.
                 if (rendered.format === 'pdf') {
                     downloadBlob(rendered.blob, rendered.suggestedFileName)
                     setState({

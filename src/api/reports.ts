@@ -25,6 +25,11 @@ const ACCEPT_BY_FORMAT: Record<OutputFormat, string> = {
     pdf: 'application/pdf',
 }
 
+// LEARN: These append* helpers add a query parameter ONLY if the user actually
+// provided a value. An empty box must mean "unspecified" (let the backend pick its
+// default), not "set this to empty/zero". Note appendString drops '' but appendBool
+// keeps `false` — `false` is a real choice. This is the ?? vs || distinction in
+// docs/02 §2.7, and the wire contract is discussed in docs/07 §7.3.
 const appendString = (
     qs: URLSearchParams,
     key: string,

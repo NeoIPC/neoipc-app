@@ -31,6 +31,11 @@ const adminPath = (segment: string, id?: string): string => {
  * bookkeeping fields (size, content type, uploader). The backend's
  * {@link camelCase} JSON naming policy maps cleanly onto `T`.
  */
+// LEARN: `<T extends AdminResourceMetadata>` is a GENERIC — read it as "T is some
+// type that has at least the AdminResourceMetadata fields, maybe more." This one
+// function correctly types the result whether the caller asks for reference-data
+// rows or validation-exception rows. It's why there's ONE generic admin page
+// instead of two near-identical ones. Generics are explained in docs/02 §2.9.
 export const adminList = async <T extends AdminResourceMetadata>(
     baseUrl: string,
     segment: string

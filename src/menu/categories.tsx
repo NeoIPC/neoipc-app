@@ -8,6 +8,15 @@ import i18n from '@dhis2/d2-i18n'
 import React, { LazyExoticComponent, ReactElement, ComponentType } from 'react'
 import type { AppAuthority } from '../authority/Authority'
 
+// LEARN: This is the SINGLE SOURCE OF TRUTH for "what pages exist." Add a page by
+// adding one entry to `categories` below; the nav (LeftNav), the routes
+// (ContentArea), and the authority filtering all derive from this list, so they
+// stay in sync automatically. Two patterns to notice as you read:
+//   • label: () => i18n.t('...')  — a "thunk" (zero-arg function) so the translated
+//     text is looked up at render time and re-translates on language switch (docs/08 §8.2).
+//   • Page: React.lazy(() => import(...)) — code-splits each page into its own
+//     download, loaded on first visit (docs/03 §3.7).
+
 /**
  * One entry in the left-nav. Order in the rendered menu is given by
  * {@link categoryOrder}; this map provides the per-entry metadata.

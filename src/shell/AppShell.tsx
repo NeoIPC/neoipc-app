@@ -15,6 +15,10 @@ import styles from './Shell.module.css'
  * dedicated "no access" notice instead of an empty shell.
  */
 const AppShell: FC = () => {
+    // LEARN: `has` is a predicate from our custom hook — has('NEOIPC_ADMIN') etc.
+    // visibleCategories filters the menu down to what THIS user may see. The same
+    // filtered list feeds both the nav and the routes, so they can't disagree.
+    // Access control is explained in docs/08-styling-i18n-and-authorities.md §8.3.
     const { has } = useAuthorities()
     const categories = visibleCategories(has)
 

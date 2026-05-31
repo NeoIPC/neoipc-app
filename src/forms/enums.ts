@@ -1,3 +1,9 @@
+// LEARN: These string lists are COPIES of enums defined in the backend; the values
+// (e.g. 'SecondaryBsiRateTable') go straight onto the HTTP request, so they must
+// match exactly — the drift check (docs/07) guards that. The *Label functions turn
+// each wire value into a human label using a big `switch` of literal i18n.t('...')
+// calls, which is required for translation extraction (docs/08 §8.2). Note
+// `as const` below, which lets the *type* be derived from the array (docs/02 §2.9).
 import i18n from '@dhis2/d2-i18n'
 
 /**

@@ -110,6 +110,9 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
         (value: ReferenceReportFormValues[K]) =>
             setValues((prev) => ({ ...prev, [key]: value }))
 
+    // LEARN: When a saved dataset is chosen, the live-fetch filters below are
+    // DISABLED (not hidden) — the backend forbids mixing the two ("no mixed mode").
+    // This derived boolean drives the `disabled` prop on those fields. docs/07 §7.2.
     const usingSavedDataset = values.referenceDataId !== ''
 
     return (

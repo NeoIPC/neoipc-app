@@ -1,3 +1,7 @@
+// LEARN: This file sets up a React "Context" — a way to share data (here: the
+// current user + reference datasets, fetched once in App.tsx) with any component
+// in the tree without passing it through every layer as props. The interfaces
+// below also document the exact JSON shapes the backend sends. See docs/03 §3.6.
 import React, { useContext } from 'react'
 
 /**

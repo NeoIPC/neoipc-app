@@ -102,13 +102,24 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
     onSubmit,
     submitting = false,
 }) => {
+    // LEARN: useState remembers data across re-renders. We keep ALL field values
+    // in one object `values`; `setValues` replaces it (and triggers a re-render).
+    // `submitting = false` above is a default for an omitted prop. See docs/03 §3.5.
     const [values, setValues] = useState<PartnerReportFormValues>(defaultValues)
 
+    // LEARN: A small helper to update ONE field immutably. setField('locale') gives
+    // back a function; calling it with a value copies the old object and overrides
+    // just that key: { ...prev, locale: value }. We never mutate state in place —
+    // React detects changes by identity. The spread/computed-key trick is docs/02 §2.6.
     const setField = <K extends keyof PartnerReportFormValues>(key: K) =>
         (value: PartnerReportFormValues[K]) =>
             setValues((prev) => ({ ...prev, [key]: value }))
 
     return (
+        // LEARN: event.preventDefault() stops the browser's native form submission
+        // (which would reload the page). Instead we hand the collected `values` up
+        // to the parent via the onSubmit callback prop. `onSubmit?.(...)` only calls
+        // it if it was provided (optional chaining, docs/02 §2.7).
         <form
             onSubmit={(event) => {
                 event.preventDefault()
@@ -161,6 +172,10 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                 </fieldset>
             </Card>
 
+            {/* LEARN: Conditional rendering. `cond && <X/>` renders <X/> only when
+                cond is true. Here the "Scope" card appears only in online mode,
+                because the backend ignores these filters when a data file is
+                uploaded ("no mixed mode"; docs/07 §7.2). */}
             {values.mode === 'online' && (
                 <Card>
                     <h2>{i18n.t('Scope')}</h2>

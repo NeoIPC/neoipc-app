@@ -1,3 +1,8 @@
+// LEARN: This is the ONE component that deliberately bypasses React and pokes the
+// real DOM (via useRef + innerHTML). Normally you never do this — but the backend
+// returns opaque HTML that isn't React-compatible, so React can't manage it. The
+// long comment below explains exactly why. Discussed in docs/06 ("the deliberate
+// exception") and docs/08 §8.1 (why report-theme.css is global, not a CSS Module).
 import React, { FC, useEffect, useRef } from 'react'
 
 /**

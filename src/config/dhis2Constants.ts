@@ -1,3 +1,8 @@
+// LEARN: This is the ONLY place "magic" deployment values (UIDs, hierarchy levels,
+// the reporting service path) are allowed to live. Import from here rather than
+// hard-coding them elsewhere. When the DHIS2 deployment topology changes, this is
+// the file to revisit. Referenced throughout; see docs/06 ("Config").
+
 /**
  * NeoIPC DHIS2 deployment constants.
  *
