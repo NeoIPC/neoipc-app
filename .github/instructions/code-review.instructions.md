@@ -31,7 +31,7 @@ This is a **DHIS2 App Platform** application built with `@dhis2/cli-app-scripts`
 
 ### Backend wire compatibility
 
-- The vendored backend schemas under `src/schemas/*.json` are the source of truth for the wire shape of `/partner-report` and `/reference-report` query parameters. Any enum value that ends up on the wire MUST match the JSON schema's `values` array verbatim, including casing. The C# backend's `[FromQuery]` model binder is case-sensitive on enum values.
+- The vendored backend schemas under `src/schemas/*.json` are the source of truth for the wire shape of `/partner-report` and `/reference-report` query parameters. Any enum value that ends up on the wire MUST match the JSON schema's `values` array verbatim, including casing. The C# backend binds these enum query parameters via ASP.NET Core **minimal-API** parameter binding (`Enum.TryParse`, no `ignoreCase` argument → **case-sensitive**); a casing mismatch fails to bind at request time. The handler params carry `[FromQuery]`, but in a minimal API that attribute only marks the binding *source* — it does not invoke the MVC model binder.
 - The schema-drift check script (`scripts/check-schema-drift.mjs`) compares field NAMES but not VALUE casings, so casing mismatches between TS enum constants and the JSON schemas pass the script but fail at runtime. Worth flagging case-mismatches in `src/forms/enums.ts` against the matching schema's `values` block.
 
 ### TypeScript / React
