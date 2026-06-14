@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-05-28T12:22:34.938Z\n"
-"PO-Revision-Date: 2026-05-28T12:22:34.938Z\n"
+"POT-Creation-Date: 2026-06-11T14:05:37.244Z\n"
+"PO-Revision-Date: 2026-06-11T14:05:37.246Z\n"
 
 msgid "Upload"
 msgstr "Upload"
@@ -41,8 +41,52 @@ msgstr "Actions"
 msgid "Delete"
 msgstr "Delete"
 
+msgid "..."
+msgstr "..."
+
+msgid "Reference data"
+msgstr "Reference data"
+
+msgid "reference dataset"
+msgstr "reference dataset"
+
+msgid "Reference datasets"
+msgstr "Reference datasets"
+
+msgid ""
+"Operator-facing label that appears in the picker on the Reference Report "
+"form."
+msgstr ""
+"Operator-facing label that appears in the picker on the Reference Report "
+"form."
+
+msgid "Reporting period"
+msgstr "Reporting period"
+
+msgid "Countries"
+msgstr "Countries"
+
 msgid "(any)"
 msgstr "(any)"
+
+msgid "Validation exceptions"
+msgstr "Validation exceptions"
+
+msgid "validation exception file"
+msgstr "validation exception file"
+
+msgid "Validation exception files"
+msgstr "Validation exception files"
+
+msgid ""
+"Operator-facing label. Partners reference this file by ID when generating a "
+"report."
+msgstr ""
+"Operator-facing label. Partners reference this file by ID when generating a "
+"report."
+
+msgid "Please select a data file before submitting."
+msgstr "Please select a data file before submitting."
 
 msgid "NeoIPC"
 msgstr "NeoIPC"
@@ -53,6 +97,69 @@ msgstr "Failed to load NeoIPC app data"
 msgid "Unknown error"
 msgstr "Unknown error"
 
+msgid "All"
+msgstr "All"
+
+msgid "Rate"
+msgstr "Rate"
+
+msgid "None"
+msgstr "None"
+
+msgid "Birth weight figure"
+msgstr "Birth weight figure"
+
+msgid "Gestational age figure"
+msgstr "Gestational age figure"
+
+msgid "Incidence density table"
+msgstr "Incidence density table"
+
+msgid "Device-associated incidence density table"
+msgstr "Device-associated incidence density table"
+
+msgid "Agent per infection rate table"
+msgstr "Agent per infection rate table"
+
+msgid "Infectious agent detection rate table"
+msgstr "Infectious agent detection rate table"
+
+msgid "Risk density rate table"
+msgstr "Risk density rate table"
+
+msgid "Antibiotic utilisation table"
+msgstr "Antibiotic utilisation table"
+
+msgid "Surgical procedure rate table"
+msgstr "Surgical procedure rate table"
+
+msgid "Resistant pathogen infection rate table"
+msgstr "Resistant pathogen infection rate table"
+
+msgid "Organism resistance rate table"
+msgstr "Organism resistance rate table"
+
+msgid "Antibiotic resistance test rate table"
+msgstr "Antibiotic resistance test rate table"
+
+msgid "Secondary BSI rate table"
+msgstr "Secondary BSI rate table"
+
+msgid "Patient population"
+msgstr "Patient population"
+
+msgid "Nosocomial"
+msgstr "Nosocomial"
+
+msgid "Infectious agents"
+msgstr "Infectious agents"
+
+msgid "Risk factors"
+msgstr "Risk factors"
+
+msgid "Surgery"
+msgstr "Surgery"
+
 msgid "From"
 msgstr "From"
 
@@ -61,6 +168,15 @@ msgstr "To"
 
 msgid "Failed to load organisation units — {{message}}"
 msgstr "Failed to load organisation units — {{message}}"
+
+msgid ""
+"These org units cannot be picked because they have no `code` set in DHIS2 "
+"metadata. Ask the NeoIPC metadata maintainers to add a code so they can be "
+"included in reports."
+msgstr ""
+"These org units cannot be picked because they have no `code` set in DHIS2 "
+"metadata. Ask the NeoIPC metadata maintainers to add a code so they can be "
+"included in reports."
 
 msgid "Clear"
 msgstr "Clear"
@@ -100,9 +216,6 @@ msgstr "Include non-core patients"
 
 msgid "Include test data"
 msgstr "Include test data"
-
-msgid "Reporting period"
-msgstr "Reporting period"
 
 msgid "Patient population filters"
 msgstr "Patient population filters"
@@ -188,9 +301,6 @@ msgstr "Disabled — a saved dataset is selected above."
 msgid "Used when no saved reference dataset is selected."
 msgstr "Used when no saved reference dataset is selected."
 
-msgid "Countries"
-msgstr "Countries"
-
 msgid "Hospitals"
 msgstr "Hospitals"
 
@@ -226,12 +336,6 @@ msgstr "Partner Report"
 
 msgid "Reference Report"
 msgstr "Reference Report"
-
-msgid "Reference data"
-msgstr "Reference data"
-
-msgid "Validation exceptions"
-msgstr "Validation exceptions"
 
 msgid "Rendering report... (elapsed {{seconds}}s — can take up to 10 minutes)"
 msgstr "Rendering report... (elapsed {{seconds}}s — can take up to 10 minutes)"
