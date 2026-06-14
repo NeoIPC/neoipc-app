@@ -8,7 +8,11 @@
   "scripts": {
     "build": "d2-app-scripts build",
     "start": "d2-app-scripts start",
+    "start:dev": "node scripts/start-dev.mjs",
     "test": "d2-app-scripts test",
+    "typecheck": "tsc --noEmit",
+    "check:schema": "node scripts/check-schema-drift.mjs",
+    "validate": "yarn typecheck && yarn check:schema && yarn test",
     "deploy": "d2-app-scripts deploy",
     "i18n:extract": "d2-app-scripts i18n extract",
     "i18n:generate": "d2-app-scripts i18n generate",

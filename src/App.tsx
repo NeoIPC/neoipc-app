@@ -5,7 +5,6 @@ import {
     CircularLoader,
     CssReset,
     CssVariables,
-    HeaderBar,
     NoticeBox,
 } from '@dhis2/ui'
 import React, { FC, useEffect, useState } from 'react'
@@ -79,7 +78,6 @@ const App: FC = () => {
         <>
             <CssReset />
             <CssVariables colors spacers theme />
-            <HeaderBar appName={i18n.t('NeoIPC')} />
             {loading ? (
                 <Center>
                     <CircularLoader />

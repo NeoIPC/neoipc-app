@@ -6,8 +6,8 @@
  *
  *  1. Default (always runs) — compare the field-name set in each
  *     vendored `src/schemas/<report>.json` snapshot against the
- *     hand-written tuple in `src/forms/<Form>.spec.ts`. Fails the
- *     build if either side carries a field the other doesn't.
+ *     hand-written tuple in `src/forms/<Form>.wire-fields.ts`. Fails
+ *     the build if either side carries a field the other doesn't.
  *
  *  2. Upstream diff (opt-in via the NEOIPC_REPORTING_REPO env var) —
  *     run `dotnet run --project $NEOIPC_REPORTING_REPO/src/NeoIPC.Reporting --
@@ -15,11 +15,12 @@
  *     vendored snapshots. Catches the case where the snapshot is
  *     stale because the backend's [ApiParameter] surface moved.
  *
- * The script is intentionally dependency-free: it parses each spec's
- * `[ ... ] as const` tuple with a narrow regex rather than spinning
- * up a TypeScript compiler. The spec files are 1-tuple-per-export and
- * the tuple format is enforced by repository convention; if a future
- * spec grows beyond that shape, switch to importing via tsx instead.
+ * The script is intentionally dependency-free: it parses each
+ * contract's `[ ... ] as const` tuple with a narrow regex rather than
+ * spinning up a TypeScript compiler. The wire-fields files are
+ * 1-tuple-per-export and the tuple format is enforced by repository
+ * convention; if a future one grows beyond that shape, switch to
+ * importing via tsx instead.
  */
 
 import { readFileSync, mkdtempSync, rmSync } from 'node:fs'
@@ -35,13 +36,13 @@ const reports = [
     {
         label: 'Partner Report',
         schemaPath: join(repoRoot, 'src/schemas/partner-report.json'),
-        specPath: join(repoRoot, 'src/forms/PartnerReportForm.spec.ts'),
+        specPath: join(repoRoot, 'src/forms/PartnerReportForm.wire-fields.ts'),
         specExport: 'partnerReportWireFields',
     },
     {
         label: 'Reference Report',
         schemaPath: join(repoRoot, 'src/schemas/reference-report.json'),
-        specPath: join(repoRoot, 'src/forms/ReferenceReportForm.spec.ts'),
+        specPath: join(repoRoot, 'src/forms/ReferenceReportForm.wire-fields.ts'),
         specExport: 'referenceReportWireFields',
     },
 ]

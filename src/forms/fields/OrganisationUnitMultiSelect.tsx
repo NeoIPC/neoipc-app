@@ -1,7 +1,7 @@
-import { useDataQuery } from '@dhis2/app-runtime'
+import { useDataEngine } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
 import { MultiSelectField, MultiSelectOption, NoticeBox } from '@dhis2/ui'
-import React, { FC, useMemo } from 'react'
+import React, { FC, useEffect, useState } from 'react'
 import { NEOIPC_CORE_PROGRAM_UID } from '../../config/dhis2Constants'
 
 interface OrgUnitRow {
@@ -11,11 +11,37 @@ interface OrgUnitRow {
     parent?: { displayName: string }
 }
 
-interface OrgUnitsQueryResult {
+interface OrgUnitsPage {
     ous: {
+        pager?: { page: number; pageCount: number }
         organisationUnits: OrgUnitRow[]
     }
 }
+
+// Per-request page size. The picker pages through *every* page (see
+// fetchAllPages below) and accumulates the results, so this is only the
+// request granularity — not a cap on how many org units are selectable. This
+// replaces the deprecated `paging: false`, which loaded everything in one
+// unbounded request.
+const PAGE_SIZE = 500
+
+const orgUnitsQuery = (level: number, page: number) => ({
+    ous: {
+        resource: 'organisationUnits',
+        params: {
+            userOnly: true,
+            filter: [
+                `programs.id:eq:${NEOIPC_CORE_PROGRAM_UID}`,
+                `level:eq:${level}`,
+            ],
+            fields: 'id,code,displayName,parent[displayName]',
+            // Deterministic order so pages don't overlap or skip rows.
+            order: 'id:asc',
+            pageSize: PAGE_SIZE,
+            page,
+        },
+    },
+})
 
 interface OrganisationUnitMultiSelectProps {
     name: string
@@ -64,25 +90,48 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
     disabled,
     required,
 }) => {
-    const query = useMemo(
-        () => ({
-            ous: {
-                resource: 'organisationUnits',
-                params: {
-                    userOnly: true,
-                    filter: [
-                        `programs.id:eq:${NEOIPC_CORE_PROGRAM_UID}`,
-                        `level:eq:${level}`,
-                    ],
-                    fields: 'id,code,displayName,parent[displayName]',
-                    paging: false,
-                },
-            },
-        }),
-        [level]
-    )
+    const engine = useDataEngine()
+    const [rows, setRows] = useState<OrgUnitRow[] | null>(null)
+    const [error, setError] = useState<Error | null>(null)
 
-    const { loading, error, data } = useDataQuery<OrgUnitsQueryResult>(query)
+    useEffect(() => {
+        let cancelled = false
+        setRows(null)
+        setError(null)
+
+        const fetchAllPages = async (): Promise<OrgUnitRow[]> => {
+            const collected: OrgUnitRow[] = []
+            let page = 1
+            let pageCount = 1
+            do {
+                const result = (await engine.query(
+                    orgUnitsQuery(level, page)
+                )) as unknown as OrgUnitsPage
+                collected.push(...result.ous.organisationUnits)
+                pageCount = result.ous.pager?.pageCount ?? 1
+                page += 1
+            } while (page <= pageCount)
+            return collected
+        }
+
+        fetchAllPages()
+            .then((all) => {
+                if (!cancelled) {
+                    setRows(all)
+                }
+            })
+            .catch((err: unknown) => {
+                if (!cancelled) {
+                    setError(
+                        err instanceof Error ? err : new Error(String(err))
+                    )
+                }
+            })
+
+        return () => {
+            cancelled = true
+        }
+    }, [engine, level])
 
     if (error) {
         return (
@@ -94,11 +143,12 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
         )
     }
 
-    const rows = data?.ous.organisationUnits ?? []
-    const rowsWithoutCode = rows.filter(
+    const loading = rows === null
+    const loadedRows = rows ?? []
+    const rowsWithoutCode = loadedRows.filter(
         (row) => row.code === null || row.code === ''
     )
-    const options = rows
+    const options = loadedRows
         .filter((row) => row.code !== null && row.code !== '')
         .map((row) => ({
             value: row.code,
