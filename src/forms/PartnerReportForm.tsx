@@ -108,7 +108,7 @@ const defaultValues: PartnerReportFormValues = {
     confidenceIntervals: '',
     includeIntroductionTexts: true,
     includeMethodsTexts: true,
-    includeOutlierInterpretation: true,
+    includeOutlierInterpretation: false,
     includeBirthWeightFigure: true,
     includeGestationalAgeFigure: true,
     includeIncidenceDensityTable: true,
