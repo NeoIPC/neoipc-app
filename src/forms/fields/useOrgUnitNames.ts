@@ -6,6 +6,7 @@ const namesQuery = (groupCode: string, page: number) => ({
     ous: {
         resource: 'organisationUnits',
         params: {
+            withinUserHierarchy: true,
             filter: [`organisationUnitGroups.code:eq:${groupCode}`],
             fields: 'id,code,displayName',
             order: 'id:asc',
@@ -16,12 +17,20 @@ const namesQuery = (groupCode: string, page: number) => ({
 })
 
 /**
- * `code → displayName` map for every org-unit in the group `groupCode`.
- * Unlike the picker, this is **not** restricted to the user's hierarchy
- * (`withinUserHierarchy`) — it's a label lookup, and a dataset can
- * reference countries outside the partner's own scope. Returns `{}`
- * while loading or on error, so callers fall back to showing the raw
- * code. Codeless units are skipped.
+ * `code → displayName` map for org-units in the group `groupCode` that
+ * lie **within the current user's hierarchy** (`withinUserHierarchy`),
+ * matching the picker and neoipcr.
+ *
+ * Deliberately scoped: we do NOT resolve names for org-units the user
+ * has no stake in. A reference dataset can reference countries/hospitals
+ * outside the user's scope, but surfacing their *names* would expose
+ * which org-units participate to unconnected users — an organizational-
+ * confidentiality concern. DHIS2 metadata read (sharing) is **not** a
+ * sufficient boundary here (org-unit metadata is often broadly
+ * readable), so we scope by hierarchy, not by read access. Out-of-scope
+ * units fall back to their bare `code` (already present in the public
+ * reference-data listing). Returns `{}` while loading or on error;
+ * codeless units are skipped.
  */
 export const useOrgUnitNames = (groupCode: string): Record<string, string> => {
     const engine = useDataEngine()
