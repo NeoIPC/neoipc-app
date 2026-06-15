@@ -99,11 +99,15 @@ const distance = (
  *
  * Strategy:
  *  1. Prefer datasets whose cohort matches **exactly** and whose country
- *     scope **covers** the partner's countries; among those, the one
- *     with the most recent reporting period wins (`exact: true`).
+ *     scope **covers** the partner's countries (`exact: true`).
  *  2. If none qualify, fall back to the **nearest** dataset by a coarse
  *     score (count of differing cohort dimensions, plus a country
- *     penalty), tie-broken by most recent period (`exact: false`).
+ *     penalty) (`exact: false`).
+ *
+ * Within whichever pool is used, ties are broken by preferring datasets
+ * that **exclude test units** (a cleaner benchmark — `includeTestUnits`
+ * isn't a cohort dimension, so it never affects the score, only this
+ * tie-break), and then by the most recent reporting period.
  *
  * Returns `null` only when there are no datasets at all. This is a
  * best-effort heuristic — finer numeric proximity isn't attempted; the
@@ -123,18 +127,22 @@ export const matchReferenceData = (
     const isExact = exactMatches.length > 0
     const pool = isExact ? exactMatches : datasets
 
-    let best: PublicReferenceDataMetadata | null = null
-    let bestScore = Number.POSITIVE_INFINITY
-    let bestPeriod = ''
-    for (const dataset of pool) {
-        const score = isExact ? 0 : distance(dataset, criteria)
-        const period = periodSortKey(dataset)
-        if (score < bestScore || (score === bestScore && period > bestPeriod)) {
-            best = dataset
-            bestScore = score
-            bestPeriod = period
-        }
-    }
+    // Rank by: score (closeness; 0 across an exact pool) asc, then prefer
+    // test-unit-free datasets, then most recent reporting period.
+    const ranked = pool
+        .map((dataset) => ({
+            dataset,
+            score: isExact ? 0 : distance(dataset, criteria),
+            testUnits: dataset.includeTestUnits ? 1 : 0,
+            period: periodSortKey(dataset),
+        }))
+        .sort(
+            (a, b) =>
+                a.score - b.score ||
+                a.testUnits - b.testUnits ||
+                b.period.localeCompare(a.period)
+        )
 
+    const best = ranked[0]?.dataset ?? null
     return best ? { dataset: best, exact: isExact } : null
 }

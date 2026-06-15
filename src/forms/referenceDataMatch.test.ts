@@ -127,6 +127,49 @@ describe('matchReferenceData', () => {
         expect(result).toEqual({ dataset: allPatients, exact: false })
     })
 
+    it('prefers a test-unit-free dataset over one including test units', () => {
+        const withTestUnits = makeDataset({
+            id: 'with',
+            birthWeightTo: 1500,
+            includeTestUnits: true,
+            reportingPeriodTo: '2024-12-31',
+        })
+        const clean = makeDataset({
+            id: 'clean',
+            birthWeightTo: 1500,
+            includeTestUnits: false,
+            reportingPeriodTo: '2023-12-31',
+        })
+        // The clean dataset wins despite being older — test-unit exclusion
+        // is preferred ahead of period recency.
+        const result = matchReferenceData(
+            [withTestUnits, clean],
+            makeCriteria({ birthWeightTo: 1500 })
+        )
+        expect(result?.dataset.id).toBe('clean')
+        expect(result?.exact).toBe(true)
+    })
+
+    it('falls back to most recent period once test-unit status is equal', () => {
+        const older = makeDataset({
+            id: 'older',
+            birthWeightTo: 1500,
+            includeTestUnits: false,
+            reportingPeriodTo: '2023-12-31',
+        })
+        const newer = makeDataset({
+            id: 'newer',
+            birthWeightTo: 1500,
+            includeTestUnits: false,
+            reportingPeriodTo: '2024-12-31',
+        })
+        const result = matchReferenceData(
+            [older, newer],
+            makeCriteria({ birthWeightTo: 1500 })
+        )
+        expect(result?.dataset.id).toBe('newer')
+    })
+
     it('breaks fallback ties by most recent period', () => {
         const older = makeDataset({
             id: 'older',
