@@ -15,12 +15,6 @@ import type { ReferenceReportFormValues } from './ReferenceReportForm'
  */
 export const referenceReportWireFields = [
     'referenceDataId',
-    'profile',
-    'validationExceptionFile',
-    'enabledElements',
-    'disabledElements',
-    'enabledSectionTexts',
-    'disabledSectionTexts',
     'reportingPeriodFrom',
     'reportingPeriodTo',
     'birthWeightFrom',
@@ -35,6 +29,19 @@ export const referenceReportWireFields = [
     'confidenceIntervals',
     'includeIntroductionTexts',
     'includeMethodsTexts',
+    'includeBirthWeightFigure',
+    'includeGestationalAgeFigure',
+    'includeIncidenceDensityTable',
+    'includeDeviceAssociatedIncidenceDensityTable',
+    'includeAgentPerInfectionRateTable',
+    'includeInfectiousAgentDetectionRateTable',
+    'includeRiskDensityRateTable',
+    'includeAntibioticUtilisationTable',
+    'includeSurgicalProcedureRateTable',
+    'includeResistantPathogenInfectionRateTable',
+    'includeOrganismResistanceRateTable',
+    'includeAntibioticResistanceTestRateTable',
+    'includeSecondaryBsiRateTable',
 ] as const
 
 type ReferenceReportNonWireKey = 'outputFormat' | 'locale'

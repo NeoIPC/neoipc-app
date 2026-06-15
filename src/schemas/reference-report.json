@@ -5,74 +5,6 @@
       "type": "character"
     },
     {
-      "name": "profile",
-      "type": "character"
-    },
-    {
-      "name": "validationExceptionFile",
-      "type": "character"
-    },
-    {
-      "name": "enabledElements",
-      "type": "character[]",
-      "values": [
-        "BirthWeightFigure",
-        "GestationalAgeFigure",
-        "IncidenceDensityTable",
-        "DeviceAssociatedIncidenceDensityTable",
-        "AgentPerInfectionRateTable",
-        "ResistantPathogenInfectionRateTable",
-        "OrganismResistanceRateTable",
-        "InfectiousAgentDetectionRateTable",
-        "AntibioticResistanceTestRateTable",
-        "RiskDensityRateTable",
-        "AntibioticUtilisationTable",
-        "SurgicalProcedureRateTable",
-        "SecondaryBsiRateTable"
-      ]
-    },
-    {
-      "name": "disabledElements",
-      "type": "character[]",
-      "values": [
-        "BirthWeightFigure",
-        "GestationalAgeFigure",
-        "IncidenceDensityTable",
-        "DeviceAssociatedIncidenceDensityTable",
-        "AgentPerInfectionRateTable",
-        "ResistantPathogenInfectionRateTable",
-        "OrganismResistanceRateTable",
-        "InfectiousAgentDetectionRateTable",
-        "AntibioticResistanceTestRateTable",
-        "RiskDensityRateTable",
-        "AntibioticUtilisationTable",
-        "SurgicalProcedureRateTable",
-        "SecondaryBsiRateTable"
-      ]
-    },
-    {
-      "name": "enabledSectionTexts",
-      "type": "character[]",
-      "values": [
-        "PatientPopulation",
-        "Nosocomial",
-        "InfectiousAgents",
-        "RiskFactors",
-        "Surgery"
-      ]
-    },
-    {
-      "name": "disabledSectionTexts",
-      "type": "character[]",
-      "values": [
-        "PatientPopulation",
-        "Nosocomial",
-        "InfectiousAgents",
-        "RiskFactors",
-        "Surgery"
-      ]
-    },
-    {
       "name": "reportingPeriodFrom",
       "type": "Date",
       "description": "Start of the reporting period (inclusive)."
@@ -161,6 +93,84 @@
       "type": "logical",
       "default": "true",
       "description": "Include report-section methods texts."
+    },
+    {
+      "name": "includeBirthWeightFigure",
+      "type": "logical",
+      "default": "true",
+      "description": "Include the birth-weight distribution figure."
+    },
+    {
+      "name": "includeGestationalAgeFigure",
+      "type": "logical",
+      "default": "true",
+      "description": "Include the gestational-age distribution figure."
+    },
+    {
+      "name": "includeIncidenceDensityTable",
+      "type": "logical",
+      "default": "true",
+      "description": "Include the incidence-density table."
+    },
+    {
+      "name": "includeDeviceAssociatedIncidenceDensityTable",
+      "type": "logical",
+      "default": "true",
+      "description": "Include the device-associated incidence-density table."
+    },
+    {
+      "name": "includeAgentPerInfectionRateTable",
+      "type": "logical",
+      "default": "true",
+      "description": "Include the agent-per-infection rate table."
+    },
+    {
+      "name": "includeResistantPathogenInfectionRateTable",
+      "type": "logical",
+      "default": "false",
+      "description": "Include the resistant-pathogen-infection rate table."
+    },
+    {
+      "name": "includeOrganismResistanceRateTable",
+      "type": "logical",
+      "default": "false",
+      "description": "Include the organism-resistance rate table."
+    },
+    {
+      "name": "includeInfectiousAgentDetectionRateTable",
+      "type": "logical",
+      "default": "true",
+      "description": "Include the infectious-agent-detection rate table."
+    },
+    {
+      "name": "includeAntibioticResistanceTestRateTable",
+      "type": "logical",
+      "default": "false",
+      "description": "Include the antibiotic-resistance-test rate table."
+    },
+    {
+      "name": "includeRiskDensityRateTable",
+      "type": "logical",
+      "default": "true",
+      "description": "Include the risk-density rate table."
+    },
+    {
+      "name": "includeAntibioticUtilisationTable",
+      "type": "logical",
+      "default": "false",
+      "description": "Include the antibiotic-utilisation table."
+    },
+    {
+      "name": "includeSurgicalProcedureRateTable",
+      "type": "logical",
+      "default": "true",
+      "description": "Include the surgical-procedure rate table."
+    },
+    {
+      "name": "includeSecondaryBsiRateTable",
+      "type": "logical",
+      "default": "false",
+      "description": "Include the secondary-BSI rate table."
     }
   ]
 }

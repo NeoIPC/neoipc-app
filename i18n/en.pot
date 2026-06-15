@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-06-14T11:50:51.971Z\n"
-"PO-Revision-Date: 2026-06-14T11:50:51.972Z\n"
+"POT-Creation-Date: 2026-06-15T09:16:58.658Z\n"
+"PO-Revision-Date: 2026-06-15T09:16:58.658Z\n"
 
 msgid "Upload"
 msgstr "Upload"
@@ -43,6 +43,24 @@ msgstr "Delete"
 
 msgid "..."
 msgstr "..."
+
+msgid "Current file"
+msgstr "Current file"
+
+msgid "Failed to load"
+msgstr "Failed to load"
+
+msgid "No {{singular}} uploaded."
+msgstr "No {{singular}} uploaded."
+
+msgid "uploaded {{when}}"
+msgstr "uploaded {{when}}"
+
+msgid "Remove"
+msgstr "Remove"
+
+msgid "Replace"
+msgstr "Replace"
 
 msgid "Reference data"
 msgstr "Reference data"
@@ -142,21 +160,6 @@ msgstr "Antibiotic resistance test rate table"
 msgid "Secondary BSI rate table"
 msgstr "Secondary BSI rate table"
 
-msgid "Patient population"
-msgstr "Patient population"
-
-msgid "Nosocomial"
-msgstr "Nosocomial"
-
-msgid "Infectious agents"
-msgstr "Infectious agents"
-
-msgid "Risk factors"
-msgstr "Risk factors"
-
-msgid "Surgery"
-msgstr "Surgery"
-
 msgid "From"
 msgstr "From"
 
@@ -202,17 +205,11 @@ msgstr "Online — pull current DHIS2 data"
 msgid "Upload partner data file (JSON)"
 msgstr "Upload partner data file (JSON)"
 
-msgid "Scope"
-msgstr "Scope"
-
 msgid "Departments"
 msgstr "Departments"
 
-msgid "Include non-core patients"
-msgstr "Include non-core patients"
-
-msgid "Include test data"
-msgstr "Include test data"
+msgid "More options"
+msgstr "More options"
 
 msgid "Patient population filters"
 msgstr "Patient population filters"
@@ -223,17 +220,29 @@ msgstr "Birth weight (g)"
 msgid "Gestational age (weeks)"
 msgstr "Gestational age (weeks)"
 
-msgid "Output options"
-msgstr "Output options"
+msgid "Include non-core patients"
+msgstr "Include non-core patients"
 
-msgid "Quarto profile"
-msgstr "Quarto profile"
+msgid "Benchmark"
+msgstr "Benchmark"
 
-msgid "Optional. Leave blank for the default profile."
-msgstr "Optional. Leave blank for the default profile."
+msgid "Reference dataset to compare against"
+msgstr "Reference dataset to compare against"
 
-msgid "Validation exception file ID"
-msgstr "Validation exception file ID"
+msgid "Automatic — best match for these settings"
+msgstr "Automatic — best match for these settings"
+
+msgid "Choose a dataset manually"
+msgstr "Choose a dataset manually"
+
+msgid "No benchmark selected"
+msgstr "No benchmark selected"
+
+msgid "Benchmark dataset"
+msgstr "Benchmark dataset"
+
+msgid "Content"
+msgstr "Content"
 
 msgid "Confidence intervals"
 msgstr "Confidence intervals"
@@ -244,35 +253,17 @@ msgstr "Backend default if unset."
 msgid "(backend default)"
 msgstr "(backend default)"
 
-msgid "Sparse data threshold"
-msgstr "Sparse data threshold"
-
 msgid "Include introduction texts"
 msgstr "Include introduction texts"
 
 msgid "Include methods texts"
 msgstr "Include methods texts"
 
-msgid "Include outlier interpretation"
-msgstr "Include outlier interpretation"
+msgid "Language"
+msgstr "Language"
 
-msgid "Element toggles"
-msgstr "Element toggles"
-
-msgid "Enabled elements (override defaults)"
-msgstr "Enabled elements (override defaults)"
-
-msgid "Leave empty to use the backend defaults."
-msgstr "Leave empty to use the backend defaults."
-
-msgid "Disabled elements (override defaults)"
-msgstr "Disabled elements (override defaults)"
-
-msgid "Locale"
-msgstr "Locale"
-
-msgid "Report locale"
-msgstr "Report locale"
+msgid "Report language"
+msgstr "Report language"
 
 msgid "Leave blank to use the locale from your DHIS2 user setting."
 msgstr "Leave blank to use the locale from your DHIS2 user setting."
@@ -280,14 +271,115 @@ msgstr "Leave blank to use the locale from your DHIS2 user setting."
 msgid "(use DHIS2 user setting)"
 msgstr "(use DHIS2 user setting)"
 
+msgid "Advanced"
+msgstr "Advanced"
+
+msgid "Include test data"
+msgstr "Include test data"
+
+msgid "Sparse data threshold"
+msgstr "Sparse data threshold"
+
+msgid "Include outlier interpretation"
+msgstr "Include outlier interpretation"
+
 msgid "Generate"
 msgstr "Generate"
+
+msgid "Default"
+msgstr "Default"
+
+msgid "Minimal"
+msgstr "Minimal"
+
+msgid "Full"
+msgstr "Full"
+
+msgid "Custom"
+msgstr "Custom"
+
+msgid "Content preset"
+msgstr "Content preset"
+
+msgid ""
+"A preset fills the content options below. Choose \"Custom\" to edit each "
+"one yourself."
+msgstr ""
+"A preset fills the content options below. Choose \"Custom\" to edit each "
+"one yourself."
+
+msgid "Approximate match"
+msgstr "Approximate match"
+
+msgid ""
+"No dataset matched your cohort and country exactly; the closest available "
+"was chosen. Switch to manual selection to override."
+msgstr ""
+"No dataset matched your cohort and country exactly; the closest available "
+"was chosen. Switch to manual selection to override."
+
+msgid "Period"
+msgstr "Period"
+
+msgid "Cohort"
+msgstr "Cohort"
+
+msgid "from {{from}}"
+msgstr "from {{from}}"
+
+msgid "until {{to}}"
+msgstr "until {{to}}"
+
+msgid "All periods"
+msgstr "All periods"
+
+msgid "g"
+msgstr "g"
+
+msgid "BW {{range}}"
+msgstr "BW {{range}}"
+
+msgid "w"
+msgstr "w"
+
+msgid "GA {{range}}"
+msgstr "GA {{range}}"
+
+msgid "all patients"
+msgstr "all patients"
+
+msgid "core only"
+msgstr "core only"
+
+msgid "incl. test units"
+msgstr "incl. test units"
+
+msgid "no test units"
+msgstr "no test units"
+
+msgid "All countries"
+msgstr "All countries"
+
+msgid "No reference datasets"
+msgstr "No reference datasets"
+
+msgid "No saved reference datasets are available yet."
+msgstr "No saved reference datasets are available yet."
+
+msgid "Any"
+msgstr "Any"
+
+msgid "Country"
+msgstr "Country"
+
+msgid "Search by name"
+msgstr "Search by name"
 
 msgid "Reference dataset"
 msgstr "Reference dataset"
 
-msgid "(none — use live-fetch filters)"
-msgstr "(none — use live-fetch filters)"
+msgid "(none)"
+msgstr "(none)"
 
 msgid "Live-fetch filters"
 msgstr "Live-fetch filters"
@@ -318,15 +410,6 @@ msgstr "Apply"
 
 msgid "Skip"
 msgstr "Skip"
-
-msgid "Section text toggles"
-msgstr "Section text toggles"
-
-msgid "Enabled section texts"
-msgstr "Enabled section texts"
-
-msgid "Disabled section texts"
-msgstr "Disabled section texts"
 
 msgid "Partner Report"
 msgstr "Partner Report"

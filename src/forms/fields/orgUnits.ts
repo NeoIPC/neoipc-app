@@ -1,0 +1,115 @@
+/**
+ * A single org-unit row as fetched by {@link orgUnitsQuery}. Beyond the
+ * `code` the pickers select on, each row carries the data the report
+ * forms derive facts from:
+ *  - `organisationUnitGroups[code]` — group membership (the Partner
+ *    form checks for `NEOIPC_ALL_PATIENTS_ELIGIBLE`);
+ *  - `ancestors[code,organisationUnitGroups[code]]` — so a department
+ *    can be resolved to its country (the ancestor in the `COUNTRY`
+ *    group) for benchmark Auto-match, without depending on hierarchy
+ *    depth.
+ */
+export interface OrgUnitRow {
+    id: string
+    code: string | null
+    displayName: string
+    parent?: { displayName: string }
+    organisationUnitGroups?: { code: string | null }[]
+    ancestors?: {
+        code: string | null
+        organisationUnitGroups?: { code: string | null }[]
+    }[]
+}
+
+export interface OrgUnitsPage {
+    ous: {
+        pager?: { page: number; pageCount: number }
+        organisationUnits: OrgUnitRow[]
+    }
+}
+
+// Per-request page size. The picker pages through *every* page and
+// accumulates the results, so this is only the request granularity —
+// not a cap on how many org units are selectable. This replaces the
+// deprecated `paging: false`, which loaded everything in one unbounded
+// request.
+export const PAGE_SIZE = 500
+
+/**
+ * One page of the org-unit query for {@link OrganisationUnitMultiSelect},
+ * filtered to the org-unit **group** that identifies the role (Country /
+ * Hospital / Department), scoped to the current user's data-view subtree
+ * (`withinUserHierarchy`). This mirrors neoipcr's metadata query
+ * (`organisationUnitGroups.code:eq:NEO_DEPARTMENT` + `withinUserHierarchy`)
+ * rather than filtering by hierarchy level, which is not a stable
+ * contract — see `dhis2Constants` for the rationale.
+ */
+export const orgUnitsQuery = (groupCode: string, page: number) => ({
+    ous: {
+        resource: 'organisationUnits',
+        params: {
+            withinUserHierarchy: true,
+            filter: [`organisationUnitGroups.code:eq:${groupCode}`],
+            fields:
+                'id,code,displayName,parent[displayName],' +
+                'organisationUnitGroups[code],' +
+                'ancestors[code,organisationUnitGroups[code]]',
+            // Deterministic order so pages don't overlap or skip rows.
+            order: 'id:asc',
+            pageSize: PAGE_SIZE,
+            page,
+        },
+    },
+})
+
+/**
+ * `true` if any of `selectedCodes` resolves to a row that belongs to the
+ * org-unit group `groupCode`. Used to gate the Partner Report's
+ * "include non-core patients" toggle on membership of
+ * `NEOIPC_ALL_PATIENTS_ELIGIBLE`. Rows not present in `rows` (not yet
+ * loaded, or outside the user's scope) simply don't contribute.
+ */
+export const anySelectedInGroup = (
+    rows: OrgUnitRow[],
+    selectedCodes: string[],
+    groupCode: string
+): boolean => {
+    const selected = new Set(selectedCodes)
+    return rows.some(
+        (row) =>
+            row.code !== null &&
+            selected.has(row.code) &&
+            (row.organisationUnitGroups ?? []).some(
+                (group) => group.code === groupCode
+            )
+    )
+}
+
+/**
+ * Distinct ancestor-country codes of the selected org-units. A
+ * department's country is the ancestor that belongs to the `COUNTRY`
+ * org-unit group (`countryGroupCode`) — resolved by group membership,
+ * not by hierarchy level, so it holds regardless of how deep the
+ * department sits. Codeless ancestors and unmatched selections are
+ * skipped. Feeds the benchmark Auto-match country comparison.
+ */
+export const ancestorCountryCodesForSelection = (
+    rows: OrgUnitRow[],
+    selectedCodes: string[],
+    countryGroupCode: string
+): string[] => {
+    const selected = new Set(selectedCodes)
+    const countries = new Set<string>()
+    for (const row of rows) {
+        if (row.code === null || !selected.has(row.code)) continue
+        for (const ancestor of row.ancestors ?? []) {
+            const isCountry = (ancestor.organisationUnitGroups ?? []).some(
+                (group) => group.code === countryGroupCode
+            )
+            if (isCountry && ancestor.code) {
+                countries.add(ancestor.code)
+            }
+        }
+    }
+    return [...countries]
+}

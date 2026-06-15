@@ -4,28 +4,30 @@ import {
     Card,
     CheckboxField,
     InputField,
-    MultiSelectField,
-    MultiSelectOption,
     Radio,
     SingleSelectField,
     SingleSelectOption,
 } from '@dhis2/ui'
-import React, { FC, useState } from 'react'
+import React, { FC, useMemo, useState } from 'react'
 import { useAppContext } from '../AppContext'
-import { COUNTRY_LEVEL, HOSPITAL_LEVEL } from '../config/dhis2Constants'
+import { useAuthorities } from '../authority/useAuthorities'
+import { COUNTRY_GROUP_CODE, HOSPITAL_GROUP_CODE } from '../config/dhis2Constants'
+import CollapsibleSection from './CollapsibleSection'
 import DateField from './fields/DateField'
 import NumberRangeField from './fields/NumberRangeField'
 import OrganisationUnitMultiSelect from './fields/OrganisationUnitMultiSelect'
+import { useOrgUnitNames } from './fields/useOrgUnitNames'
+import ReferenceDataSelect from './ReferenceDataSelect'
+import PresetSelect, { CUSTOM_PRESET } from './PresetSelect'
+import { governedKeys, resolvePresetValues } from './applyPreset'
+import { languageLabel } from './languageLabel'
+import { useReportConfig } from './useReportConfig'
 import {
     ConfidenceIntervalMode,
     ConfidenceIntervalModeValues,
     confidenceIntervalModeLabel,
-    ReferenceReportElement,
-    ReferenceReportElementValues,
-    referenceReportSectionTextLabel,
-    ReferenceReportSectionText,
-    ReferenceReportSectionTextValues,
-    reportElementLabel,
+    includeElementKeys,
+    includeElementLabel,
 } from './enums'
 
 /**
@@ -39,12 +41,6 @@ export interface ReferenceReportFormValues {
      *  When set, the live-fetch filters are disabled and the report
      *  consumes the pre-computed dataset. */
     referenceDataId: string
-    profile: string
-    validationExceptionFile: string
-    enabledElements: ReferenceReportElement[]
-    disabledElements: ReferenceReportElement[]
-    enabledSectionTexts: ReferenceReportSectionText[]
-    disabledSectionTexts: ReferenceReportSectionText[]
     reportingPeriodFrom: string
     reportingPeriodTo: string
     birthWeightFrom: number | null
@@ -61,18 +57,25 @@ export interface ReferenceReportFormValues {
     confidenceIntervals: ConfidenceIntervalMode | ''
     includeIntroductionTexts: boolean
     includeMethodsTexts: boolean
+    includeBirthWeightFigure: boolean
+    includeGestationalAgeFigure: boolean
+    includeIncidenceDensityTable: boolean
+    includeDeviceAssociatedIncidenceDensityTable: boolean
+    includeAgentPerInfectionRateTable: boolean
+    includeInfectiousAgentDetectionRateTable: boolean
+    includeRiskDensityRateTable: boolean
+    includeAntibioticUtilisationTable: boolean
+    includeSurgicalProcedureRateTable: boolean
+    includeResistantPathogenInfectionRateTable: boolean
+    includeOrganismResistanceRateTable: boolean
+    includeAntibioticResistanceTestRateTable: boolean
+    includeSecondaryBsiRateTable: boolean
     locale: string
     outputFormat: 'html' | 'pdf'
 }
 
 const defaultValues: ReferenceReportFormValues = {
     referenceDataId: '',
-    profile: '',
-    validationExceptionFile: '',
-    enabledElements: [],
-    disabledElements: [],
-    enabledSectionTexts: [],
-    disabledSectionTexts: [],
     reportingPeriodFrom: '',
     reportingPeriodTo: '',
     birthWeightFrom: null,
@@ -87,6 +90,19 @@ const defaultValues: ReferenceReportFormValues = {
     confidenceIntervals: '',
     includeIntroductionTexts: true,
     includeMethodsTexts: true,
+    includeBirthWeightFigure: true,
+    includeGestationalAgeFigure: true,
+    includeIncidenceDensityTable: true,
+    includeDeviceAssociatedIncidenceDensityTable: true,
+    includeAgentPerInfectionRateTable: true,
+    includeInfectiousAgentDetectionRateTable: true,
+    includeRiskDensityRateTable: true,
+    includeAntibioticUtilisationTable: false,
+    includeSurgicalProcedureRateTable: true,
+    includeResistantPathogenInfectionRateTable: false,
+    includeOrganismResistanceRateTable: false,
+    includeAntibioticResistanceTestRateTable: false,
+    includeSecondaryBsiRateTable: false,
     locale: '',
     outputFormat: 'html',
 }
@@ -102,13 +118,34 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
     submitting = false,
 }) => {
     const { referenceDataSets } = useAppContext()
+    const { presets, locales } = useReportConfig('reference-report')
+    const { isAdmin } = useAuthorities()
+    const countryNames = useOrgUnitNames(COUNTRY_GROUP_CODE)
     const [values, setValues] = useState<ReferenceReportFormValues>(
         defaultValues
     )
+    const [preset, setPreset] = useState<string>('default')
+
+    const presetLocked = preset !== CUSTOM_PRESET
 
     const setField = <K extends keyof ReferenceReportFormValues>(key: K) =>
         (value: ReferenceReportFormValues[K]) =>
             setValues((prev) => ({ ...prev, [key]: value }))
+
+    const governedDefaults = useMemo<Record<string, boolean | string>>(
+        () => Object.fromEntries(governedKeys.map((k) => [k, defaultValues[k]])),
+        []
+    )
+
+    const applyPreset = (name: string): void => {
+        setPreset(name)
+        if (name === CUSTOM_PRESET) return
+        const resolved = resolvePresetValues(presets?.[name] ?? {}, governedDefaults)
+        setValues((prev) => ({
+            ...prev,
+            ...(resolved as Partial<ReferenceReportFormValues>),
+        }))
+    }
 
     const usingSavedDataset = values.referenceDataId !== ''
 
@@ -140,175 +177,175 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
             </Card>
 
             <Card>
-                <h2>{i18n.t('Data source')}</h2>
-                <SingleSelectField
-                    label={i18n.t('Reference dataset')}
-                    helpText={i18n.t(
-                        'Pick a pre-computed dataset to render against, ' +
-                            'or leave empty to compute reference data live ' +
-                            'from the filters below.'
-                    )}
-                    selected={values.referenceDataId}
-                    onChange={({ selected }) =>
-                        setField('referenceDataId')(selected ?? '')
+                <h2>{i18n.t('Reference dataset')}</h2>
+                <ReferenceDataSelect
+                    datasets={referenceDataSets}
+                    value={values.referenceDataId}
+                    onChange={setField('referenceDataId')}
+                    countryNames={countryNames}
+                    helpText={
+                        isAdmin
+                            ? i18n.t(
+                                  'Pick a pre-computed dataset, or leave empty ' +
+                                      'to compute reference data live from the ' +
+                                      'admin filters below.'
+                              )
+                            : i18n.t(
+                                  'Pick a pre-computed reference dataset to ' +
+                                      'render against.'
+                              )
                     }
-                >
-                    <SingleSelectOption
-                        value=""
-                        label={i18n.t('(none — use live-fetch filters)')}
+                />
+            </Card>
+
+            {isAdmin && (
+                <CollapsibleSection title={i18n.t('Live-fetch filters')}>
+                    <p>
+                        {usingSavedDataset
+                            ? i18n.t(
+                                  'Disabled — a saved dataset is selected above.'
+                              )
+                            : i18n.t(
+                                  'Used when no saved reference dataset is selected.'
+                              )}
+                    </p>
+                    <OrganisationUnitMultiSelect
+                        name="countryFilter"
+                        label={i18n.t('Countries')}
+                        groupCode={COUNTRY_GROUP_CODE}
+                        selectedCodes={values.countryFilter}
+                        onChange={setField('countryFilter')}
+                        disabled={usingSavedDataset}
                     />
-                    {referenceDataSets.map((dataset) => (
-                        <SingleSelectOption
-                            key={dataset.id}
-                            value={dataset.id}
-                            label={dataset.displayName}
-                        />
-                    ))}
-                </SingleSelectField>
-            </Card>
+                    <OrganisationUnitMultiSelect
+                        name="hospitalFilter"
+                        label={i18n.t('Hospitals')}
+                        groupCode={HOSPITAL_GROUP_CODE}
+                        selectedCodes={values.hospitalFilter}
+                        onChange={setField('hospitalFilter')}
+                        disabled={usingSavedDataset}
+                    />
+                    <SingleSelectField
+                        label={i18n.t('Test units')}
+                        selected={
+                            values.testUnitFilter === null
+                                ? ''
+                                : values.testUnitFilter
+                                  ? 'true'
+                                  : 'false'
+                        }
+                        onChange={({ selected }) =>
+                            setField('testUnitFilter')(
+                                selected === '' ? null : selected === 'true'
+                            )
+                        }
+                        disabled={usingSavedDataset}
+                    >
+                        <SingleSelectOption value="" label={i18n.t('(backend default)')} />
+                        <SingleSelectOption value="true" label={i18n.t('Include')} />
+                        <SingleSelectOption value="false" label={i18n.t('Exclude')} />
+                    </SingleSelectField>
+                    <SingleSelectField
+                        label={i18n.t('Default patient filter')}
+                        selected={
+                            values.defaultPatientFilter === null
+                                ? ''
+                                : values.defaultPatientFilter
+                                  ? 'true'
+                                  : 'false'
+                        }
+                        onChange={({ selected }) =>
+                            setField('defaultPatientFilter')(
+                                selected === '' ? null : selected === 'true'
+                            )
+                        }
+                        disabled={usingSavedDataset}
+                    >
+                        <SingleSelectOption value="" label={i18n.t('(backend default)')} />
+                        <SingleSelectOption value="true" label={i18n.t('Apply')} />
+                        <SingleSelectOption value="false" label={i18n.t('Skip')} />
+                    </SingleSelectField>
+                    <h3>{i18n.t('Reporting period')}</h3>
+                    <DateField
+                        name="reportingPeriodFrom"
+                        label={i18n.t('From')}
+                        value={values.reportingPeriodFrom}
+                        onChange={setField('reportingPeriodFrom')}
+                        disabled={usingSavedDataset}
+                    />
+                    <DateField
+                        name="reportingPeriodTo"
+                        label={i18n.t('To')}
+                        value={values.reportingPeriodTo}
+                        onChange={setField('reportingPeriodTo')}
+                        disabled={usingSavedDataset}
+                    />
+                    <h3>{i18n.t('Patient population filters')}</h3>
+                    <NumberRangeField
+                        name="birthWeight"
+                        label={i18n.t('Birth weight (g)')}
+                        fromValue={values.birthWeightFrom}
+                        toValue={values.birthWeightTo}
+                        onFromChange={setField('birthWeightFrom')}
+                        onToChange={setField('birthWeightTo')}
+                        min={0}
+                        max={65535}
+                        disabled={usingSavedDataset}
+                    />
+                    <NumberRangeField
+                        name="gestationalAge"
+                        label={i18n.t('Gestational age (weeks)')}
+                        fromValue={values.gestationalAgeFrom}
+                        toValue={values.gestationalAgeTo}
+                        onFromChange={setField('gestationalAgeFrom')}
+                        onToChange={setField('gestationalAgeTo')}
+                        min={0}
+                        max={52}
+                        disabled={usingSavedDataset}
+                    />
+                    <InputField
+                        label={i18n.t('Sparse data threshold')}
+                        name="sparseDataThreshold"
+                        type="number"
+                        value={
+                            values.sparseDataThreshold === null
+                                ? ''
+                                : String(values.sparseDataThreshold)
+                        }
+                        disabled={usingSavedDataset}
+                        onChange={({ value }) =>
+                            setField('sparseDataThreshold')(
+                                value === '' || value === undefined
+                                    ? null
+                                    : Number(value)
+                            )
+                        }
+                    />
+                </CollapsibleSection>
+            )}
 
-            <Card>
-                <h2>{i18n.t('Live-fetch filters')}</h2>
-                <p>
-                    {usingSavedDataset
-                        ? i18n.t(
-                              'Disabled — a saved dataset is selected above.'
-                          )
-                        : i18n.t(
-                              'Used when no saved reference dataset is selected.'
-                          )}
-                </p>
-                <OrganisationUnitMultiSelect
-                    name="countryFilter"
-                    label={i18n.t('Countries')}
-                    level={COUNTRY_LEVEL}
-                    selectedCodes={values.countryFilter}
-                    onChange={setField('countryFilter')}
-                    disabled={usingSavedDataset}
+            <CollapsibleSection title={i18n.t('More options')}>
+                <h3>{i18n.t('Content')}</h3>
+                <PresetSelect
+                    presets={presets}
+                    value={preset}
+                    onChange={applyPreset}
                 />
-                <OrganisationUnitMultiSelect
-                    name="hospitalFilter"
-                    label={i18n.t('Hospitals')}
-                    level={HOSPITAL_LEVEL}
-                    selectedCodes={values.hospitalFilter}
-                    onChange={setField('hospitalFilter')}
-                    disabled={usingSavedDataset}
-                />
-                <SingleSelectField
-                    label={i18n.t('Test units')}
-                    selected={
-                        values.testUnitFilter === null
-                            ? ''
-                            : values.testUnitFilter
-                              ? 'true'
-                              : 'false'
-                    }
-                    onChange={({ selected }) =>
-                        setField('testUnitFilter')(
-                            selected === '' ? null : selected === 'true'
-                        )
-                    }
-                    disabled={usingSavedDataset}
-                >
-                    <SingleSelectOption value="" label={i18n.t('(backend default)')} />
-                    <SingleSelectOption value="true" label={i18n.t('Include')} />
-                    <SingleSelectOption value="false" label={i18n.t('Exclude')} />
-                </SingleSelectField>
-                <SingleSelectField
-                    label={i18n.t('Default patient filter')}
-                    selected={
-                        values.defaultPatientFilter === null
-                            ? ''
-                            : values.defaultPatientFilter
-                              ? 'true'
-                              : 'false'
-                    }
-                    onChange={({ selected }) =>
-                        setField('defaultPatientFilter')(
-                            selected === '' ? null : selected === 'true'
-                        )
-                    }
-                    disabled={usingSavedDataset}
-                >
-                    <SingleSelectOption value="" label={i18n.t('(backend default)')} />
-                    <SingleSelectOption value="true" label={i18n.t('Apply')} />
-                    <SingleSelectOption value="false" label={i18n.t('Skip')} />
-                </SingleSelectField>
-            </Card>
-
-            <Card>
-                <h2>{i18n.t('Reporting period')}</h2>
-                <DateField
-                    name="reportingPeriodFrom"
-                    label={i18n.t('From')}
-                    value={values.reportingPeriodFrom}
-                    onChange={setField('reportingPeriodFrom')}
-                    disabled={usingSavedDataset}
-                />
-                <DateField
-                    name="reportingPeriodTo"
-                    label={i18n.t('To')}
-                    value={values.reportingPeriodTo}
-                    onChange={setField('reportingPeriodTo')}
-                    disabled={usingSavedDataset}
-                />
-            </Card>
-
-            <Card>
-                <h2>{i18n.t('Patient population filters')}</h2>
-                <NumberRangeField
-                    name="birthWeight"
-                    label={i18n.t('Birth weight (g)')}
-                    fromValue={values.birthWeightFrom}
-                    toValue={values.birthWeightTo}
-                    onFromChange={setField('birthWeightFrom')}
-                    onToChange={setField('birthWeightTo')}
-                    min={0}
-                    max={65535}
-                    disabled={usingSavedDataset}
-                />
-                <NumberRangeField
-                    name="gestationalAge"
-                    label={i18n.t('Gestational age (weeks)')}
-                    fromValue={values.gestationalAgeFrom}
-                    toValue={values.gestationalAgeTo}
-                    onFromChange={setField('gestationalAgeFrom')}
-                    onToChange={setField('gestationalAgeTo')}
-                    min={0}
-                    max={52}
-                    disabled={usingSavedDataset}
-                />
-            </Card>
-
-            <Card>
-                <h2>{i18n.t('Output options')}</h2>
-                <InputField
-                    label={i18n.t('Quarto profile')}
-                    name="profile"
-                    helpText={i18n.t(
-                        'Optional. Leave blank for the default profile.'
-                    )}
-                    value={values.profile}
-                    onChange={({ value }) =>
-                        setField('profile')(value ?? '')
-                    }
-                />
-                <InputField
-                    label={i18n.t('Validation exception file ID')}
-                    name="validationExceptionFile"
-                    helpText={i18n.t(
-                        'Optional. Pick from the admin-managed list ' +
-                            '(picker UI lands in a later commit).'
-                    )}
-                    value={values.validationExceptionFile}
-                    onChange={({ value }) =>
-                        setField('validationExceptionFile')(value ?? '')
-                    }
-                />
+                {includeElementKeys.map((key) => (
+                    <CheckboxField
+                        key={key}
+                        name={key}
+                        label={includeElementLabel(key)}
+                        checked={values[key]}
+                        disabled={presetLocked}
+                        onChange={({ checked }) => setField(key)(checked)}
+                    />
+                ))}
                 <SingleSelectField
                     label={i18n.t('Confidence intervals')}
                     helpText={i18n.t('Backend default if unset.')}
                     selected={values.confidenceIntervals}
+                    disabled={presetLocked}
                     onChange={({ selected }) =>
                         setField('confidenceIntervals')(
                             selected as ConfidenceIntervalMode | ''
@@ -327,27 +364,11 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                         />
                     ))}
                 </SingleSelectField>
-                <InputField
-                    label={i18n.t('Sparse data threshold')}
-                    name="sparseDataThreshold"
-                    type="number"
-                    value={
-                        values.sparseDataThreshold === null
-                            ? ''
-                            : String(values.sparseDataThreshold)
-                    }
-                    onChange={({ value }) =>
-                        setField('sparseDataThreshold')(
-                            value === '' || value === undefined
-                                ? null
-                                : Number(value)
-                        )
-                    }
-                />
                 <CheckboxField
                     name="includeIntroductionTexts"
                     label={i18n.t('Include introduction texts')}
                     checked={values.includeIntroductionTexts}
+                    disabled={presetLocked}
                     onChange={({ checked }) =>
                         setField('includeIntroductionTexts')(checked)
                     }
@@ -356,118 +377,44 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                     name="includeMethodsTexts"
                     label={i18n.t('Include methods texts')}
                     checked={values.includeMethodsTexts}
+                    disabled={presetLocked}
                     onChange={({ checked }) =>
                         setField('includeMethodsTexts')(checked)
                     }
                 />
-            </Card>
 
-            <Card>
-                <h2>{i18n.t('Element toggles')}</h2>
-                <MultiSelectField
-                    label={i18n.t('Enabled elements (override defaults)')}
-                    helpText={i18n.t(
-                        'Leave empty to use the backend defaults.'
-                    )}
-                    selected={values.enabledElements}
-                    onChange={({ selected }) =>
-                        setField('enabledElements')(
-                            selected as ReferenceReportElement[]
-                        )
-                    }
-                >
-                    {ReferenceReportElementValues.map((element) => (
-                        <MultiSelectOption
-                            key={element}
-                            value={element}
-                            label={reportElementLabel(element)}
-                        />
-                    ))}
-                </MultiSelectField>
-                <MultiSelectField
-                    label={i18n.t('Disabled elements (override defaults)')}
-                    selected={values.disabledElements}
-                    onChange={({ selected }) =>
-                        setField('disabledElements')(
-                            selected as ReferenceReportElement[]
-                        )
-                    }
-                >
-                    {ReferenceReportElementValues.map((element) => (
-                        <MultiSelectOption
-                            key={element}
-                            value={element}
-                            label={reportElementLabel(element)}
-                        />
-                    ))}
-                </MultiSelectField>
-            </Card>
-
-            <Card>
-                <h2>{i18n.t('Section text toggles')}</h2>
-                <MultiSelectField
-                    label={i18n.t('Enabled section texts')}
-                    selected={values.enabledSectionTexts}
-                    onChange={({ selected }) =>
-                        setField('enabledSectionTexts')(
-                            selected as ReferenceReportSectionText[]
-                        )
-                    }
-                >
-                    {ReferenceReportSectionTextValues.map((section) => (
-                        <MultiSelectOption
-                            key={section}
-                            value={section}
-                            label={referenceReportSectionTextLabel(section)}
-                        />
-                    ))}
-                </MultiSelectField>
-                <MultiSelectField
-                    label={i18n.t('Disabled section texts')}
-                    selected={values.disabledSectionTexts}
-                    onChange={({ selected }) =>
-                        setField('disabledSectionTexts')(
-                            selected as ReferenceReportSectionText[]
-                        )
-                    }
-                >
-                    {ReferenceReportSectionTextValues.map((section) => (
-                        <MultiSelectOption
-                            key={section}
-                            value={section}
-                            label={referenceReportSectionTextLabel(section)}
-                        />
-                    ))}
-                </MultiSelectField>
-            </Card>
-
-            <Card>
-                <h2>{i18n.t('Locale')}</h2>
+                <h3>{i18n.t('Language')}</h3>
                 <SingleSelectField
-                    label={i18n.t('Report locale')}
+                    label={i18n.t('Report language')}
                     helpText={i18n.t(
                         'Leave blank to use the locale from your DHIS2 user setting.'
                     )}
                     selected={values.locale}
-                    onChange={({ selected }) =>
-                        setField('locale')(selected ?? '')
-                    }
+                    loading={locales === null}
+                    onChange={({ selected }) => setField('locale')(selected ?? '')}
                 >
                     <SingleSelectOption
                         value=""
                         label={i18n.t('(use DHIS2 user setting)')}
                     />
-                    {['en', 'de'].map((loc) => (
+                    {(locales ?? []).map((loc) => (
                         <SingleSelectOption
                             key={loc}
                             value={loc}
-                            label={loc}
+                            label={languageLabel(loc)}
                         />
                     ))}
                 </SingleSelectField>
-            </Card>
+            </CollapsibleSection>
 
-            <Button primary type="submit" disabled={submitting} loading={submitting}>
+            <Button
+                primary
+                type="submit"
+                disabled={
+                    submitting || (!isAdmin && values.referenceDataId === '')
+                }
+                loading={submitting}
+            >
                 {i18n.t('Generate')}
             </Button>
         </form>

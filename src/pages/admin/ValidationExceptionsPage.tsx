@@ -1,9 +1,9 @@
 import React, { FC } from 'react'
-import AdminListPage from '../../admin/AdminListPage'
+import AdminSingletonPage from '../../admin/AdminSingletonPage'
 import { validationExceptionsResource } from '../../admin/validationExceptionsResource'
 
 const ValidationExceptionsPage: FC = () => (
-    <AdminListPage resource={validationExceptionsResource} />
+    <AdminSingletonPage resource={validationExceptionsResource} />
 )
 
 export default ValidationExceptionsPage

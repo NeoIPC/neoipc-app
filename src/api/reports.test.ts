@@ -13,10 +13,6 @@ const partnerValues = (
     mode: 'online',
     dataFile: null,
     referenceDataFile: '',
-    profile: '',
-    validationExceptionFile: '',
-    enabledElements: [],
-    disabledElements: [],
     unitCodes: [],
     reportingPeriodFrom: '',
     reportingPeriodTo: '',
@@ -31,6 +27,19 @@ const partnerValues = (
     includeIntroductionTexts: true,
     includeMethodsTexts: true,
     includeOutlierInterpretation: true,
+    includeBirthWeightFigure: false,
+    includeGestationalAgeFigure: false,
+    includeIncidenceDensityTable: false,
+    includeDeviceAssociatedIncidenceDensityTable: false,
+    includeAgentPerInfectionRateTable: false,
+    includeInfectiousAgentDetectionRateTable: false,
+    includeRiskDensityRateTable: false,
+    includeAntibioticUtilisationTable: false,
+    includeSurgicalProcedureRateTable: false,
+    includeResistantPathogenInfectionRateTable: false,
+    includeOrganismResistanceRateTable: false,
+    includeAntibioticResistanceTestRateTable: false,
+    includeSecondaryBsiRateTable: false,
     locale: '',
     outputFormat: 'html',
     ...overrides,
@@ -40,12 +49,6 @@ const referenceValues = (
     overrides: Partial<ReferenceReportFormValues> = {}
 ): ReferenceReportFormValues => ({
     referenceDataId: '',
-    profile: '',
-    validationExceptionFile: '',
-    enabledElements: [],
-    disabledElements: [],
-    enabledSectionTexts: [],
-    disabledSectionTexts: [],
     reportingPeriodFrom: '',
     reportingPeriodTo: '',
     birthWeightFrom: null,
@@ -60,6 +63,19 @@ const referenceValues = (
     confidenceIntervals: '',
     includeIntroductionTexts: true,
     includeMethodsTexts: true,
+    includeBirthWeightFigure: false,
+    includeGestationalAgeFigure: false,
+    includeIncidenceDensityTable: false,
+    includeDeviceAssociatedIncidenceDensityTable: false,
+    includeAgentPerInfectionRateTable: false,
+    includeInfectiousAgentDetectionRateTable: false,
+    includeRiskDensityRateTable: false,
+    includeAntibioticUtilisationTable: false,
+    includeSurgicalProcedureRateTable: false,
+    includeResistantPathogenInfectionRateTable: false,
+    includeOrganismResistanceRateTable: false,
+    includeAntibioticResistanceTestRateTable: false,
+    includeSecondaryBsiRateTable: false,
     locale: '',
     outputFormat: 'html',
     ...overrides,
@@ -87,7 +103,6 @@ describe('buildPartnerReportQuery', () => {
         expect(qs.has('birthWeightTo')).toBe(false)
         // empty strings dropped
         expect(qs.has('referenceDataFile')).toBe(false)
-        expect(qs.has('profile')).toBe(false)
         // booleans are always emitted, including `false`
         expect(qs.get('includeTestData')).toBe('true')
         expect(qs.get('includeNonCorePatients')).toBe('false')
@@ -117,20 +132,17 @@ describe('buildPartnerReportQuery', () => {
         expect(qs.has('includeNonCorePatients')).toBe(false)
     })
 
-    it('appends one query entry per array element', () => {
+    it('emits each includeX content flag as a boolean', () => {
         const qs = buildPartnerReportQuery(
             partnerValues({
-                enabledElements: ['BirthWeightFigure', 'IncidenceDensityTable'],
-                disabledElements: ['SecondaryBsiRateTable'],
+                includeBirthWeightFigure: true,
+                includeSecondaryBsiRateTable: false,
             }),
             'pdf'
         )
 
-        expect(qs.getAll('enabledElements')).toEqual([
-            'BirthWeightFigure',
-            'IncidenceDensityTable',
-        ])
-        expect(qs.getAll('disabledElements')).toEqual(['SecondaryBsiRateTable'])
+        expect(qs.get('includeBirthWeightFigure')).toBe('true')
+        expect(qs.get('includeSecondaryBsiRateTable')).toBe('false')
     })
 
     it('drops confidenceIntervals when unset, includes it when chosen', () => {
@@ -185,7 +197,7 @@ describe('buildReferenceReportQuery', () => {
         expect(qs.has('defaultPatientFilter')).toBe(false)
     })
 
-    it('saved-dataset mode (referenceDataId set): skips live-fetch filters but keeps element toggles', () => {
+    it('saved-dataset mode (referenceDataId set): skips live-fetch filters but keeps content flags', () => {
         const qs = buildReferenceReportQuery(
             referenceValues({
                 referenceDataId: 'DS123',
@@ -195,7 +207,7 @@ describe('buildReferenceReportQuery', () => {
                 hospitalFilter: ['H1'],
                 testUnitFilter: true,
                 defaultPatientFilter: true,
-                enabledElements: ['IncidenceDensityTable'],
+                includeIncidenceDensityTable: true,
             }),
             'pdf'
         )
@@ -208,24 +220,21 @@ describe('buildReferenceReportQuery', () => {
         expect(qs.has('hospitalFilter')).toBe(false)
         expect(qs.has('testUnitFilter')).toBe(false)
         expect(qs.has('defaultPatientFilter')).toBe(false)
-        // element toggles are not live-fetch filters → still sent
-        expect(qs.getAll('enabledElements')).toEqual(['IncidenceDensityTable'])
+        // content flags are not live-fetch filters → still sent
+        expect(qs.get('includeIncidenceDensityTable')).toBe('true')
     })
 
-    it('appends section-text arrays and fragmentMode for html', () => {
+    it('emits includeX content flags and fragmentMode for html', () => {
         const qs = buildReferenceReportQuery(
             referenceValues({
-                enabledSectionTexts: ['PatientPopulation', 'Surgery'],
-                disabledSectionTexts: ['Nosocomial'],
+                includeBirthWeightFigure: true,
+                includeSecondaryBsiRateTable: false,
             }),
             'html'
         )
 
-        expect(qs.getAll('enabledSectionTexts')).toEqual([
-            'PatientPopulation',
-            'Surgery',
-        ])
-        expect(qs.getAll('disabledSectionTexts')).toEqual(['Nosocomial'])
+        expect(qs.get('includeBirthWeightFigure')).toBe('true')
+        expect(qs.get('includeSecondaryBsiRateTable')).toBe('false')
         expect(qs.get('fragmentMode')).toBe('true')
     })
 })

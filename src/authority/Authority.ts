@@ -8,4 +8,4 @@
  * by `hasAuthority(...)` in `useAuthorities` — superusers see
  * everything regardless of the NeoIPC-specific authorities.
  */
-export type AppAuthority = 'NEOIPC_ADMIN' | 'NEOIPC_REPORT'
+export type AppAuthority = 'F_NEOIPC_ADMIN' | 'F_NEOIPC_REPORT'

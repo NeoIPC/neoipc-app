@@ -1,57 +1,19 @@
 import { useDataEngine } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
 import { MultiSelectField, MultiSelectOption, NoticeBox } from '@dhis2/ui'
-import React, { FC, useEffect, useState } from 'react'
-import { NEOIPC_CORE_PROGRAM_UID } from '../../config/dhis2Constants'
-
-interface OrgUnitRow {
-    id: string
-    code: string
-    displayName: string
-    parent?: { displayName: string }
-}
-
-interface OrgUnitsPage {
-    ous: {
-        pager?: { page: number; pageCount: number }
-        organisationUnits: OrgUnitRow[]
-    }
-}
-
-// Per-request page size. The picker pages through *every* page (see
-// fetchAllPages below) and accumulates the results, so this is only the
-// request granularity — not a cap on how many org units are selectable. This
-// replaces the deprecated `paging: false`, which loaded everything in one
-// unbounded request.
-const PAGE_SIZE = 500
-
-const orgUnitsQuery = (level: number, page: number) => ({
-    ous: {
-        resource: 'organisationUnits',
-        params: {
-            userOnly: true,
-            filter: [
-                `programs.id:eq:${NEOIPC_CORE_PROGRAM_UID}`,
-                `level:eq:${level}`,
-            ],
-            fields: 'id,code,displayName,parent[displayName]',
-            // Deterministic order so pages don't overlap or skip rows.
-            order: 'id:asc',
-            pageSize: PAGE_SIZE,
-            page,
-        },
-    },
-})
+import React, { FC, useEffect, useRef, useState } from 'react'
+import { OrgUnitRow, OrgUnitsPage, orgUnitsQuery } from './orgUnits'
 
 interface OrganisationUnitMultiSelectProps {
     name: string
     label: string
     helpText?: string
     /**
-     * OrgUnit hierarchy level to filter to (`COUNTRY_LEVEL`,
-     * `HOSPITAL_LEVEL`, or `DEPARTMENT_LEVEL` from `dhis2Constants`).
+     * Org-unit group code identifying the role to filter to
+     * (`COUNTRY_GROUP_CODE`, `HOSPITAL_GROUP_CODE`, or
+     * `DEPARTMENT_GROUP_CODE` from `dhis2Constants`).
      */
-    level: number
+    groupCode: string
     /**
      * Selected orgUnit codes. The picker emits and consumes `code`
      * strings (the wire format the report endpoints accept), not
@@ -61,16 +23,26 @@ interface OrganisationUnitMultiSelectProps {
     onChange: (codes: string[]) => void
     /** Show the parent's `displayName` as a prefix in option labels. */
     showParentInLabel?: boolean
+    /**
+     * Called once the full org-unit list has loaded, with the enriched
+     * rows (group membership + ancestors). Lets a parent form derive
+     * facts about the selected units — e.g. eligibility-group membership
+     * or ancestor country — without issuing a second query.
+     */
+    onRowsLoaded?: (rows: OrgUnitRow[]) => void
     disabled?: boolean
     required?: boolean
 }
 
 /**
- * Multi-select picker for orgUnits at a specific NeoIPC hierarchy
- * level (Country / Hospital / Department). The list is filtered to
- *   - orgUnits the current user has data-capture access to (`userOnly`)
- *   - orgUnits assigned to the NeoIPC core program (`D8mSSpOpsKj`)
- *   - the level passed in via the `level` prop.
+ * Multi-select picker for orgUnits of a specific NeoIPC role
+ * (Country / Hospital / Department). The list is filtered to
+ *   - orgUnits within the current user's data-view hierarchy
+ *     (`withinUserHierarchy`)
+ *   - orgUnits in the role's org-unit group (the `groupCode` prop).
+ *
+ * Role is identified by group membership, not hierarchy level — see
+ * `dhis2Constants` for why level is not a stable contract.
  *
  * Values are orgUnit `code` strings — the wire format
  * `Partner-/Reference-Report`'s `UnitCodes` / `CountryFilter` /
@@ -83,16 +55,22 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
     name,
     label,
     helpText,
-    level,
+    groupCode,
     selectedCodes,
     onChange,
     showParentInLabel = false,
+    onRowsLoaded,
     disabled,
     required,
 }) => {
     const engine = useDataEngine()
     const [rows, setRows] = useState<OrgUnitRow[] | null>(null)
     const [error, setError] = useState<Error | null>(null)
+
+    // Held in a ref so a changing `onRowsLoaded` identity doesn't
+    // re-trigger the fetch effect (which keys only on engine + groupCode).
+    const onRowsLoadedRef = useRef(onRowsLoaded)
+    onRowsLoadedRef.current = onRowsLoaded
 
     useEffect(() => {
         let cancelled = false
@@ -105,7 +83,7 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
             let pageCount = 1
             do {
                 const result = (await engine.query(
-                    orgUnitsQuery(level, page)
+                    orgUnitsQuery(groupCode, page)
                 )) as unknown as OrgUnitsPage
                 collected.push(...result.ous.organisationUnits)
                 pageCount = result.ous.pager?.pageCount ?? 1
@@ -118,6 +96,7 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
             .then((all) => {
                 if (!cancelled) {
                     setRows(all)
+                    onRowsLoadedRef.current?.(all)
                 }
             })
             .catch((err: unknown) => {
@@ -131,7 +110,7 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
         return () => {
             cancelled = true
         }
-    }, [engine, level])
+    }, [engine, groupCode])
 
     if (error) {
         return (
