@@ -5,24 +5,42 @@ import {
     CheckboxField,
     FileInput,
     InputField,
-    MultiSelectField,
-    MultiSelectOption,
+    NoticeBox,
     Radio,
     SingleSelectField,
     SingleSelectOption,
 } from '@dhis2/ui'
-import React, { FC, useState } from 'react'
-import { DEPARTMENT_LEVEL } from '../config/dhis2Constants'
+import React, { FC, useEffect, useMemo, useState } from 'react'
+import { useAppContext } from '../AppContext'
+import { useAuthorities } from '../authority/useAuthorities'
+import {
+    COUNTRY_GROUP_CODE,
+    DEPARTMENT_GROUP_CODE,
+    ELIGIBLE_PATIENTS_GROUP_CODE,
+} from '../config/dhis2Constants'
+import CollapsibleSection from './CollapsibleSection'
 import DateField from './fields/DateField'
 import NumberRangeField from './fields/NumberRangeField'
 import OrganisationUnitMultiSelect from './fields/OrganisationUnitMultiSelect'
 import {
+    OrgUnitRow,
+    ancestorCountryCodesForSelection,
+    anySelectedInGroup,
+} from './fields/orgUnits'
+import { useOrgUnitNames } from './fields/useOrgUnitNames'
+import PresetSelect, { CUSTOM_PRESET } from './PresetSelect'
+import ReferenceDataCard from './ReferenceDataCard'
+import ReferenceDataSelect from './ReferenceDataSelect'
+import { matchReferenceData, BenchmarkMatch } from './referenceDataMatch'
+import { governedKeys, resolvePresetValues } from './applyPreset'
+import { languageLabel } from './languageLabel'
+import { useReportConfig } from './useReportConfig'
+import {
     ConfidenceIntervalMode,
     ConfidenceIntervalModeValues,
     confidenceIntervalModeLabel,
-    PartnerReportElement,
-    PartnerReportElementValues,
-    reportElementLabel,
+    includeElementKeys,
+    includeElementLabel,
 } from './enums'
 
 type PartnerReportMode = 'online' | 'dataFile'
@@ -41,10 +59,6 @@ export interface PartnerReportFormValues {
     /** dataFile mode only: JSON file body. `null` until the user picks one. */
     dataFile: File | null
     referenceDataFile: string
-    profile: string
-    validationExceptionFile: string
-    enabledElements: PartnerReportElement[]
-    disabledElements: PartnerReportElement[]
     /** online mode only: department orgUnit codes to aggregate. */
     unitCodes: string[]
     reportingPeriodFrom: string
@@ -60,6 +74,19 @@ export interface PartnerReportFormValues {
     includeIntroductionTexts: boolean
     includeMethodsTexts: boolean
     includeOutlierInterpretation: boolean
+    includeBirthWeightFigure: boolean
+    includeGestationalAgeFigure: boolean
+    includeIncidenceDensityTable: boolean
+    includeDeviceAssociatedIncidenceDensityTable: boolean
+    includeAgentPerInfectionRateTable: boolean
+    includeInfectiousAgentDetectionRateTable: boolean
+    includeRiskDensityRateTable: boolean
+    includeAntibioticUtilisationTable: boolean
+    includeSurgicalProcedureRateTable: boolean
+    includeResistantPathogenInfectionRateTable: boolean
+    includeOrganismResistanceRateTable: boolean
+    includeAntibioticResistanceTestRateTable: boolean
+    includeSecondaryBsiRateTable: boolean
     locale: string
     outputFormat: 'html' | 'pdf'
 }
@@ -68,10 +95,6 @@ const defaultValues: PartnerReportFormValues = {
     mode: 'online',
     dataFile: null,
     referenceDataFile: '',
-    profile: '',
-    validationExceptionFile: '',
-    enabledElements: [],
-    disabledElements: [],
     unitCodes: [],
     reportingPeriodFrom: '',
     reportingPeriodTo: '',
@@ -85,12 +108,23 @@ const defaultValues: PartnerReportFormValues = {
     confidenceIntervals: '',
     includeIntroductionTexts: true,
     includeMethodsTexts: true,
-    includeOutlierInterpretation: true,
+    includeOutlierInterpretation: false,
+    includeBirthWeightFigure: true,
+    includeGestationalAgeFigure: true,
+    includeIncidenceDensityTable: true,
+    includeDeviceAssociatedIncidenceDensityTable: true,
+    includeAgentPerInfectionRateTable: true,
+    includeInfectiousAgentDetectionRateTable: true,
+    includeRiskDensityRateTable: true,
+    includeAntibioticUtilisationTable: false,
+    includeSurgicalProcedureRateTable: true,
+    includeResistantPathogenInfectionRateTable: false,
+    includeOrganismResistanceRateTable: false,
+    includeAntibioticResistanceTestRateTable: false,
+    includeSecondaryBsiRateTable: false,
     locale: '',
     outputFormat: 'html',
 }
-
-const LOCALE_OPTIONS = ['', 'en', 'de'] as const
 
 interface PartnerReportFormProps {
     onSubmit?: (values: PartnerReportFormValues) => void
@@ -102,11 +136,95 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
     onSubmit,
     submitting = false,
 }) => {
+    const { presets, locales } = useReportConfig('partner-report')
+    const { referenceDataSets } = useAppContext()
+    const { isAdmin } = useAuthorities()
+    const countryNames = useOrgUnitNames(COUNTRY_GROUP_CODE)
     const [values, setValues] = useState<PartnerReportFormValues>(defaultValues)
+    const [preset, setPreset] = useState<string>('default')
+    // Benchmark selection: 'auto' derives the dataset from the partner's
+    // settings; 'manual' opens the faceted picker for override.
+    const [benchmarkMode, setBenchmarkMode] = useState<'auto' | 'manual'>(
+        'auto'
+    )
+    // Enriched department rows from the picker — used to derive the
+    // selection's ancestor countries (Auto-match) and eligibility-group
+    // membership (the non-core-patients gate) without a second query.
+    const [deptRows, setDeptRows] = useState<OrgUnitRow[]>([])
+    const [autoMatch, setAutoMatch] = useState<BenchmarkMatch | null>(null)
+
+    const presetLocked = preset !== CUSTOM_PRESET
+
+    const deptCountryCodes = useMemo(
+        () =>
+            ancestorCountryCodesForSelection(
+                deptRows,
+                values.unitCodes,
+                COUNTRY_GROUP_CODE
+            ),
+        [deptRows, values.unitCodes]
+    )
+    // Only departments in NEOIPC_ALL_PATIENTS_ELIGIBLE intentionally enrol
+    // non-core patients, so the toggle is offered only then.
+    const showNonCorePatients = useMemo(
+        () =>
+            anySelectedInGroup(
+                deptRows,
+                values.unitCodes,
+                ELIGIBLE_PATIENTS_GROUP_CODE
+            ),
+        [deptRows, values.unitCodes]
+    )
 
     const setField = <K extends keyof PartnerReportFormValues>(key: K) =>
         (value: PartnerReportFormValues[K]) =>
             setValues((prev) => ({ ...prev, [key]: value }))
+
+    // The governed-content defaults (QMD defaults) a non-Custom preset
+    // resets to before applying its overrides.
+    const governedDefaults = useMemo<Record<string, boolean | string>>(
+        () => Object.fromEntries(governedKeys.map((k) => [k, defaultValues[k]])),
+        []
+    )
+
+    const applyPreset = (name: string): void => {
+        setPreset(name)
+        if (name === CUSTOM_PRESET) return
+        const resolved = resolvePresetValues(presets?.[name] ?? {}, governedDefaults)
+        setValues((prev) => ({
+            ...prev,
+            ...(resolved as Partial<PartnerReportFormValues>),
+        }))
+    }
+
+    // In Auto mode, keep the benchmark dataset synced to the partner's
+    // cohort + countries. Manual mode leaves `referenceDataFile` to the
+    // picker (and seeds it from the last Auto pick).
+    useEffect(() => {
+        if (benchmarkMode !== 'auto') return
+        const match = matchReferenceData(referenceDataSets, {
+            birthWeightFrom: values.birthWeightFrom,
+            birthWeightTo: values.birthWeightTo,
+            gestationalAgeFrom: values.gestationalAgeFrom,
+            gestationalAgeTo: values.gestationalAgeTo,
+            includeNonCorePatients: values.includeNonCorePatients,
+            countryCodes: deptCountryCodes,
+        })
+        setAutoMatch(match)
+        setValues((prev) => ({
+            ...prev,
+            referenceDataFile: match?.dataset.id ?? '',
+        }))
+    }, [
+        benchmarkMode,
+        referenceDataSets,
+        values.birthWeightFrom,
+        values.birthWeightTo,
+        values.gestationalAgeFrom,
+        values.gestationalAgeTo,
+        values.includeNonCorePatients,
+        deptCountryCodes,
+    ])
 
     return (
         <form
@@ -163,7 +281,7 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
 
             {values.mode === 'online' && (
                 <Card>
-                    <h2>{i18n.t('Scope')}</h2>
+                    <h2>{i18n.t('Departments')}</h2>
                     <OrganisationUnitMultiSelect
                         name="unitCodes"
                         label={i18n.t('Departments')}
@@ -171,26 +289,11 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                             'Pick one or more departments. The report ' +
                                 'aggregates across the selected set.'
                         )}
-                        level={DEPARTMENT_LEVEL}
+                        groupCode={DEPARTMENT_GROUP_CODE}
                         showParentInLabel
                         selectedCodes={values.unitCodes}
                         onChange={setField('unitCodes')}
-                    />
-                    <CheckboxField
-                        name="includeNonCorePatients"
-                        label={i18n.t('Include non-core patients')}
-                        checked={values.includeNonCorePatients}
-                        onChange={({ checked }) =>
-                            setField('includeNonCorePatients')(checked)
-                        }
-                    />
-                    <CheckboxField
-                        name="includeTestData"
-                        label={i18n.t('Include test data')}
-                        checked={values.includeTestData}
-                        onChange={({ checked }) =>
-                            setField('includeTestData')(checked)
-                        }
+                        onRowsLoaded={setDeptRows}
                     />
                 </Card>
             )}
@@ -211,8 +314,8 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                 />
             </Card>
 
-            <Card>
-                <h2>{i18n.t('Patient population filters')}</h2>
+            <CollapsibleSection title={i18n.t('More options')}>
+                <h3>{i18n.t('Patient population filters')}</h3>
                 <NumberRangeField
                     name="birthWeight"
                     label={i18n.t('Birth weight (g)')}
@@ -233,39 +336,91 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                     min={0}
                     max={52}
                 />
-            </Card>
+                {values.mode === 'online' && showNonCorePatients && (
+                    <CheckboxField
+                        name="includeNonCorePatients"
+                        label={i18n.t('Include non-core patients')}
+                        helpText={i18n.t(
+                            'A selected department enrols all neonates, not ' +
+                                'just the core cohort. Include those non-core ' +
+                                'patients in the report.'
+                        )}
+                        checked={values.includeNonCorePatients}
+                        onChange={({ checked }) =>
+                            setField('includeNonCorePatients')(checked)
+                        }
+                    />
+                )}
 
-            <Card>
-                <h2>{i18n.t('Output options')}</h2>
-                <InputField
-                    label={i18n.t('Quarto profile')}
-                    name="profile"
-                    helpText={i18n.t(
-                        'Optional. Leave blank for the default profile.'
-                    )}
-                    value={values.profile}
-                    onChange={({ value }) =>
-                        setField('profile')(value ?? '')
-                    }
+                <h3>{i18n.t('Benchmark')}</h3>
+                <fieldset>
+                    <legend>{i18n.t('Reference dataset to compare against')}</legend>
+                    <Radio
+                        name="benchmarkMode"
+                        label={i18n.t('Automatic — best match for these settings')}
+                        value="auto"
+                        checked={benchmarkMode === 'auto'}
+                        onChange={() => setBenchmarkMode('auto')}
+                    />
+                    <Radio
+                        name="benchmarkMode"
+                        label={i18n.t('Choose a dataset manually')}
+                        value="manual"
+                        checked={benchmarkMode === 'manual'}
+                        onChange={() => setBenchmarkMode('manual')}
+                    />
+                </fieldset>
+                {benchmarkMode === 'auto' ? (
+                    autoMatch ? (
+                        <ReferenceDataCard
+                            dataset={autoMatch.dataset}
+                            approximate={!autoMatch.exact}
+                            countryNames={countryNames}
+                        />
+                    ) : (
+                        <NoticeBox title={i18n.t('No benchmark selected')}>
+                            {i18n.t(
+                                'No saved reference dataset is available to ' +
+                                    'benchmark against. The report renders ' +
+                                    'without a comparison.'
+                            )}
+                        </NoticeBox>
+                    )
+                ) : (
+                    <ReferenceDataSelect
+                        datasets={referenceDataSets}
+                        value={values.referenceDataFile}
+                        onChange={setField('referenceDataFile')}
+                        countryNames={countryNames}
+                        label={i18n.t('Benchmark dataset')}
+                        helpText={i18n.t(
+                            'Optional. Pick a saved reference dataset to ' +
+                                'compare the partner units against.'
+                        )}
+                    />
+                )}
+
+                <h3>{i18n.t('Content')}</h3>
+                <PresetSelect
+                    presets={presets}
+                    value={preset}
+                    onChange={applyPreset}
                 />
-                <InputField
-                    label={i18n.t('Validation exception file ID')}
-                    name="validationExceptionFile"
-                    helpText={i18n.t(
-                        'Optional. Pick from the admin-managed list ' +
-                            '(picker UI lands in a later commit).'
-                    )}
-                    value={values.validationExceptionFile}
-                    onChange={({ value }) =>
-                        setField('validationExceptionFile')(value ?? '')
-                    }
-                />
+                {includeElementKeys.map((key) => (
+                    <CheckboxField
+                        key={key}
+                        name={key}
+                        label={includeElementLabel(key)}
+                        checked={values[key]}
+                        disabled={presetLocked}
+                        onChange={({ checked }) => setField(key)(checked)}
+                    />
+                ))}
                 <SingleSelectField
                     label={i18n.t('Confidence intervals')}
-                    helpText={i18n.t(
-                        'Backend default if unset.'
-                    )}
+                    helpText={i18n.t('Backend default if unset.')}
                     selected={values.confidenceIntervals}
+                    disabled={presetLocked}
                     onChange={({ selected }) =>
                         setField('confidenceIntervals')(
                             selected as ConfidenceIntervalMode | ''
@@ -284,27 +439,11 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                         />
                     ))}
                 </SingleSelectField>
-                <InputField
-                    label={i18n.t('Sparse data threshold')}
-                    name="sparseDataThreshold"
-                    type="number"
-                    value={
-                        values.sparseDataThreshold === null
-                            ? ''
-                            : String(values.sparseDataThreshold)
-                    }
-                    onChange={({ value }) =>
-                        setField('sparseDataThreshold')(
-                            value === '' || value === undefined
-                                ? null
-                                : Number(value)
-                        )
-                    }
-                />
                 <CheckboxField
                     name="includeIntroductionTexts"
                     label={i18n.t('Include introduction texts')}
                     checked={values.includeIntroductionTexts}
+                    disabled={presetLocked}
                     onChange={({ checked }) =>
                         setField('includeIntroductionTexts')(checked)
                     }
@@ -313,86 +452,75 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                     name="includeMethodsTexts"
                     label={i18n.t('Include methods texts')}
                     checked={values.includeMethodsTexts}
+                    disabled={presetLocked}
                     onChange={({ checked }) =>
                         setField('includeMethodsTexts')(checked)
                     }
                 />
-                <CheckboxField
-                    name="includeOutlierInterpretation"
-                    label={i18n.t('Include outlier interpretation')}
-                    checked={values.includeOutlierInterpretation}
-                    onChange={({ checked }) =>
-                        setField('includeOutlierInterpretation')(checked)
-                    }
-                />
-            </Card>
 
-            <Card>
-                <h2>{i18n.t('Element toggles')}</h2>
-                <MultiSelectField
-                    label={i18n.t('Enabled elements (override defaults)')}
-                    helpText={i18n.t(
-                        'Leave empty to use the backend defaults.'
-                    )}
-                    selected={values.enabledElements}
-                    onChange={({ selected }) =>
-                        setField('enabledElements')(
-                            selected as PartnerReportElement[]
-                        )
-                    }
-                >
-                    {PartnerReportElementValues.map((element) => (
-                        <MultiSelectOption
-                            key={element}
-                            value={element}
-                            label={reportElementLabel(element)}
-                        />
-                    ))}
-                </MultiSelectField>
-                <MultiSelectField
-                    label={i18n.t('Disabled elements (override defaults)')}
-                    selected={values.disabledElements}
-                    onChange={({ selected }) =>
-                        setField('disabledElements')(
-                            selected as PartnerReportElement[]
-                        )
-                    }
-                >
-                    {PartnerReportElementValues.map((element) => (
-                        <MultiSelectOption
-                            key={element}
-                            value={element}
-                            label={reportElementLabel(element)}
-                        />
-                    ))}
-                </MultiSelectField>
-            </Card>
-
-            <Card>
-                <h2>{i18n.t('Locale')}</h2>
+                <h3>{i18n.t('Language')}</h3>
                 <SingleSelectField
-                    label={i18n.t('Report locale')}
+                    label={i18n.t('Report language')}
                     helpText={i18n.t(
                         'Leave blank to use the locale from your DHIS2 user setting.'
                     )}
                     selected={values.locale}
-                    onChange={({ selected }) =>
-                        setField('locale')(selected ?? '')
-                    }
+                    loading={locales === null}
+                    onChange={({ selected }) => setField('locale')(selected ?? '')}
                 >
                     <SingleSelectOption
                         value=""
                         label={i18n.t('(use DHIS2 user setting)')}
                     />
-                    {LOCALE_OPTIONS.slice(1).map((loc) => (
+                    {(locales ?? []).map((loc) => (
                         <SingleSelectOption
                             key={loc}
                             value={loc}
-                            label={loc}
+                            label={languageLabel(loc)}
                         />
                     ))}
                 </SingleSelectField>
-            </Card>
+            </CollapsibleSection>
+
+            {isAdmin && (
+                <CollapsibleSection title={i18n.t('Advanced')}>
+                    {values.mode === 'online' && (
+                        <CheckboxField
+                            name="includeTestData"
+                            label={i18n.t('Include test data')}
+                            checked={values.includeTestData}
+                            onChange={({ checked }) =>
+                                setField('includeTestData')(checked)
+                            }
+                        />
+                    )}
+                    <InputField
+                        label={i18n.t('Sparse data threshold')}
+                        name="sparseDataThreshold"
+                        type="number"
+                        value={
+                            values.sparseDataThreshold === null
+                                ? ''
+                                : String(values.sparseDataThreshold)
+                        }
+                        onChange={({ value }) =>
+                            setField('sparseDataThreshold')(
+                                value === '' || value === undefined
+                                    ? null
+                                    : Number(value)
+                            )
+                        }
+                    />
+                    <CheckboxField
+                        name="includeOutlierInterpretation"
+                        label={i18n.t('Include outlier interpretation')}
+                        checked={values.includeOutlierInterpretation}
+                        onChange={({ checked }) =>
+                            setField('includeOutlierInterpretation')(checked)
+                        }
+                    />
+                </CollapsibleSection>
+            )}
 
             <Button primary type="submit" disabled={submitting} loading={submitting}>
                 {i18n.t('Generate')}

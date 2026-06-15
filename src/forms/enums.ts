@@ -1,69 +1,21 @@
 import i18n from '@dhis2/d2-i18n'
 
 /**
- * Vendored copies of the backend's report-parameter enums. Kept in
- * sync with the corresponding C# enums in
+ * Vendored copies of the backend's report-parameter enums / content
+ * flags. Kept in sync with the corresponding C# definitions in
  * `repos/NeoIPC-Reporting/src/NeoIPC.Reporting/`:
  *
- *   - {@link PartnerReportElementValues}: `PartnerReportElement.cs`
- *   - {@link ReferenceReportElementValues}: `ReferenceReportElement.cs`
- *   - {@link ReferenceReportSectionTextValues}: `ReferenceReportElement.cs`
  *   - {@link ConfidenceIntervalModeValues}: `ConfidenceIntervalMode.cs`
+ *   - {@link includeElementKeys}: the per-element `includeX` render flags
+ *     on `PartnerReportApiParameters.cs` / `ReferenceReportApiParameters.cs`
  *
  * The schema-as-contract drift check (`scripts/check-schema-drift.mjs`)
- * verifies these lists against the vendored
+ * verifies the wire-field tuples against the vendored
  * `src/schemas/*-report.json` snapshots and against the backend's
  * compiled `<Report>ApiParameters.Schema` arrays. Backend rename or
  * insert: schema-drift check fails, this file gets updated, form
  * spec updated, all in the same change.
  */
-
-export const PartnerReportElementValues = [
-    'BirthWeightFigure',
-    'GestationalAgeFigure',
-    'IncidenceDensityTable',
-    'DeviceAssociatedIncidenceDensityTable',
-    'AgentPerInfectionRateTable',
-    'InfectiousAgentDetectionRateTable',
-    'RiskDensityRateTable',
-    'AntibioticUtilisationTable',
-    'SurgicalProcedureRateTable',
-    'ResistantPathogenInfectionRateTable',
-    'OrganismResistanceRateTable',
-    'AntibioticResistanceTestRateTable',
-    'SecondaryBsiRateTable',
-] as const
-
-export type PartnerReportElement = (typeof PartnerReportElementValues)[number]
-
-export const ReferenceReportElementValues = [
-    'BirthWeightFigure',
-    'GestationalAgeFigure',
-    'IncidenceDensityTable',
-    'DeviceAssociatedIncidenceDensityTable',
-    'AgentPerInfectionRateTable',
-    'ResistantPathogenInfectionRateTable',
-    'OrganismResistanceRateTable',
-    'InfectiousAgentDetectionRateTable',
-    'AntibioticResistanceTestRateTable',
-    'RiskDensityRateTable',
-    'AntibioticUtilisationTable',
-    'SurgicalProcedureRateTable',
-    'SecondaryBsiRateTable',
-] as const
-
-export type ReferenceReportElement = (typeof ReferenceReportElementValues)[number]
-
-export const ReferenceReportSectionTextValues = [
-    'PatientPopulation',
-    'Nosocomial',
-    'InfectiousAgents',
-    'RiskFactors',
-    'Surgery',
-] as const
-
-export type ReferenceReportSectionText =
-    (typeof ReferenceReportSectionTextValues)[number]
 
 /**
  * Wire values for the `confidenceIntervals` query parameter. The backend
@@ -98,70 +50,65 @@ export const confidenceIntervalModeLabel = (
 }
 
 /**
- * Localised display label for a {@link PartnerReportElement} or
- * {@link ReferenceReportElement}. The wire identifiers are PascalCase
- * C# enum names; the labels here are the operator-facing sentence-case
- * strings that appear in the report-element selector. Mapped per value
- * (rather than computed by splitting PascalCase) so each label is a
- * literal `i18n.t('...')` call that the d2-i18n extractor picks up,
- * and so individual labels can be copyedited or abbreviated
- * independently of the wire identifiers (e.g. capitalising acronyms
- * like `BSI`).
- *
- * `PartnerReportElement` and `ReferenceReportElement` currently share
- * the same set of values, so one helper covers both.
+ * The per-element content-toggle keys shared by both report forms. Each
+ * is an `includeX` boolean render flag (a figure or table the report
+ * can include or omit); Partner and Reference expose the same 13
+ * elements, so one list drives both forms' content checkboxes. These
+ * are exactly the `boolean` `includeX` keys of `PartnerReportFormValues`
+ * / `ReferenceReportFormValues`.
  */
-export const reportElementLabel = (
-    element: PartnerReportElement | ReferenceReportElement
-): string => {
-    switch (element) {
-        case 'BirthWeightFigure':
-            return i18n.t('Birth weight figure')
-        case 'GestationalAgeFigure':
-            return i18n.t('Gestational age figure')
-        case 'IncidenceDensityTable':
-            return i18n.t('Incidence density table')
-        case 'DeviceAssociatedIncidenceDensityTable':
-            return i18n.t('Device-associated incidence density table')
-        case 'AgentPerInfectionRateTable':
-            return i18n.t('Agent per infection rate table')
-        case 'InfectiousAgentDetectionRateTable':
-            return i18n.t('Infectious agent detection rate table')
-        case 'RiskDensityRateTable':
-            return i18n.t('Risk density rate table')
-        case 'AntibioticUtilisationTable':
-            return i18n.t('Antibiotic utilisation table')
-        case 'SurgicalProcedureRateTable':
-            return i18n.t('Surgical procedure rate table')
-        case 'ResistantPathogenInfectionRateTable':
-            return i18n.t('Resistant pathogen infection rate table')
-        case 'OrganismResistanceRateTable':
-            return i18n.t('Organism resistance rate table')
-        case 'AntibioticResistanceTestRateTable':
-            return i18n.t('Antibiotic resistance test rate table')
-        case 'SecondaryBsiRateTable':
-            return i18n.t('Secondary BSI rate table')
-    }
-}
+export const includeElementKeys = [
+    'includeBirthWeightFigure',
+    'includeGestationalAgeFigure',
+    'includeIncidenceDensityTable',
+    'includeDeviceAssociatedIncidenceDensityTable',
+    'includeAgentPerInfectionRateTable',
+    'includeInfectiousAgentDetectionRateTable',
+    'includeRiskDensityRateTable',
+    'includeAntibioticUtilisationTable',
+    'includeSurgicalProcedureRateTable',
+    'includeResistantPathogenInfectionRateTable',
+    'includeOrganismResistanceRateTable',
+    'includeAntibioticResistanceTestRateTable',
+    'includeSecondaryBsiRateTable',
+] as const
+
+export type IncludeElementKey = (typeof includeElementKeys)[number]
 
 /**
- * Localised display label for a {@link ReferenceReportSectionText}.
- * Same pattern as {@link reportElementLabel}: literal `i18n.t('...')`
- * per value so the strings extract into `i18n/en.pot`.
+ * Localised display label for an {@link IncludeElementKey}. Mapped per
+ * key (rather than computed by splitting the identifier) so each label
+ * is a literal `i18n.t('...')` call the d2-i18n extractor picks up, and
+ * so individual labels can be copyedited independently (e.g.
+ * capitalising acronyms like `BSI`).
  */
-export const referenceReportSectionTextLabel = (
-    section: ReferenceReportSectionText
-): string => {
-    switch (section) {
-        case 'PatientPopulation':
-            return i18n.t('Patient population')
-        case 'Nosocomial':
-            return i18n.t('Nosocomial')
-        case 'InfectiousAgents':
-            return i18n.t('Infectious agents')
-        case 'RiskFactors':
-            return i18n.t('Risk factors')
-        case 'Surgery':
-            return i18n.t('Surgery')
+export const includeElementLabel = (key: IncludeElementKey): string => {
+    switch (key) {
+        case 'includeBirthWeightFigure':
+            return i18n.t('Birth weight figure')
+        case 'includeGestationalAgeFigure':
+            return i18n.t('Gestational age figure')
+        case 'includeIncidenceDensityTable':
+            return i18n.t('Incidence density table')
+        case 'includeDeviceAssociatedIncidenceDensityTable':
+            return i18n.t('Device-associated incidence density table')
+        case 'includeAgentPerInfectionRateTable':
+            return i18n.t('Agent per infection rate table')
+        case 'includeInfectiousAgentDetectionRateTable':
+            return i18n.t('Infectious agent detection rate table')
+        case 'includeRiskDensityRateTable':
+            return i18n.t('Risk density rate table')
+        case 'includeAntibioticUtilisationTable':
+            return i18n.t('Antibiotic utilisation table')
+        case 'includeSurgicalProcedureRateTable':
+            return i18n.t('Surgical procedure rate table')
+        case 'includeResistantPathogenInfectionRateTable':
+            return i18n.t('Resistant pathogen infection rate table')
+        case 'includeOrganismResistanceRateTable':
+            return i18n.t('Organism resistance rate table')
+        case 'includeAntibioticResistanceTestRateTable':
+            return i18n.t('Antibiotic resistance test rate table')
+        case 'includeSecondaryBsiRateTable':
+            return i18n.t('Secondary BSI rate table')
     }
 }

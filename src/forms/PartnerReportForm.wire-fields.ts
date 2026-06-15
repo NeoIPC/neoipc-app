@@ -15,10 +15,6 @@ import type { PartnerReportFormValues } from './PartnerReportForm'
  */
 export const partnerReportWireFields = [
     'referenceDataFile',
-    'profile',
-    'validationExceptionFile',
-    'enabledElements',
-    'disabledElements',
     'unitCodes',
     'reportingPeriodFrom',
     'reportingPeriodTo',
@@ -33,6 +29,19 @@ export const partnerReportWireFields = [
     'includeIntroductionTexts',
     'includeMethodsTexts',
     'includeOutlierInterpretation',
+    'includeBirthWeightFigure',
+    'includeGestationalAgeFigure',
+    'includeIncidenceDensityTable',
+    'includeDeviceAssociatedIncidenceDensityTable',
+    'includeAgentPerInfectionRateTable',
+    'includeInfectiousAgentDetectionRateTable',
+    'includeRiskDensityRateTable',
+    'includeAntibioticUtilisationTable',
+    'includeSurgicalProcedureRateTable',
+    'includeResistantPathogenInfectionRateTable',
+    'includeOrganismResistanceRateTable',
+    'includeAntibioticResistanceTestRateTable',
+    'includeSecondaryBsiRateTable',
 ] as const
 
 type PartnerReportNonWireKey =

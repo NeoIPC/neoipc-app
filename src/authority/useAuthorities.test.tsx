@@ -21,23 +21,23 @@ describe('useAuthorities', () => {
     afterEach(() => jest.clearAllMocks())
 
     it('grants an authority the user explicitly holds and denies the others', () => {
-        withAuthorities(['NEOIPC_REPORT'])
+        withAuthorities(['F_NEOIPC_REPORT'])
         const { result } = renderHook(() => useAuthorities())
-        expect(result.current.has('NEOIPC_REPORT')).toBe(true)
-        expect(result.current.has('NEOIPC_ADMIN')).toBe(false)
+        expect(result.current.has('F_NEOIPC_REPORT')).toBe(true)
+        expect(result.current.has('F_NEOIPC_ADMIN')).toBe(false)
     })
 
     it('treats the DHIS2 superuser authority (ALL) as holding every gate', () => {
         withAuthorities(['ALL'])
         const { result } = renderHook(() => useAuthorities())
-        expect(result.current.has('NEOIPC_ADMIN')).toBe(true)
-        expect(result.current.has('NEOIPC_REPORT')).toBe(true)
+        expect(result.current.has('F_NEOIPC_ADMIN')).toBe(true)
+        expect(result.current.has('F_NEOIPC_REPORT')).toBe(true)
     })
 
     it('denies everything when the user holds no authorities', () => {
         withAuthorities([])
         const { result } = renderHook(() => useAuthorities())
-        expect(result.current.has('NEOIPC_ADMIN')).toBe(false)
-        expect(result.current.has('NEOIPC_REPORT')).toBe(false)
+        expect(result.current.has('F_NEOIPC_ADMIN')).toBe(false)
+        expect(result.current.has('F_NEOIPC_REPORT')).toBe(false)
     })
 })

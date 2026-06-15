@@ -31,7 +31,7 @@ const config = {
         app: './src/App.tsx',
     },
     minDHIS2Version: '2.40',
-    customAuthorities: ['NEOIPC_ADMIN', 'NEOIPC_REPORT'],
+    customAuthorities: ['F_NEOIPC_ADMIN', 'F_NEOIPC_REPORT'],
     dataStoreNamespace: 'neoipc-app',
     shortcuts: [
         { name: 'Partner Report', url: '#/reports/partner' },

@@ -7,25 +7,40 @@
  * `repos/neoipc-dhis2/config/default.conf.template` when the
  * deployment topology changes.
  *
- * The orgUnit-level metadata entries in DHIS2 use misleading names
- * (level 3 is labelled "3"/"Station" but is semantically Hospital;
- * level 4 has no name but is semantically Department). The level
- * numbers are the stable contract — see
- * `tasks/neoipc-dhis2-rename-orgunit-levels.md` for the planned
- * metadata polish.
+ * The three NeoIPC org-unit roles (Country / Hospital / Department) are
+ * identified by **org-unit group code**, not by hierarchy *level*. The
+ * level numbers are not a stable contract — the DHIS2
+ * `organisationUnitLevels` are partly unnamed/auto-named (level 5 is
+ * literally named "5", level 1 is "Reference Centre"), and a department
+ * need not sit at a fixed depth (test or hospital-less deployments can
+ * place one higher up). neoipcr — the normative data layer — selects
+ * departments by `organisationUnitGroups.code:eq:NEO_DEPARTMENT` with no
+ * level filter, and the analogous `COUNTRY` / `HOSPITAL` groups identify
+ * the other two roles. The pickers and Auto-match mirror that.
  */
 
-/** UID of the NeoIPC core tracker program. */
-export const NEOIPC_CORE_PROGRAM_UID = 'D8mSSpOpsKj'
+/** Org-unit group code for "Country" (id `V9axyIuqqs6`). */
+export const COUNTRY_GROUP_CODE = 'COUNTRY'
 
-/** OrgUnit hierarchy level for "Country" (id `iFJGSLdXYIi`). */
-export const COUNTRY_LEVEL = 2
+/** Org-unit group code for "Hospital" (id `OuU4pHxMRe1`). */
+export const HOSPITAL_GROUP_CODE = 'HOSPITAL'
 
-/** OrgUnit hierarchy level for "Hospital" (id `wb10bKLJpVj`). */
-export const HOSPITAL_LEVEL = 3
+/** Org-unit group code for "Department" (id `aYhPCaHuOnT`, "Neonatology Department"). */
+export const DEPARTMENT_GROUP_CODE = 'NEO_DEPARTMENT'
 
-/** OrgUnit hierarchy level for "Department" (id `zjgC9x4XmFO`). */
-export const DEPARTMENT_LEVEL = 4
+/**
+ * Code of the org-unit group (UID `H1frxxJMCb4`, "NeoIPC All patients
+ * eligible") whose member departments have the birth-weight /
+ * gestational-age eligibility criteria disabled — i.e. they
+ * intentionally enrol *all* neonates, not just the core
+ * very-low-birth-weight / very-preterm cohort. Non-core patients are
+ * therefore a meaningful, intentional population only in these
+ * departments, so the Partner Report's "include non-core patients"
+ * toggle is offered only when at least one selected department belongs
+ * to this group (the same `d2:inOrgUnitGroup('NEOIPC_ALL_PATIENTS_ELIGIBLE')`
+ * predicate the DHIS2 program rules use).
+ */
+export const ELIGIBLE_PATIENTS_GROUP_CODE = 'NEOIPC_ALL_PATIENTS_ELIGIBLE'
 
 /**
  * Base path under which the new NeoIPC-Reporting service is mounted

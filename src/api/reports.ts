@@ -1,5 +1,6 @@
 import i18n from '@dhis2/d2-i18n'
 import { fetchNeoipcReporting } from './neoipcReporting'
+import { includeElementKeys } from '../forms/enums'
 import type { PartnerReportFormValues } from '../forms/PartnerReportForm'
 import type { ReferenceReportFormValues } from '../forms/ReferenceReportForm'
 
@@ -79,16 +80,13 @@ export const buildReferenceReportQuery = (
     const qs = new URLSearchParams()
     appendString(qs, 'referenceDataId', values.referenceDataId)
     appendString(qs, 'locale', values.locale)
-    appendString(qs, 'profile', values.profile)
-    appendString(qs, 'validationExceptionFile', values.validationExceptionFile)
     appendString(qs, 'confidenceIntervals', values.confidenceIntervals)
     appendNumber(qs, 'sparseDataThreshold', values.sparseDataThreshold)
     appendBool(qs, 'includeIntroductionTexts', values.includeIntroductionTexts)
     appendBool(qs, 'includeMethodsTexts', values.includeMethodsTexts)
-    appendArray(qs, 'enabledElements', values.enabledElements)
-    appendArray(qs, 'disabledElements', values.disabledElements)
-    appendArray(qs, 'enabledSectionTexts', values.enabledSectionTexts)
-    appendArray(qs, 'disabledSectionTexts', values.disabledSectionTexts)
+    for (const key of includeElementKeys) {
+        appendBool(qs, key, values[key])
+    }
 
     if (values.referenceDataId === '') {
         appendString(qs, 'reportingPeriodFrom', values.reportingPeriodFrom)
@@ -122,8 +120,6 @@ export const buildPartnerReportQuery = (
     const qs = new URLSearchParams()
     appendString(qs, 'referenceDataFile', values.referenceDataFile)
     appendString(qs, 'locale', values.locale)
-    appendString(qs, 'profile', values.profile)
-    appendString(qs, 'validationExceptionFile', values.validationExceptionFile)
     appendString(qs, 'confidenceIntervals', values.confidenceIntervals)
     appendNumber(qs, 'sparseDataThreshold', values.sparseDataThreshold)
     appendBool(qs, 'includeIntroductionTexts', values.includeIntroductionTexts)
@@ -133,8 +129,9 @@ export const buildPartnerReportQuery = (
         'includeOutlierInterpretation',
         values.includeOutlierInterpretation
     )
-    appendArray(qs, 'enabledElements', values.enabledElements)
-    appendArray(qs, 'disabledElements', values.disabledElements)
+    for (const key of includeElementKeys) {
+        appendBool(qs, key, values[key])
+    }
 
     if (values.mode === 'online') {
         appendArray(qs, 'unitCodes', values.unitCodes)

@@ -113,3 +113,82 @@ export const adminDownloadUrl = (
     segment: string,
     id: string
 ): string => neoipcReportingUrl(baseUrl, adminPath(segment, id))
+
+// --- Singleton resources (one file at a time; no id segment) -----------
+// The validation-exception file is a single, auto-applied resource, so its
+// admin API is `GET` (current metadata, or 404) / `PUT` (upload-replace) /
+// `DELETE` — see ValidationExceptionEndpoints.cs.
+
+/**
+ * `GET /admin/<segment>` for a singleton resource. Returns the current
+ * metadata, or `null` when none has been uploaded (the backend's 404).
+ */
+export const adminGetSingle = async <T extends AdminResourceMetadata>(
+    baseUrl: string,
+    segment: string
+): Promise<T | null> => {
+    try {
+        const response = await fetchNeoipcReporting(baseUrl, adminPath(segment), {
+            method: 'GET',
+            headers: { Accept: 'application/json' },
+        })
+        return (await response.json()) as T
+    } catch (err) {
+        if (err instanceof NeoipcReportingError && err.response.status === 404) {
+            return null
+        }
+        throw err
+    }
+}
+
+/**
+ * `PUT /admin/<segment>?displayName=<encoded>` — idempotent
+ * create-or-replace of the single stored file. Returns the new metadata.
+ * `contentType` overrides the file's auto-detected MIME (pass `null` to
+ * forward the file's own type).
+ */
+export const adminPutSingle = async <T extends AdminResourceMetadata>(
+    baseUrl: string,
+    segment: string,
+    file: File,
+    displayName: string,
+    contentType: string | null
+): Promise<T> => {
+    const headers: Record<string, string> = {
+        Accept: 'application/json',
+        'Content-Type': contentType ?? (file.type || 'application/octet-stream'),
+    }
+    const qs = new URLSearchParams()
+    if (displayName !== '') qs.append('displayName', displayName)
+    const suffix = qs.toString() === '' ? '' : `?${qs.toString()}`
+    const response = await fetchNeoipcReporting(
+        baseUrl,
+        `${adminPath(segment)}${suffix}`,
+        {
+            method: 'PUT',
+            headers,
+            body: file,
+        }
+    )
+    return (await response.json()) as T
+}
+
+/**
+ * `DELETE /admin/<segment>` for a singleton resource. 404 (already
+ * absent) is treated as success to keep the UX idempotent.
+ */
+export const adminDeleteSingle = async (
+    baseUrl: string,
+    segment: string
+): Promise<void> => {
+    try {
+        await fetchNeoipcReporting(baseUrl, adminPath(segment), {
+            method: 'DELETE',
+        })
+    } catch (err) {
+        if (err instanceof NeoipcReportingError && err.response.status === 404) {
+            return
+        }
+        throw err
+    }
+}
