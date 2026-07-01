@@ -3,7 +3,7 @@
  * Local-stack dev launcher.
  *
  * Serves the app same-origin against the DHIS2 stack brought up by the
- * workspace `scripts/Verify-NeoIpcApp.ps1 -KeepRunning` (DHIS2 on
+ * workspace `scripts/Test-NeoIpcApp.ps1 -KeepRunning` (DHIS2 on
  * http://localhost:8080). It sets DHIS2_BASE_URL to the dev server's own
  * origin, so the app shell targets itself and the Vite dev-server proxy (see
  * d2.config.js) forwards /api, /neoipc, etc. to DHIS2 — every request is then

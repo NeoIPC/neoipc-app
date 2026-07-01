@@ -9,7 +9,7 @@ Nginx on `http://localhost:8080`) and leave it running:
 
 ```sh
 # from the workspace root
-./scripts/Verify-NeoIpcApp.ps1 -KeepRunning
+./scripts/Test-NeoIpcApp.ps1 -KeepRunning
 ```
 
 Then start the app in same-origin dev mode:
