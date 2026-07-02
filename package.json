@@ -9,6 +9,7 @@
     "build": "d2-app-scripts build",
     "start": "d2-app-scripts start",
     "start:dev": "node scripts/start-dev.mjs",
+    "pretest": "d2-app-scripts i18n generate",
     "test": "d2-app-scripts test",
     "typecheck": "tsc --noEmit",
     "check:schema": "node scripts/check-schema-drift.mjs",
