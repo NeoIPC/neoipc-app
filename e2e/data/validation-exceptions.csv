@@ -1,0 +1,2 @@
+rule,orgUnit,period,reason
+NEOIPC_EXAMPLE_RULE,AT_TEST_TEST,2025,e2e CRUD stub — content is not parsed on upload

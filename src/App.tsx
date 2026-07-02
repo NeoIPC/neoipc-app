@@ -1,5 +1,11 @@
 import { useConfig, useDataQuery } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
+// Register the app's generated translation bundles into the shared i18n
+// instance. Without this side-effect import the bundles are never included in
+// the build, so `i18n.t` returns the key and the UI stays English regardless of
+// the user's DHIS2 locale.
+// eslint-disable-next-line import/order
+import './locales'
 import {
     Center,
     CircularLoader,

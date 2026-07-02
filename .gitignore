@@ -3,3 +3,10 @@ node_modules
 .d2
 src/locales
 build
+
+# Playwright e2e
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+e2e/.auth/

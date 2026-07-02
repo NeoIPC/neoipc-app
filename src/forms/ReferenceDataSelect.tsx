@@ -32,6 +32,9 @@ interface ReferenceDataSelectProps {
     /** Country code → display-name map (from `useOrgUnitNames`); the
      *  country facet and card show raw codes without it. */
     countryNames?: Record<string, string>
+    /** `data-test` for the main result select, so the e2e suite can target
+     *  it directly (mirrors the department picker's `data-test`). */
+    dataTest?: string
 }
 
 const unique = (values: string[]): string[] => [...new Set(values)]
@@ -60,6 +63,7 @@ const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
     disabled,
     approximate = false,
     countryNames,
+    dataTest,
 }) => {
     const [period, setPeriod] = useState('')
     const [country, setCountry] = useState('')
@@ -179,6 +183,7 @@ const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
 
             <SingleSelectField
                 label={label ?? i18n.t('Reference dataset')}
+                dataTest={dataTest}
                 helpText={helpText}
                 selected={value}
                 disabled={disabled}

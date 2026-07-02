@@ -182,6 +182,7 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                     datasets={referenceDataSets}
                     value={values.referenceDataId}
                     onChange={setField('referenceDataId')}
+                    dataTest="referenceDataId"
                     countryNames={countryNames}
                     helpText={
                         isAdmin

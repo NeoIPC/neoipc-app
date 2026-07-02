@@ -1,0 +1,189 @@
+import fs from 'node:fs'
+import path from 'node:path'
+import type { APIRequestContext } from '@playwright/test'
+import { AUTH_DIR } from './users'
+
+/** App name from `d2.config.js`; installed custom apps are served here. */
+export const APP_NAME = 'neoipc-app'
+export const APP_INDEX = `/api/apps/${APP_NAME}/index.html`
+
+/** Build an in-app URL: the installed bundle plus a HashRouter route. */
+export const appUrl = (hashRoute: string): string => `${APP_INDEX}#${hashRoute}`
+
+/** NeoIPC-Reporting mount (see `src/config/dhis2Constants.ts` `NEOIPC_REPORTING_BASE`). */
+export const NEOIPC_BASE = '/neoipc/api'
+
+/** Committed fixtures under `e2e/data/` (see `e2e/data/README.md`). */
+export const DATA_DIR = path.join(__dirname, 'data')
+export const REFERENCE_DATA_FIXTURE = path.join(DATA_DIR, 'reference-data.json')
+export const PARTNER_DATA_FIXTURE = path.join(DATA_DIR, 'partner-data.json')
+export const VALIDATION_EXCEPTIONS_FIXTURE = path.join(
+    DATA_DIR,
+    'validation-exceptions.csv'
+)
+
+/**
+ * True if a fixture is still the committed placeholder rather than a real
+ * captured dataset. The reference/partner data files must be captured from a
+ * seeded stack (their upload derives metadata from the content), so the specs
+ * that consume them skip until a real fixture is dropped in — see
+ * `e2e/data/README.md`.
+ */
+export function isPlaceholderFixture(filePath: string): boolean {
+    try {
+        return fs.readFileSync(filePath, 'utf8').includes('__placeholder__')
+    } catch {
+        return true
+    }
+}
+
+const STATE_FILE = path.join(AUTH_DIR, 'state.json')
+
+/** Cross-run state written by global setup and read by the specs. */
+export interface E2EState {
+    /**
+     * The reference dataset uploaded in global setup, for reference-report.spec.
+     * `null` when the `reference-data.json` fixture is still a placeholder.
+     */
+    referenceFixture: { id: string; displayName: string } | null
+    /** displayName of each seeded department, by org-unit code (for the picker spec). */
+    orgUnitDisplayNames: Record<string, string>
+}
+
+export const writeState = (state: E2EState): void => {
+    fs.mkdirSync(AUTH_DIR, { recursive: true })
+    fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2))
+}
+
+export const readState = (): E2EState =>
+    JSON.parse(fs.readFileSync(STATE_FILE, 'utf8')) as E2EState
+
+const ensureOk = async (
+    res: { ok(): boolean; status(): number; text(): Promise<string> },
+    what: string
+): Promise<void> => {
+    if (!res.ok()) {
+        throw new Error(`${what} failed: HTTP ${res.status()} — ${await res.text()}`)
+    }
+}
+
+/**
+ * Install the built app bundle into DHIS2 (`POST /api/apps`, multipart field
+ * `file`), then assert it is served. Reuses the bundle the runner built — this
+ * does not re-run `yarn build`.
+ */
+export async function installApp(
+    ctx: APIRequestContext,
+    bundlePath: string
+): Promise<void> {
+    if (!fs.existsSync(bundlePath)) {
+        throw new Error(
+            `app bundle not found: ${bundlePath} — run 'yarn build' (or Invoke-PlaywrightTests.ps1 without -SkipAppBuild)`
+        )
+    }
+    const res = await ctx.post('/api/apps', {
+        multipart: {
+            file: {
+                name: path.basename(bundlePath),
+                mimeType: 'application/zip',
+                buffer: fs.readFileSync(bundlePath),
+            },
+        },
+    })
+    await ensureOk(res, 'app install (POST /api/apps)')
+    const served = await ctx.get(APP_INDEX)
+    await ensureOk(served, `app served (GET ${APP_INDEX})`)
+}
+
+/**
+ * Fail fast if the play seed is absent — the suite asserts the seed exists but
+ * does not create it (seeding stays in `Initialize-TestDhis2.ps1`).
+ */
+export async function assertSeeded(ctx: APIRequestContext): Promise<void> {
+    for (const code of ['AT_TEST_TEST', 'CH_TEST_TEST']) {
+        const res = await ctx.get('/api/organisationUnits', {
+            params: { filter: `code:eq:${code}`, fields: 'id' },
+        })
+        await ensureOk(res, `seed check (org unit ${code})`)
+        const body = (await res.json()) as { organisationUnits?: unknown[] }
+        if (!body.organisationUnits?.length) {
+            throw new Error(
+                `seed missing: no org unit with code ${code}. Seed the stack with Initialize-TestDhis2.ps1 first.`
+            )
+        }
+    }
+    for (const username of ['play.at.report1', 'play.ch.report1']) {
+        const res = await ctx.get('/api/users', {
+            params: { filter: `username:eq:${username}`, fields: 'id' },
+        })
+        await ensureOk(res, `seed check (user ${username})`)
+        const body = (await res.json()) as { users?: unknown[] }
+        if (!body.users?.length) {
+            throw new Error(
+                `seed missing: report user ${username} not found. Re-seed with the updated play package.`
+            )
+        }
+    }
+}
+
+/** Resolve an org unit's displayName by its code (metadata read; not a privacy boundary). */
+export async function orgUnitDisplayName(
+    ctx: APIRequestContext,
+    code: string
+): Promise<string> {
+    const res = await ctx.get('/api/organisationUnits', {
+        params: { filter: `code:eq:${code}`, fields: 'displayName' },
+    })
+    await ensureOk(res, `org unit lookup (${code})`)
+    const body = (await res.json()) as {
+        organisationUnits?: { displayName: string }[]
+    }
+    const displayName = body.organisationUnits?.[0]?.displayName
+    if (!displayName) throw new Error(`org unit not found by code: ${code}`)
+    return displayName
+}
+
+/** Upload a reference dataset via the admin endpoint; returns its stored id. */
+export async function uploadReferenceData(
+    ctx: APIRequestContext,
+    displayName: string,
+    body: Buffer
+): Promise<string> {
+    const res = await ctx.post(`${NEOIPC_BASE}/admin/reference-data`, {
+        params: { displayName },
+        headers: { 'Content-Type': 'application/json' },
+        data: body,
+    })
+    if (res.status() !== 201) {
+        throw new Error(
+            `reference-data upload failed: HTTP ${res.status()} — ${await res.text()}`
+        )
+    }
+    const meta = (await res.json()) as { id: string }
+    return meta.id
+}
+
+/** Delete a reference dataset by id (best-effort teardown). */
+export async function deleteReferenceData(
+    ctx: APIRequestContext,
+    id: string
+): Promise<void> {
+    await ctx.delete(`${NEOIPC_BASE}/admin/reference-data/${encodeURIComponent(id)}`)
+}
+
+/** Set the current user's DHIS2 UI locale (`POST /api/userSettings/keyUiLocale?value=`). */
+export async function setUiLocale(
+    ctx: APIRequestContext,
+    locale: string
+): Promise<void> {
+    const res = await ctx.post('/api/userSettings/keyUiLocale', {
+        params: { value: locale },
+    })
+    await ensureOk(res, `set keyUiLocale=${locale}`)
+}
+
+/** Clear the current user's DHIS2 UI locale, restoring the instance default. */
+export async function clearUiLocale(ctx: APIRequestContext): Promise<void> {
+    const res = await ctx.delete('/api/userSettings/keyUiLocale')
+    await ensureOk(res, 'clear keyUiLocale')
+}
