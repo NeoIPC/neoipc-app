@@ -97,6 +97,28 @@ export async function setDataSource(
 }
 
 /**
+ * Set a `DateField` (which wraps `@dhis2/ui`'s `CalendarInput`) to an ISO
+ * `YYYY-MM-DD` date and commit it to form state.
+ *
+ * `CalendarInput` only calls `onDateSelect` — the callback that flows into the
+ * form via `DateField` — on blur, a calendar-cell pick, or Clear; typing (or a
+ * raw `fill()`) updates the widget's internal `partialDate` only. So the fill
+ * must be followed by a blur, or the form value stays empty and the period
+ * filter is silently dropped from the request. The blur also closes the calendar
+ * overlay (CalendarInput's own `setOpen(false)`), so each field commits
+ * independently without relying on the next field's focus.
+ */
+export async function setDateField(
+    page: Page,
+    name: string,
+    isoDate: string
+): Promise<void> {
+    const input = page.locator(`input[name="${name}"]`)
+    await input.fill(isoDate)
+    await input.blur()
+}
+
+/**
  * Open the department multiselect (`data-test="unitCodes"`) and select the
  * option carrying `deptDisplayName` (matched as a substring, since the option
  * label is "Hospital — Department" when `showParentInLabel` is set).

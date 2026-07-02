@@ -5,6 +5,7 @@ import {
     gotoApp,
     setDataSource,
     setOutputFormat,
+    setDateField,
     selectDepartment,
     clickGenerate,
     expectRenderedReport,
@@ -16,9 +17,11 @@ import {
  * inline Quarto fragment; PDF output triggers a blob download. Runs as the AT
  * report user against synthetic patients seeded into AT_TEST_TEST.
  *
- * The reporting period is deliberately wide so it overlaps the seeded events.
- * first-run: narrow it (and confirm the CalendarInput accepts a typed ISO date)
- * once the demo-data date range is known — see scripts/Build-Dhis2DemoData.ps1.
+ * The reporting period spans 2020–2030 so it overlaps the seeded events. Dates
+ * go through setDateField (fill + blur), since CalendarInput commits to form
+ * state only on blur; each spec asserts the render request URL carries the
+ * period, so a silently-dropped period filter fails the test rather than passing
+ * on the backend's default window.
  */
 test.describe('partner report — online mode', () => {
     test.use({ storageState: userByKey('atReport').storageState })
@@ -30,10 +33,21 @@ test.describe('partner report — online mode', () => {
         await gotoApp(page, '/reports/partner')
         await setDataSource(page, 'online')
         await selectDepartment(page, orgUnitDisplayNames.AT_TEST_TEST)
-        await page.locator('input[name="reportingPeriodFrom"]').fill('2020-01-01')
-        await page.locator('input[name="reportingPeriodTo"]').fill('2030-12-31')
+        await setDateField(page, 'reportingPeriodFrom', '2020-01-01')
+        await setDateField(page, 'reportingPeriodTo', '2030-12-31')
         await setOutputFormat(page, 'html')
+
+        // The period must reach the backend: it is appended to the query string
+        // only when non-empty (buildPartnerReportQuery), so a value that never
+        // committed to form state disappears from the request entirely.
+        const renderRequest = page.waitForRequest(
+            (req) =>
+                req.url().includes('/partner-report') && req.method() === 'GET'
+        )
         await clickGenerate(page)
+        const request = await renderRequest
+        expect(request.url()).toContain('reportingPeriodFrom=2020-01-01')
+        expect(request.url()).toContain('reportingPeriodTo=2030-12-31')
 
         const report = await expectRenderedReport(page)
         await expect(report.locator('table').first()).toBeVisible()
@@ -44,11 +58,19 @@ test.describe('partner report — online mode', () => {
         await gotoApp(page, '/reports/partner')
         await setDataSource(page, 'online')
         await selectDepartment(page, orgUnitDisplayNames.AT_TEST_TEST)
-        await page.locator('input[name="reportingPeriodFrom"]').fill('2020-01-01')
-        await page.locator('input[name="reportingPeriodTo"]').fill('2030-12-31')
+        await setDateField(page, 'reportingPeriodFrom', '2020-01-01')
+        await setDateField(page, 'reportingPeriodTo', '2030-12-31')
         await setOutputFormat(page, 'pdf')
 
+        // Same period round-trip guarantee as the HTML spec (see there).
+        const renderRequest = page.waitForRequest(
+            (req) =>
+                req.url().includes('/partner-report') && req.method() === 'GET'
+        )
         const download = await expectPdfDownload(page, () => clickGenerate(page))
+        const request = await renderRequest
+        expect(request.url()).toContain('reportingPeriodFrom=2020-01-01')
+        expect(request.url()).toContain('reportingPeriodTo=2030-12-31')
         // Backend Content-Disposition: NeoIPC-Surveillance-<report>_<yyyy-MM-dd_HH-mm-ss>.pdf
         // (ExternalProcessReportProducer.GetFileDownloadName) — not the app's fallback name.
         expect(download.suggestedFilename()).toMatch(
