@@ -28,6 +28,26 @@ import {
  */
 async function globalSetup(): Promise<void> {
     const baseURL = process.env.DHIS2_BASE_URL ?? 'http://localhost:8080'
+
+    // Safety gate: the suite mutates DHIS2 state (installs the app bundle,
+    // uploads/deletes reference data, CRUDs the validation-exceptions singleton)
+    // with default synthetic/demo credentials. Refuse a non-local target unless
+    // explicitly opted in, so an errant DHIS2_BASE_URL can't drive destructive
+    // setup against a shared or production stack.
+    const { hostname } = new URL(baseURL)
+    const isLocal =
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '::1' ||
+        hostname === '[::1]'
+    if (!isLocal && process.env.E2E_ALLOW_NONLOCAL !== 'true') {
+        throw new Error(
+            `Refusing to run the e2e suite against non-local DHIS2_BASE_URL ` +
+                `"${baseURL}": it mutates state with default synthetic ` +
+                `credentials. Set E2E_ALLOW_NONLOCAL=true to override.`
+        )
+    }
+
     const adminUser = process.env.DHIS2_ADMIN_USER ?? 'admin'
     const adminPass = process.env.DHIS2_ADMIN_PASS ?? 'district'
 

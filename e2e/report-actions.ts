@@ -122,9 +122,6 @@ export async function setDateField(
  * Open the department multiselect (`data-test="unitCodes"`) and select the
  * option carrying `deptDisplayName` (matched as a substring, since the option
  * label is "Hospital — Department" when `showParentInLabel` is set).
- *
- * first-run: the exact open/click gesture for the @dhis2/ui MultiSelect layer
- * may need adjustment against the running widget.
  */
 export async function selectDepartment(
     page: Page,
@@ -147,9 +144,6 @@ export async function clickGenerate(page: Page): Promise<void> {
  * Open the reference-dataset select (`data-test="referenceDataId"`) and pick
  * the option carrying `displayName` (its label is "displayName — period", so a
  * substring name match selects it).
- *
- * first-run: the open/click gesture for the @dhis2/ui SingleSelect layer may
- * need adjustment against the running widget.
  */
 export async function selectReferenceDataset(
     page: Page,

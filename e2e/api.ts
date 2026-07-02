@@ -184,5 +184,6 @@ export async function setUiLocale(
 
 /** Clear the current user's DHIS2 UI locale, restoring the instance default. */
 export async function clearUiLocale(ctx: APIRequestContext): Promise<void> {
-    await ctx.delete('/api/userSettings/keyUiLocale')
+    const res = await ctx.delete('/api/userSettings/keyUiLocale')
+    await ensureOk(res, 'clear keyUiLocale')
 }

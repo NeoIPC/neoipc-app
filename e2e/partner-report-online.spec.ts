@@ -39,13 +39,17 @@ test.describe('partner report — online mode', () => {
 
         // The period must reach the backend: it is appended to the query string
         // only when non-empty (buildPartnerReportQuery), so a value that never
-        // committed to form state disappears from the request entirely.
-        const renderRequest = page.waitForRequest(
-            (req) =>
-                req.url().includes('/partner-report') && req.method() === 'GET'
-        )
-        await clickGenerate(page)
-        const request = await renderRequest
+        // committed to form state disappears from the request entirely. Observe
+        // the request and the click together so neither promise is left unobserved
+        // if the other rejects.
+        const [request] = await Promise.all([
+            page.waitForRequest(
+                (req) =>
+                    req.url().includes('/partner-report') &&
+                    req.method() === 'GET'
+            ),
+            clickGenerate(page),
+        ])
         expect(request.url()).toContain('reportingPeriodFrom=2020-01-01')
         expect(request.url()).toContain('reportingPeriodTo=2030-12-31')
 
@@ -62,13 +66,17 @@ test.describe('partner report — online mode', () => {
         await setDateField(page, 'reportingPeriodTo', '2030-12-31')
         await setOutputFormat(page, 'pdf')
 
-        // Same period round-trip guarantee as the HTML spec (see there).
-        const renderRequest = page.waitForRequest(
-            (req) =>
-                req.url().includes('/partner-report') && req.method() === 'GET'
-        )
-        const download = await expectPdfDownload(page, () => clickGenerate(page))
-        const request = await renderRequest
+        // Same period round-trip guarantee as the HTML spec (see there). Await the
+        // request and the download together so a failure in one doesn't leave the
+        // other's promise unobserved (an unhandled rejection after the test ends).
+        const [request, download] = await Promise.all([
+            page.waitForRequest(
+                (req) =>
+                    req.url().includes('/partner-report') &&
+                    req.method() === 'GET'
+            ),
+            expectPdfDownload(page, () => clickGenerate(page)),
+        ])
         expect(request.url()).toContain('reportingPeriodFrom=2020-01-01')
         expect(request.url()).toContain('reportingPeriodTo=2030-12-31')
         // Backend Content-Disposition: NeoIPC-Surveillance-<report>_<yyyy-MM-dd_HH-mm-ss>.pdf

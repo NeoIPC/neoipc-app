@@ -74,11 +74,11 @@ placeholders and their dependent specs skip until real captures are dropped in.
 ## First-run notes
 
 These are the points most likely to need a small adjustment on the first live
-run (marked `first-run` in the code):
+run:
 
 - `@dhis2/ui` radio/multiselect gestures — `setDataSource`/`setOutputFormat`
   use `input.check()`; the department and dataset dropdown open/click may need
   tuning against the running widgets.
-- The Partner Report reporting period uses a wide range typed into the
-  `CalendarInput`; confirm it accepts a typed ISO date and overlaps the seeded
-  demo-data date range.
+- The Partner Report reporting period uses a wide range set via `setDateField`
+  (fill + blur, since `CalendarInput` commits to form state on blur); the range
+  may want narrowing once the seeded demo-data date range is known.

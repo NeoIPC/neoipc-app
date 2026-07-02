@@ -12,7 +12,13 @@ import { dhis2FormLogin } from './dhis2-login'
 for (const user of USERS) {
     setup(`authenticate ${user.username}`, async ({ playwright, baseURL }) => {
         fs.mkdirSync(AUTH_DIR, { recursive: true })
-        const ctx = await playwright.request.newContext({ baseURL })
+        // ignoreHTTPSErrors mirrors the project `use` (which a manually-created
+        // request context does not inherit): local DHIS2 stacks commonly serve a
+        // self-signed cert on https, so form-login here must tolerate it too.
+        const ctx = await playwright.request.newContext({
+            baseURL,
+            ignoreHTTPSErrors: true,
+        })
         try {
             await dhis2FormLogin(ctx, user.username, PLAY_USER_PASSWORD)
             await ctx.storageState({ path: user.storageState })
