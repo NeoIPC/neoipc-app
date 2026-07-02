@@ -1,0 +1,71 @@
+import { defineConfig, devices } from '@playwright/test'
+
+/**
+ * Playwright configuration for the neoipc-app end-to-end (e2e) suite.
+ *
+ * The suite runs against an **installed** app bundle served from the
+ * DHIS2/nginx origin (production fidelity — not the `yarn start:dev`
+ * proxy). Point it at a stack with `DHIS2_BASE_URL`; it defaults to the
+ * local integration stack on port 8080.
+ */
+const baseURL = process.env.DHIS2_BASE_URL ?? 'http://localhost:8080'
+
+/**
+ * Single source of truth for the browser engines under test — the three
+ * independent engine cores (Blink / Gecko / WebKit). Adding or removing an
+ * engine is a one-token edit here; the `projects` below are derived from
+ * this list, so there are no copy-pasted per-engine blocks. Pick one with
+ * `--project=<name>` (surfaced as `Invoke-PlaywrightTests.ps1 -Project`).
+ *
+ * Residual gap: Playwright's `webkit` is the WebKit engine core run
+ * cross-platform, not shipping Safari.
+ */
+const ENGINES = ['chromium', 'firefox', 'webkit'] as const
+const DEVICE: Record<(typeof ENGINES)[number], string> = {
+    chromium: 'Desktop Chrome',
+    firefox: 'Desktop Firefox',
+    webkit: 'Desktop Safari',
+}
+
+export default defineConfig({
+    testDir: './e2e',
+    // The backend renders (Quarto/R via NeoIPC-Reporting) take up to ~10 min,
+    // so give each test generous headroom rather than the 30 s default.
+    timeout: 15 * 60 * 1000,
+    expect: { timeout: 30 * 1000 },
+    // One worker, no intra-file parallelism: every engine shares one DHIS2
+    // substrate and the singleton validation-exceptions resource, so admin
+    // CRUD is the binding constraint and tests must not race.
+    workers: 1,
+    fullyParallel: false,
+    forbidOnly: !!process.env.CI,
+    reporter: [['list'], ['html', { open: 'never' }]],
+    // One-time, engine-independent setup: install the app bundle, assert the
+    // seed is present, upload the reference-dataset fixture (teardown deletes
+    // it). Per-user login → storageState is the `setup` project below.
+    globalSetup: './e2e/global-setup.ts',
+    globalTeardown: './e2e/global-teardown.ts',
+    use: {
+        baseURL,
+        // Pin the browser locale so report renders are deterministic. The report
+        // form's locale field defaults to blank, so the app sends no ?locale and
+        // NeoIPC-Reporting falls back to Accept-Language — which otherwise follows
+        // the runner's machine locale and can render a different (possibly
+        // incomplete) language than intended. en-GB is a served report locale.
+        locale: 'en-GB',
+        trace: 'retain-on-failure',
+        video: 'retain-on-failure',
+        // Local DHIS2 dev stacks commonly serve a self-signed cert on https.
+        ignoreHTTPSErrors: true,
+    },
+    projects: [
+        // Mints a per-user JSESSIONID session via DHIS2 form-login and saves
+        // it as storageState; every engine project depends on it.
+        { name: 'setup', testMatch: /auth\.setup\.ts/ },
+        ...ENGINES.map((name) => ({
+            name,
+            use: { ...devices[DEVICE[name]] },
+            dependencies: ['setup'],
+        })),
+    ],
+})

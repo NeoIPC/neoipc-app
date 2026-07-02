@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-06-15T09:16:58.658Z\n"
-"PO-Revision-Date: 2026-06-15T09:16:58.658Z\n"
+"POT-Creation-Date: 2026-07-01T10:40:21.859Z\n"
+"PO-Revision-Date: 2026-07-01T10:40:21.860Z\n"
 
 msgid "Upload"
 msgstr "Upload"
@@ -425,3 +425,27 @@ msgstr "Report rendering failed"
 
 msgid "No NeoIPC access"
 msgstr "No NeoIPC access"
+
+msgctxt "Application title"
+msgid "__MANIFEST_APP_TITLE"
+msgstr "NeoIPC"
+
+msgctxt "Application description"
+msgid "__MANIFEST_APP_DESCRIPTION"
+msgstr "NeoIPC report generation and administration"
+
+msgctxt "Title for shortcut used by command palette"
+msgid "__MANIFEST_SHORTCUT_Partner Report"
+msgstr "Partner Report"
+
+msgctxt "Title for shortcut used by command palette"
+msgid "__MANIFEST_SHORTCUT_Reference Report"
+msgstr "Reference Report"
+
+msgctxt "Title for shortcut used by command palette"
+msgid "__MANIFEST_SHORTCUT_Reference data"
+msgstr "Reference data"
+
+msgctxt "Title for shortcut used by command palette"
+msgid "__MANIFEST_SHORTCUT_Validation exceptions"
+msgstr "Validation exceptions"
