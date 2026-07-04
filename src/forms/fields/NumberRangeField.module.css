@@ -1,0 +1,7 @@
+/* Lay the From/To inputs of a numeric range side by side instead of stacked. */
+.pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacers-dp16);
+    align-items: start;
+}

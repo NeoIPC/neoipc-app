@@ -1,6 +1,7 @@
 import i18n from '@dhis2/d2-i18n'
 import { Field, FieldGroup, InputField } from '@dhis2/ui'
 import React, { FC } from 'react'
+import styles from './NumberRangeField.module.css'
 
 interface NumberRangeFieldProps {
     name: string
@@ -41,32 +42,34 @@ const NumberRangeField: FC<NumberRangeFieldProps> = ({
     disabled,
 }) => (
     <FieldGroup label={label} helpText={helpText} name={name}>
-        <Field label={i18n.t('From')} name={`${name}-from`}>
-            <InputField
-                type="number"
-                name={`${name}-from`}
-                value={fromValue === null ? '' : String(fromValue)}
-                onChange={(payload) =>
-                    onFromChange(parseValue(payload.value ?? ''))
-                }
-                min={min === undefined ? undefined : String(min)}
-                max={max === undefined ? undefined : String(max)}
-                disabled={disabled}
-            />
-        </Field>
-        <Field label={i18n.t('To')} name={`${name}-to`}>
-            <InputField
-                type="number"
-                name={`${name}-to`}
-                value={toValue === null ? '' : String(toValue)}
-                onChange={(payload) =>
-                    onToChange(parseValue(payload.value ?? ''))
-                }
-                min={min === undefined ? undefined : String(min)}
-                max={max === undefined ? undefined : String(max)}
-                disabled={disabled}
-            />
-        </Field>
+        <div className={styles.pair}>
+            <Field label={i18n.t('From')} name={`${name}-from`}>
+                <InputField
+                    type="number"
+                    name={`${name}-from`}
+                    value={fromValue === null ? '' : String(fromValue)}
+                    onChange={(payload) =>
+                        onFromChange(parseValue(payload.value ?? ''))
+                    }
+                    min={min === undefined ? undefined : String(min)}
+                    max={max === undefined ? undefined : String(max)}
+                    disabled={disabled}
+                />
+            </Field>
+            <Field label={i18n.t('To')} name={`${name}-to`}>
+                <InputField
+                    type="number"
+                    name={`${name}-to`}
+                    value={toValue === null ? '' : String(toValue)}
+                    onChange={(payload) =>
+                        onToChange(parseValue(payload.value ?? ''))
+                    }
+                    min={min === undefined ? undefined : String(min)}
+                    max={max === undefined ? undefined : String(max)}
+                    disabled={disabled}
+                />
+            </Field>
+        </div>
     </FieldGroup>
 )
 

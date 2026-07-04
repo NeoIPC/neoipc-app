@@ -104,7 +104,12 @@ const App: FC = () => {
                         referenceDataSets,
                     }}
                 >
-                    <HashRouter>
+                    <HashRouter
+                        future={{
+                            v7_startTransition: true,
+                            v7_relativeSplatPath: true,
+                        }}
+                    >
                         <AppShell />
                     </HashRouter>
                 </AppContextProvider>

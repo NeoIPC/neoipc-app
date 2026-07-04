@@ -2,6 +2,7 @@ import { Center, CircularLoader } from '@dhis2/ui'
 import React, { FC, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import type { MenuCategory } from '../menu/categories'
+import styles from './ContentArea.module.css'
 
 interface ContentAreaProps {
     visibleCategories: MenuCategory[]
@@ -24,15 +25,17 @@ const ContentArea: FC<ContentAreaProps> = ({ visibleCategories }) => {
                 </Center>
             }
         >
-            <Routes>
-                {visibleCategories.map(({ id, Page }) => (
-                    <Route key={id} path={id} element={<Page />} />
-                ))}
-                <Route
-                    path="*"
-                    element={<Navigate to={`/${fallbackId}`} replace />}
-                />
-            </Routes>
+            <div className={styles.page}>
+                <Routes>
+                    {visibleCategories.map(({ id, Page }) => (
+                        <Route key={id} path={id} element={<Page />} />
+                    ))}
+                    <Route
+                        path="*"
+                        element={<Navigate to={`/${fallbackId}`} replace />}
+                    />
+                </Routes>
+            </div>
         </Suspense>
     )
 }

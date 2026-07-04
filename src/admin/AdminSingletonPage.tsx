@@ -156,6 +156,7 @@ function AdminSingletonPage<T extends AdminResourceMetadata>({
                     />
                     <FileInput
                         name="file"
+                        buttonLabel={i18n.t('Choose file')}
                         accept={resource.accept}
                         onChange={({ files }) => setFile(files?.[0] ?? null)}
                         disabled={uploading}

@@ -42,6 +42,7 @@ import {
     includeElementKeys,
     includeElementLabel,
 } from './enums'
+import styles from './PartnerReportForm.module.css'
 
 type PartnerReportMode = 'online' | 'dataFile'
 
@@ -228,6 +229,7 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
 
     return (
         <form
+            className={styles.form}
             onSubmit={(event) => {
                 event.preventDefault()
                 onSubmit?.(values)
@@ -270,6 +272,7 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                     {values.mode === 'dataFile' && (
                         <FileInput
                             name="dataFile"
+                            buttonLabel={i18n.t('Choose file')}
                             accept="application/json"
                             onChange={({ files }) =>
                                 setField('dataFile')(files?.[0] ?? null)
@@ -300,42 +303,46 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
 
             <Card>
                 <h2>{i18n.t('Reporting period')}</h2>
-                <DateField
-                    name="reportingPeriodFrom"
-                    label={i18n.t('From')}
-                    value={values.reportingPeriodFrom}
-                    onChange={setField('reportingPeriodFrom')}
-                />
-                <DateField
-                    name="reportingPeriodTo"
-                    label={i18n.t('To')}
-                    value={values.reportingPeriodTo}
-                    onChange={setField('reportingPeriodTo')}
-                />
+                <div className={styles.rowTwo}>
+                    <DateField
+                        name="reportingPeriodFrom"
+                        label={i18n.t('From')}
+                        value={values.reportingPeriodFrom}
+                        onChange={setField('reportingPeriodFrom')}
+                    />
+                    <DateField
+                        name="reportingPeriodTo"
+                        label={i18n.t('To')}
+                        value={values.reportingPeriodTo}
+                        onChange={setField('reportingPeriodTo')}
+                    />
+                </div>
             </Card>
 
             <CollapsibleSection title={i18n.t('More options')}>
                 <h3>{i18n.t('Patient population filters')}</h3>
-                <NumberRangeField
-                    name="birthWeight"
-                    label={i18n.t('Birth weight (g)')}
-                    fromValue={values.birthWeightFrom}
-                    toValue={values.birthWeightTo}
-                    onFromChange={setField('birthWeightFrom')}
-                    onToChange={setField('birthWeightTo')}
-                    min={0}
-                    max={65535}
-                />
-                <NumberRangeField
-                    name="gestationalAge"
-                    label={i18n.t('Gestational age (weeks)')}
-                    fromValue={values.gestationalAgeFrom}
-                    toValue={values.gestationalAgeTo}
-                    onFromChange={setField('gestationalAgeFrom')}
-                    onToChange={setField('gestationalAgeTo')}
-                    min={0}
-                    max={52}
-                />
+                <div className={styles.rowTwo}>
+                    <NumberRangeField
+                        name="birthWeight"
+                        label={i18n.t('Birth weight (g)')}
+                        fromValue={values.birthWeightFrom}
+                        toValue={values.birthWeightTo}
+                        onFromChange={setField('birthWeightFrom')}
+                        onToChange={setField('birthWeightTo')}
+                        min={0}
+                        max={65535}
+                    />
+                    <NumberRangeField
+                        name="gestationalAge"
+                        label={i18n.t('Gestational age (weeks)')}
+                        fromValue={values.gestationalAgeFrom}
+                        toValue={values.gestationalAgeTo}
+                        onFromChange={setField('gestationalAgeFrom')}
+                        onToChange={setField('gestationalAgeTo')}
+                        min={0}
+                        max={52}
+                    />
+                </div>
                 {values.mode === 'online' && showNonCorePatients && (
                     <CheckboxField
                         name="includeNonCorePatients"
@@ -406,16 +413,18 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                     value={preset}
                     onChange={applyPreset}
                 />
-                {includeElementKeys.map((key) => (
-                    <CheckboxField
-                        key={key}
-                        name={key}
-                        label={includeElementLabel(key)}
-                        checked={values[key]}
-                        disabled={presetLocked}
-                        onChange={({ checked }) => setField(key)(checked)}
-                    />
-                ))}
+                <div className={styles.checkboxGrid}>
+                    {includeElementKeys.map((key) => (
+                        <CheckboxField
+                            key={key}
+                            name={key}
+                            label={includeElementLabel(key)}
+                            checked={values[key]}
+                            disabled={presetLocked}
+                            onChange={({ checked }) => setField(key)(checked)}
+                        />
+                    ))}
+                </div>
                 <SingleSelectField
                     label={i18n.t('Confidence intervals')}
                     helpText={i18n.t('Backend default if unset.')}
@@ -483,7 +492,7 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
             </CollapsibleSection>
 
             {isAdmin && (
-                <CollapsibleSection title={i18n.t('Advanced')}>
+                <CollapsibleSection title={i18n.t('Advanced (admins only)')}>
                     {values.mode === 'online' && (
                         <CheckboxField
                             name="includeTestData"

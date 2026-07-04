@@ -1,0 +1,34 @@
+/*
+ * Layout for the Partner Report form. The form is an *input* surface, so it
+ * gets its own bounded, multi-column layout — deliberately independent of the
+ * (separate, full-width) rendered-report pane, which the report page mounts as
+ * a sibling. Capping the form here does not touch the report output.
+ */
+.form {
+    max-width: 960px;
+}
+
+/*
+ * Two equal columns for naturally-paired fields (From/To ranges, related
+ * groups). Collapses to a single column when the viewport is too narrow to
+ * keep both readable.
+ */
+.rowTwo {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacers-dp16);
+    align-items: start;
+}
+
+/* Flow the many boolean content toggles into as many columns as fit. */
+.checkboxGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--spacers-dp8) var(--spacers-dp24);
+}
+
+@media (max-width: 640px) {
+    .rowTwo {
+        grid-template-columns: 1fr;
+    }
+}

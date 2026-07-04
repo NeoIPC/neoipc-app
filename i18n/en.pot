@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-07-01T10:40:21.859Z\n"
-"PO-Revision-Date: 2026-07-01T10:40:21.860Z\n"
+"POT-Creation-Date: 2026-07-04T20:28:03.052Z\n"
+"PO-Revision-Date: 2026-07-04T20:28:03.052Z\n"
 
 msgid "Upload"
 msgstr "Upload"
@@ -19,6 +19,9 @@ msgstr "Display name"
 
 msgid "Optional; blank uses a timestamp-based default."
 msgstr "Optional; blank uses a timestamp-based default."
+
+msgid "Choose file"
+msgstr "Choose file"
 
 msgid "Failed to load list"
 msgstr "Failed to load list"
@@ -271,8 +274,8 @@ msgstr "Leave blank to use the locale from your DHIS2 user setting."
 msgid "(use DHIS2 user setting)"
 msgstr "(use DHIS2 user setting)"
 
-msgid "Advanced"
-msgstr "Advanced"
+msgid "Advanced (admins only)"
+msgstr "Advanced (admins only)"
 
 msgid "Include test data"
 msgstr "Include test data"
@@ -425,6 +428,9 @@ msgstr "Report rendering failed"
 
 msgid "No NeoIPC access"
 msgstr "No NeoIPC access"
+
+msgid "Open navigation menu"
+msgstr "Open navigation menu"
 
 msgctxt "Application title"
 msgid "__MANIFEST_APP_TITLE"

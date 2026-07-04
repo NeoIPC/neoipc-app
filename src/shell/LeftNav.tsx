@@ -5,6 +5,8 @@ import type { MenuCategory } from '../menu/categories'
 
 interface LeftNavProps {
     categories: MenuCategory[]
+    /** Called after a category is selected — used to close the mobile drawer. */
+    onNavigate?: () => void
 }
 
 /**
@@ -16,7 +18,7 @@ interface LeftNavProps {
  * anchor) so HashRouter resolves the segment via React Router instead
  * of relying on the browser's hashchange event.
  */
-const LeftNav: FC<LeftNavProps> = ({ categories }) => {
+const LeftNav: FC<LeftNavProps> = ({ categories, onNavigate }) => {
     const location = useLocation()
     const navigate = useNavigate()
     const currentSegment = location.pathname.replace(/^\//, '')
@@ -29,7 +31,10 @@ const LeftNav: FC<LeftNavProps> = ({ categories }) => {
                     label={category.label()}
                     icon={category.icon}
                     active={currentSegment === category.id}
-                    onClick={() => navigate(`/${category.id}`)}
+                    onClick={() => {
+                        navigate(`/${category.id}`)
+                        onNavigate?.()
+                    }}
                 />
             ))}
         </Menu>
