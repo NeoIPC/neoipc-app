@@ -143,12 +143,15 @@ export async function clickGenerate(page: Page): Promise<void> {
 /**
  * Open the reference-dataset select (`data-test="referenceDataId"`) and pick
  * the option carrying `displayName` (its label is "displayName — period", so a
- * substring name match selects it).
+ * substring text match selects it). `@dhis2/ui`'s `SingleSelectOption` renders
+ * as a plain `<div>`, not an ARIA `option`, so the option must be matched by
+ * text — the same way the department multiselect is picked — rather than with
+ * `getByRole('option')`, which never resolves against these options.
  */
 export async function selectReferenceDataset(
     page: Page,
     displayName: string
 ): Promise<void> {
     await page.locator('[data-test="referenceDataId"]').click()
-    await page.getByRole('option', { name: displayName }).click()
+    await page.getByText(displayName, { exact: false }).first().click()
 }

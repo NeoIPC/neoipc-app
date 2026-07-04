@@ -76,7 +76,7 @@ async function globalSetup(): Promise<void> {
 
         // Upload the reference-dataset fixture unless it is still a placeholder
         // (real datasets must be captured from a seeded stack — see
-        // e2e/data/README.md); reference-report.spec skips when it is absent. A
+        // e2e/fixtures/README.md); reference-report.spec skips when it is absent. A
         // per-run displayName keeps parallel/repeat runs from colliding.
         let referenceFixture: E2EState['referenceFixture'] = null
         if (!isPlaceholderFixture(REFERENCE_DATA_FIXTURE)) {

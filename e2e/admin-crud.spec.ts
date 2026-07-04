@@ -23,7 +23,7 @@ test.describe('admin CRUD', () => {
     }) => {
         test.skip(
             isPlaceholderFixture(REFERENCE_DATA_FIXTURE),
-            'needs a real reference-data.json fixture — see e2e/data/README.md'
+            'needs a real reference-data.json fixture — see e2e/fixtures/README.md'
         )
         const displayName = `e2e-refdata-${Date.now().toString(36)}`
         await gotoApp(page, '/admin/reference-data')

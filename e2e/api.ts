@@ -13,12 +13,12 @@ export const appUrl = (hashRoute: string): string => `${APP_INDEX}#${hashRoute}`
 /** NeoIPC-Reporting mount (see `src/config/dhis2Constants.ts` `NEOIPC_REPORTING_BASE`). */
 export const NEOIPC_BASE = '/neoipc/api'
 
-/** Committed fixtures under `e2e/data/` (see `e2e/data/README.md`). */
-export const DATA_DIR = path.join(__dirname, 'data')
-export const REFERENCE_DATA_FIXTURE = path.join(DATA_DIR, 'reference-data.json')
-export const PARTNER_DATA_FIXTURE = path.join(DATA_DIR, 'partner-data.json')
+/** Committed fixtures under `e2e/fixtures/` (see `e2e/fixtures/README.md`). */
+export const FIXTURES_DIR = path.join(__dirname, 'fixtures')
+export const REFERENCE_DATA_FIXTURE = path.join(FIXTURES_DIR, 'reference-data.json')
+export const PARTNER_DATA_FIXTURE = path.join(FIXTURES_DIR, 'partner-data.json')
 export const VALIDATION_EXCEPTIONS_FIXTURE = path.join(
-    DATA_DIR,
+    FIXTURES_DIR,
     'validation-exceptions.csv'
 )
 
@@ -27,7 +27,7 @@ export const VALIDATION_EXCEPTIONS_FIXTURE = path.join(
  * captured dataset. The reference/partner data files must be captured from a
  * seeded stack (their upload derives metadata from the content), so the specs
  * that consume them skip until a real fixture is dropped in — see
- * `e2e/data/README.md`.
+ * `e2e/fixtures/README.md`.
  */
 export function isPlaceholderFixture(filePath: string): boolean {
     try {
