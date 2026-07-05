@@ -113,3 +113,26 @@ export const ancestorCountryCodesForSelection = (
     }
     return [...countries]
 }
+
+/**
+ * The set of pickable `code`s in `rows`: those with a non-empty code that do
+ * not belong to any group in `excludeGroupCodes`. `OrganisationUnitMultiSelect`
+ * shares one call across the option list, the crash-guard on `selected`, and
+ * the selection reconciliation, so all three agree on exactly what is
+ * currently pickable.
+ */
+export const pickableCodeSet = (
+    rows: OrgUnitRow[],
+    excludeGroupCodes: readonly string[]
+): Set<string> => {
+    const excluded = new Set(excludeGroupCodes)
+    const codes = new Set<string>()
+    for (const row of rows) {
+        if (row.code === null || row.code === '') continue
+        const inExcluded = (row.organisationUnitGroups ?? []).some(
+            (group) => group.code !== null && excluded.has(group.code)
+        )
+        if (!inExcluded) codes.add(row.code)
+    }
+    return codes
+}

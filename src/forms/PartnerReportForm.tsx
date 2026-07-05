@@ -3,6 +3,7 @@ import {
     Button,
     Card,
     CheckboxField,
+    Field,
     FileInput,
     InputField,
     NoticeBox,
@@ -35,6 +36,7 @@ import ReferenceDataSelect from './ReferenceDataSelect'
 import { matchReferenceData, BenchmarkMatch } from './referenceDataMatch'
 import { governedKeys, resolvePresetValues } from './applyPreset'
 import { languageLabel } from './languageLabel'
+import { hasErrors, validatePartnerReport } from './reportValidation'
 import { useReportConfig } from './useReportConfig'
 import {
     ConfidenceIntervalMode,
@@ -43,7 +45,7 @@ import {
     includeElementKeys,
     includeElementLabel,
 } from './enums'
-import styles from './PartnerReportForm.module.css'
+import styles from './formLayout.module.css'
 
 type PartnerReportMode = 'online' | 'dataFile'
 
@@ -154,6 +156,13 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
     // membership (the non-core-patients gate) without a second query.
     const [deptRows, setDeptRows] = useState<OrgUnitRow[]>([])
     const [autoMatch, setAutoMatch] = useState<BenchmarkMatch | null>(null)
+    // Client-side preconditions are only surfaced after the first Generate
+    // attempt, then re-evaluated live as the user fixes each field.
+    const [submitAttempted, setSubmitAttempted] = useState(false)
+    const errors = useMemo(
+        () => (submitAttempted ? validatePartnerReport(values) : {}),
+        [submitAttempted, values]
+    )
 
     const presetLocked = preset !== CUSTOM_PRESET
     // Only offer a language picker when there is a genuine choice. The
@@ -263,6 +272,8 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                     onToChange={setField('birthWeightTo')}
                     min={0}
                     max={65535}
+                    error={Boolean(errors.birthWeight)}
+                    validationText={errors.birthWeight}
                 />
                 <NumberRangeField
                     name="gestationalAge"
@@ -273,6 +284,8 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                     onToChange={setField('gestationalAgeTo')}
                     min={0}
                     max={52}
+                    error={Boolean(errors.gestationalAge)}
+                    validationText={errors.gestationalAge}
                 />
             </div>
             {showNonCorePatients && (
@@ -485,6 +498,8 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
         <form
             onSubmit={(event) => {
                 event.preventDefault()
+                setSubmitAttempted(true)
+                if (hasErrors(validatePartnerReport(values))) return
                 onSubmit?.(values)
             }}
         >
@@ -523,14 +538,20 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                         onChange={() => setField('mode')('dataFile')}
                     />
                     {values.mode === 'dataFile' && (
-                        <FileInput
+                        <Field
                             name="dataFile"
-                            buttonLabel={i18n.t('Choose file')}
-                            accept="application/json"
-                            onChange={({ files }) =>
-                                setField('dataFile')(files?.[0] ?? null)
-                            }
-                        />
+                            error={Boolean(errors.dataFile)}
+                            validationText={errors.dataFile}
+                        >
+                            <FileInput
+                                name="dataFile"
+                                buttonLabel={i18n.t('Choose file')}
+                                accept="application/json"
+                                onChange={({ files }) =>
+                                    setField('dataFile')(files?.[0] ?? null)
+                                }
+                            />
+                        </Field>
                     )}
                 </fieldset>
             </Card>
@@ -551,6 +572,8 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                         selectedCodes={values.unitCodes}
                         onChange={setField('unitCodes')}
                         onRowsLoaded={setDeptRows}
+                        error={Boolean(errors.unitCodes)}
+                        validationText={errors.unitCodes}
                     />
                 </Card>
             )}
@@ -564,19 +587,27 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                             label={i18n.t('From')}
                             value={values.reportingPeriodFrom}
                             onChange={setField('reportingPeriodFrom')}
+                            error={Boolean(errors.reportingPeriod)}
                         />
                         <DateField
                             name="reportingPeriodTo"
                             label={i18n.t('To')}
                             value={values.reportingPeriodTo}
                             onChange={setField('reportingPeriodTo')}
+                            error={Boolean(errors.reportingPeriod)}
+                            validationText={errors.reportingPeriod}
                         />
                     </div>
                 </Card>
             )}
 
             {values.mode === 'online' ? (
-                <CollapsibleSection title={i18n.t('More options')}>
+                <CollapsibleSection
+                    title={i18n.t('More options')}
+                    forceOpen={Boolean(
+                        errors.birthWeight || errors.gestationalAge
+                    )}
+                >
                     {patientPopulationFilters}
                     <h3>{i18n.t('Benchmark')}</h3>
                     {benchmarkFields(false)}
@@ -646,6 +677,19 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                         }
                     />
                 </CollapsibleSection>
+            )}
+
+            {submitAttempted && hasErrors(errors) && (
+                <NoticeBox
+                    error
+                    title={i18n.t('Please correct the highlighted fields')}
+                >
+                    <ul>
+                        {Object.entries(errors).map(([field, message]) => (
+                            <li key={field}>{message}</li>
+                        ))}
+                    </ul>
+                </NoticeBox>
             )}
 
             <Button primary type="submit" disabled={submitting} loading={submitting}>

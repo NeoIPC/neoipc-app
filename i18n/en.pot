@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-07-05T07:13:50.339Z\n"
-"PO-Revision-Date: 2026-07-05T07:13:50.339Z\n"
+"POT-Creation-Date: 2026-07-05T13:52:11.475Z\n"
+"PO-Revision-Date: 2026-07-05T13:52:11.476Z\n"
 
 msgid "Upload"
 msgstr "Upload"
@@ -105,6 +105,55 @@ msgid ""
 msgstr ""
 "Operator-facing label. Partners reference this file by ID when generating a "
 "report."
+
+msgid "Select at least one department."
+msgstr "Select at least one department."
+
+msgid "Choose a data file to upload."
+msgstr "Choose a data file to upload."
+
+msgid "The selected confidence-interval option is not valid."
+msgstr "The selected confidence-interval option is not valid."
+
+msgid "The selected benchmark dataset is no longer available — choose another."
+msgstr "The selected benchmark dataset is no longer available — choose another."
+
+msgid "The selected report language is not available."
+msgstr "The selected report language is not available."
+
+msgid ""
+"A saved reference dataset and live-fetch filters cannot be combined — clear "
+"one of them."
+msgstr ""
+"A saved reference dataset and live-fetch filters cannot be combined — clear "
+"one of them."
+
+msgid "One of the values contains characters that are not allowed."
+msgstr "One of the values contains characters that are not allowed."
+
+msgid "The uploaded file is not a valid reference dataset."
+msgstr "The uploaded file is not a valid reference dataset."
+
+msgid "The uploaded file type is not supported."
+msgstr "The uploaded file type is not supported."
+
+msgid "The requested item no longer exists."
+msgstr "The requested item no longer exists."
+
+msgid "You do not have permission to perform this action."
+msgstr "You do not have permission to perform this action."
+
+msgid "The request was not valid."
+msgstr "The request was not valid."
+
+msgid "Something went wrong while generating the report. Please try again."
+msgstr "Something went wrong while generating the report. Please try again."
+
+msgid "The report is not available in the requested format or language."
+msgstr "The report is not available in the requested format or language."
+
+msgid "The request could not be completed."
+msgstr "The request could not be completed."
 
 msgid "Please select a data file before submitting."
 msgstr "Please select a data file before submitting."
@@ -292,6 +341,9 @@ msgstr "Sparse data threshold"
 msgid "Include outlier interpretation"
 msgstr "Include outlier interpretation"
 
+msgid "Please correct the highlighted fields"
+msgstr "Please correct the highlighted fields"
+
 msgid "Generate"
 msgstr "Generate"
 
@@ -390,8 +442,8 @@ msgstr "Reference dataset"
 msgid "(none)"
 msgstr "(none)"
 
-msgid "Live-fetch filters"
-msgstr "Live-fetch filters"
+msgid "Live-fetch filters (admins only)"
+msgstr "Live-fetch filters (admins only)"
 
 msgid "Disabled — a saved dataset is selected above."
 msgstr "Disabled — a saved dataset is selected above."
@@ -419,6 +471,12 @@ msgstr "Apply"
 
 msgid "Skip"
 msgstr "Skip"
+
+msgid "The \"from\" value must not exceed the \"to\" value."
+msgstr "The \"from\" value must not exceed the \"to\" value."
+
+msgid "The start date must not be after the end date."
+msgstr "The start date must not be after the end date."
 
 msgid "Partner Report"
 msgstr "Partner Report"

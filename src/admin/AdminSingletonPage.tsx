@@ -15,8 +15,9 @@ import {
     adminGetSingle,
     adminPutSingle,
 } from '../api/admin'
+import { enrichError } from '../api/problemDetails'
 import { AdminResourceType } from './AdminResourceType'
-import { enrichError, formatBytes, formatDate } from './adminFormat'
+import { formatBytes, formatDate } from './adminFormat'
 
 interface AdminSingletonPageProps<T extends AdminResourceMetadata> {
     resource: AdminResourceType<T>

@@ -4,6 +4,7 @@ import {
     Card,
     CheckboxField,
     InputField,
+    NoticeBox,
     Radio,
     SingleSelectField,
     SingleSelectOption,
@@ -21,6 +22,7 @@ import ReferenceDataSelect from './ReferenceDataSelect'
 import PresetSelect, { CUSTOM_PRESET } from './PresetSelect'
 import { governedKeys, resolvePresetValues } from './applyPreset'
 import { languageLabel } from './languageLabel'
+import { hasErrors, validateReferenceReport } from './reportValidation'
 import { useReportConfig } from './useReportConfig'
 import {
     ConfidenceIntervalMode,
@@ -29,6 +31,7 @@ import {
     includeElementKeys,
     includeElementLabel,
 } from './enums'
+import styles from './formLayout.module.css'
 
 /**
  * Mirrors the on-the-wire shape the Reference-Report endpoint
@@ -125,8 +128,19 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
         defaultValues
     )
     const [preset, setPreset] = useState<string>('default')
+    // Client-side preconditions are only surfaced after the first Generate
+    // attempt, then re-evaluated live as the user fixes each field.
+    const [submitAttempted, setSubmitAttempted] = useState(false)
+    const errors = useMemo(
+        () => (submitAttempted ? validateReferenceReport(values) : {}),
+        [submitAttempted, values]
+    )
 
     const presetLocked = preset !== CUSTOM_PRESET
+    // Only offer a language picker when the backend advertises more than one
+    // render-ready language; today English is the only one, so it stays hidden
+    // (mirrors the Partner Report form).
+    const hasLanguageChoice = (locales?.length ?? 0) > 1
 
     const setField = <K extends keyof ReferenceReportFormValues>(key: K) =>
         (value: ReferenceReportFormValues[K]) =>
@@ -153,6 +167,8 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
         <form
             onSubmit={(event) => {
                 event.preventDefault()
+                setSubmitAttempted(true)
+                if (hasErrors(validateReferenceReport(values))) return
                 onSubmit?.(values)
             }}
         >
@@ -200,7 +216,14 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
             </Card>
 
             {isAdmin && (
-                <CollapsibleSection title={i18n.t('Live-fetch filters')}>
+                <CollapsibleSection
+                    title={i18n.t('Live-fetch filters (admins only)')}
+                    forceOpen={Boolean(
+                        errors.reportingPeriod ||
+                            errors.birthWeight ||
+                            errors.gestationalAge
+                    )}
+                >
                     <p>
                         {usingSavedDataset
                             ? i18n.t(
@@ -267,20 +290,25 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                         <SingleSelectOption value="false" label={i18n.t('Skip')} />
                     </SingleSelectField>
                     <h3>{i18n.t('Reporting period')}</h3>
-                    <DateField
-                        name="reportingPeriodFrom"
-                        label={i18n.t('From')}
-                        value={values.reportingPeriodFrom}
-                        onChange={setField('reportingPeriodFrom')}
-                        disabled={usingSavedDataset}
-                    />
-                    <DateField
-                        name="reportingPeriodTo"
-                        label={i18n.t('To')}
-                        value={values.reportingPeriodTo}
-                        onChange={setField('reportingPeriodTo')}
-                        disabled={usingSavedDataset}
-                    />
+                    <div className={styles.rowTwo}>
+                        <DateField
+                            name="reportingPeriodFrom"
+                            label={i18n.t('From')}
+                            value={values.reportingPeriodFrom}
+                            onChange={setField('reportingPeriodFrom')}
+                            disabled={usingSavedDataset}
+                            error={Boolean(errors.reportingPeriod)}
+                        />
+                        <DateField
+                            name="reportingPeriodTo"
+                            label={i18n.t('To')}
+                            value={values.reportingPeriodTo}
+                            onChange={setField('reportingPeriodTo')}
+                            disabled={usingSavedDataset}
+                            error={Boolean(errors.reportingPeriod)}
+                            validationText={errors.reportingPeriod}
+                        />
+                    </div>
                     <h3>{i18n.t('Patient population filters')}</h3>
                     <NumberRangeField
                         name="birthWeight"
@@ -292,6 +320,8 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                         min={0}
                         max={65535}
                         disabled={usingSavedDataset}
+                        error={Boolean(errors.birthWeight)}
+                        validationText={errors.birthWeight}
                     />
                     <NumberRangeField
                         name="gestationalAge"
@@ -303,6 +333,8 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                         min={0}
                         max={52}
                         disabled={usingSavedDataset}
+                        error={Boolean(errors.gestationalAge)}
+                        validationText={errors.gestationalAge}
                     />
                     <InputField
                         label={i18n.t('Sparse data threshold')}
@@ -332,16 +364,18 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                     value={preset}
                     onChange={applyPreset}
                 />
-                {includeElementKeys.map((key) => (
-                    <CheckboxField
-                        key={key}
-                        name={key}
-                        label={includeElementLabel(key)}
-                        checked={values[key]}
-                        disabled={presetLocked}
-                        onChange={({ checked }) => setField(key)(checked)}
-                    />
-                ))}
+                <div className={styles.checkboxGrid}>
+                    {includeElementKeys.map((key) => (
+                        <CheckboxField
+                            key={key}
+                            name={key}
+                            label={includeElementLabel(key)}
+                            checked={values[key]}
+                            disabled={presetLocked}
+                            onChange={({ checked }) => setField(key)(checked)}
+                        />
+                    ))}
+                </div>
                 <SingleSelectField
                     label={i18n.t('Confidence intervals')}
                     helpText={i18n.t('Backend default if unset.')}
@@ -384,29 +418,53 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                     }
                 />
 
-                <h3>{i18n.t('Language')}</h3>
-                <SingleSelectField
-                    label={i18n.t('Report language')}
-                    helpText={i18n.t(
-                        'Leave blank to use the locale from your DHIS2 user setting.'
-                    )}
-                    selected={values.locale}
-                    loading={locales === null}
-                    onChange={({ selected }) => setField('locale')(selected ?? '')}
-                >
-                    <SingleSelectOption
-                        value=""
-                        label={i18n.t('(use DHIS2 user setting)')}
-                    />
-                    {(locales ?? []).map((loc) => (
-                        <SingleSelectOption
-                            key={loc}
-                            value={loc}
-                            label={languageLabel(loc)}
-                        />
-                    ))}
-                </SingleSelectField>
+                {hasLanguageChoice && (
+                    <>
+                        <h3>{i18n.t('Language')}</h3>
+                        <SingleSelectField
+                            label={i18n.t('Report language')}
+                            helpText={i18n.t(
+                                'Leave blank to use the locale from your DHIS2 user setting.'
+                            )}
+                            selected={
+                                values.locale === '' ||
+                                (locales ?? []).includes(values.locale)
+                                    ? values.locale
+                                    : undefined
+                            }
+                            loading={locales === null}
+                            onChange={({ selected }) =>
+                                setField('locale')(selected ?? '')
+                            }
+                        >
+                            <SingleSelectOption
+                                value=""
+                                label={i18n.t('(use DHIS2 user setting)')}
+                            />
+                            {(locales ?? []).map((loc) => (
+                                <SingleSelectOption
+                                    key={loc}
+                                    value={loc}
+                                    label={languageLabel(loc)}
+                                />
+                            ))}
+                        </SingleSelectField>
+                    </>
+                )}
             </CollapsibleSection>
+
+            {submitAttempted && hasErrors(errors) && (
+                <NoticeBox
+                    error
+                    title={i18n.t('Please correct the highlighted fields')}
+                >
+                    <ul>
+                        {Object.entries(errors).map(([field, message]) => (
+                            <li key={field}>{message}</li>
+                        ))}
+                    </ul>
+                </NoticeBox>
+            )}
 
             <Button
                 primary

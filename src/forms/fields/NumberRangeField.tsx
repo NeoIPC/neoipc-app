@@ -15,6 +15,10 @@ interface NumberRangeFieldProps {
     min?: number
     max?: number
     disabled?: boolean
+    /** Mark both inputs and the group message as invalid. */
+    error?: boolean
+    /** Validation message shown beneath the pair (with `error`). */
+    validationText?: string
 }
 
 const parseValue = (raw: string): number | null => {
@@ -40,8 +44,16 @@ const NumberRangeField: FC<NumberRangeFieldProps> = ({
     min,
     max,
     disabled,
+    error,
+    validationText,
 }) => (
-    <FieldGroup label={label} helpText={helpText} name={name}>
+    <FieldGroup
+        label={label}
+        helpText={helpText}
+        name={name}
+        error={error}
+        validationText={error ? validationText : undefined}
+    >
         <div className={styles.pair}>
             <Field label={i18n.t('From')} name={`${name}-from`}>
                 <InputField
@@ -54,6 +66,7 @@ const NumberRangeField: FC<NumberRangeFieldProps> = ({
                     min={min === undefined ? undefined : String(min)}
                     max={max === undefined ? undefined : String(max)}
                     disabled={disabled}
+                    error={error}
                 />
             </Field>
             <Field label={i18n.t('To')} name={`${name}-to`}>
@@ -67,6 +80,7 @@ const NumberRangeField: FC<NumberRangeFieldProps> = ({
                     min={min === undefined ? undefined : String(min)}
                     max={max === undefined ? undefined : String(max)}
                     disabled={disabled}
+                    error={error}
                 />
             </Field>
         </div>

@@ -2,7 +2,12 @@ import { useDataEngine } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
 import { MultiSelectField, MultiSelectOption, NoticeBox } from '@dhis2/ui'
 import React, { FC, useEffect, useRef, useState } from 'react'
-import { OrgUnitRow, OrgUnitsPage, orgUnitsQuery } from './orgUnits'
+import {
+    OrgUnitRow,
+    OrgUnitsPage,
+    orgUnitsQuery,
+    pickableCodeSet,
+} from './orgUnits'
 
 interface OrganisationUnitMultiSelectProps {
     name: string
@@ -42,28 +47,9 @@ interface OrganisationUnitMultiSelectProps {
     onRowsLoaded?: (rows: OrgUnitRow[]) => void
     disabled?: boolean
     required?: boolean
-}
-
-/**
- * The set of pickable `code`s in `rows`: those with a non-empty code that
- * do not belong to any group in `excludeGroupCodes`. Shared by the option
- * list, the crash-guard on `selected`, and the selection reconciliation so
- * all three agree on exactly what is currently pickable.
- */
-const pickableCodeSet = (
-    rows: OrgUnitRow[],
-    excludeGroupCodes: readonly string[]
-): Set<string> => {
-    const excluded = new Set(excludeGroupCodes)
-    const codes = new Set<string>()
-    for (const row of rows) {
-        if (row.code === null || row.code === '') continue
-        const inExcluded = (row.organisationUnitGroups ?? []).some(
-            (group) => group.code !== null && excluded.has(group.code)
-        )
-        if (!inExcluded) codes.add(row.code)
-    }
-    return codes
+    /** Mark the select invalid (red) with an inline validation message. */
+    error?: boolean
+    validationText?: string
 }
 
 /**
@@ -95,6 +81,8 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
     onRowsLoaded,
     disabled,
     required,
+    error: validationError,
+    validationText,
 }) => {
     const engine = useDataEngine()
     const [rows, setRows] = useState<OrgUnitRow[] | null>(null)
@@ -222,6 +210,8 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
             loading={loading}
             disabled={disabled}
             required={required}
+            error={validationError}
+            validationText={validationError ? validationText : undefined}
             filterable
             clearable
             clearText={i18n.t('Clear')}

@@ -1,9 +1,9 @@
 /*
- * Layout for the Partner Report form. Width is not capped here: the form
- * fills the shared centred content column (ContentArea.module.css `.page`), so
- * it lines up with the rendered report below it. Only the multi-column field
- * groups are constrained, so single controls span the column while paired
- * fields sit side by side.
+ * Shared grid layout for the report forms (Partner + Reference). Width is not
+ * capped here: a form fills the shared centred content column
+ * (ContentArea.module.css `.page`) so it lines up with the rendered report
+ * below it. Only the multi-column field groups are constrained, so single
+ * controls span the column while paired fields sit side by side.
  */
 
 /*

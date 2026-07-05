@@ -6,6 +6,12 @@ interface CollapsibleSectionProps {
     title: string
     /** Open on first render. Defaults to collapsed. */
     defaultOpen?: boolean
+    /**
+     * Force the section open regardless of the user's toggle — used to
+     * reveal a field inside it that failed validation, so a highlighted
+     * error is never hidden behind a collapsed section.
+     */
+    forceOpen?: boolean
     children: ReactNode
 }
 
@@ -19,15 +25,17 @@ interface CollapsibleSectionProps {
 const CollapsibleSection: FC<CollapsibleSectionProps> = ({
     title,
     defaultOpen = false,
+    forceOpen = false,
     children,
 }) => {
-    const [open, setOpen] = useState(defaultOpen)
+    const [userOpen, setUserOpen] = useState(defaultOpen)
+    const open = forceOpen || userOpen
     return (
         <Card>
             <button
                 type="button"
                 aria-expanded={open}
-                onClick={() => setOpen((prev) => !prev)}
+                onClick={() => setUserOpen((prev) => !prev)}
                 style={{
                     width: '100%',
                     display: 'flex',

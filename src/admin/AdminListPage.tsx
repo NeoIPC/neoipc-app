@@ -23,7 +23,8 @@ import {
     adminList,
     adminUpload,
 } from '../api/admin'
-import { enrichError, formatBytes, formatDate } from './adminFormat'
+import { enrichError } from '../api/problemDetails'
+import { formatBytes, formatDate } from './adminFormat'
 import { AdminResourceType } from './AdminResourceType'
 
 interface AdminListPageProps<T extends AdminResourceMetadata> {
