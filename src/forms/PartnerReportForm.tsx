@@ -26,6 +26,7 @@ import NumberRangeField from './fields/NumberRangeField'
 import OrganisationUnitMultiSelect from './fields/OrganisationUnitMultiSelect'
 import {
     OrgUnitRow,
+    allCodedUnitsExcluded,
     ancestorCountryCodesForSelection,
     anySelectedInGroup,
 } from './fields/orgUnits'
@@ -199,6 +200,13 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
     const departmentExcludeGroups = useMemo(
         () => (values.includeTestData ? [] : [TEST_UNITS_GROUP_CODE]),
         [values.includeTestData]
+    )
+    // When the user's whole department scope is test units (excluded above, and
+    // only an admin can turn "Include test data" on) the picker would be
+    // silently empty — surface why instead of leaving a blank control.
+    const noSelectableDepartments = useMemo(
+        () => allCodedUnitsExcluded(deptRows, departmentExcludeGroups),
+        [deptRows, departmentExcludeGroups]
     )
 
     const setField = <K extends keyof PartnerReportFormValues>(key: K) =>
@@ -559,6 +567,20 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
             {values.mode === 'online' && (
                 <Card>
                     <h2>{i18n.t('Departments')}</h2>
+                    {noSelectableDepartments && (
+                        <NoticeBox
+                            warning
+                            title={i18n.t('No selectable departments')}
+                        >
+                            {isAdmin
+                                ? i18n.t(
+                                      'All departments in your scope are test units. Turn on "Include test data" under Advanced to select them.'
+                                  )
+                                : i18n.t(
+                                      'All departments in your scope are test units, which are excluded from reports. Ask an administrator to include test data.'
+                                  )}
+                        </NoticeBox>
+                    )}
                     <OrganisationUnitMultiSelect
                         name="unitCodes"
                         label={i18n.t('Departments')}

@@ -16,6 +16,17 @@ export const NEOIPC_BASE = '/neoipc/api'
 /** Committed fixtures under `e2e/fixtures/` (see `e2e/fixtures/README.md`). */
 export const FIXTURES_DIR = path.join(__dirname, 'fixtures')
 export const REFERENCE_DATA_FIXTURE = path.join(FIXTURES_DIR, 'reference-data.json')
+/**
+ * A second, byte-distinct-but-valid reference dataset (a copy of
+ * `reference-data.json` with one metadata count bumped). The reporting service
+ * dedups identical content, so the admin-CRUD upload path needs a dataset that
+ * is *not* the one the seed / global setup already stored — otherwise the upload
+ * would 409 (which the dedicated duplicate-rejection test asserts on purpose).
+ */
+export const REFERENCE_DATA_CRUD_FIXTURE = path.join(
+    FIXTURES_DIR,
+    'reference-data-crud.json'
+)
 export const PARTNER_DATA_FIXTURE = path.join(FIXTURES_DIR, 'partner-data.json')
 export const VALIDATION_EXCEPTIONS_FIXTURE = path.join(
     FIXTURES_DIR,
@@ -42,10 +53,13 @@ const STATE_FILE = path.join(AUTH_DIR, 'state.json')
 /** Cross-run state written by global setup and read by the specs. */
 export interface E2EState {
     /**
-     * The reference dataset uploaded in global setup, for reference-report.spec.
-     * `null` when the `reference-data.json` fixture is still a placeholder.
+     * The reference dataset reference-report.spec renders. Global setup reuses an
+     * already-stored dataset when the stack has one (`owned: false` — the seed's
+     * benchmark; teardown leaves it) and only uploads `reference-data.json`
+     * itself on an empty stack (`owned: true` — teardown deletes it). `null` when
+     * nothing is stored and the fixture is still a placeholder.
      */
-    referenceFixture: { id: string; displayName: string } | null
+    referenceFixture: { id: string; displayName: string; owned: boolean } | null
     /** displayName of each seeded department, by org-unit code (for the picker spec). */
     orgUnitDisplayNames: Record<string, string>
 }
@@ -143,24 +157,13 @@ export async function orgUnitDisplayName(
     return displayName
 }
 
-/** Upload a reference dataset via the admin endpoint; returns its stored id. */
-export async function uploadReferenceData(
-    ctx: APIRequestContext,
-    displayName: string,
-    body: Buffer
-): Promise<string> {
-    const res = await ctx.post(`${NEOIPC_BASE}/admin/reference-data`, {
-        params: { displayName },
-        headers: { 'Content-Type': 'application/json' },
-        data: body,
-    })
-    if (res.status() !== 201) {
-        throw new Error(
-            `reference-data upload failed: HTTP ${res.status()} — ${await res.text()}`
-        )
-    }
-    const meta = (await res.json()) as { id: string }
-    return meta.id
+/** List the saved reference datasets (public listing: `GET {NEOIPC_BASE}/reference-data`). */
+export async function listReferenceData(
+    ctx: APIRequestContext
+): Promise<{ id: string; displayName: string }[]> {
+    const res = await ctx.get(`${NEOIPC_BASE}/reference-data`)
+    await ensureOk(res, 'reference-data listing')
+    return (await res.json()) as { id: string; displayName: string }[]
 }
 
 /** Delete a reference dataset by id (best-effort teardown). */

@@ -1,10 +1,5 @@
 import i18n from '@dhis2/d2-i18n'
-import {
-    InputField,
-    NoticeBox,
-    SingleSelectField,
-    SingleSelectOption,
-} from '@dhis2/ui'
+import { NoticeBox, SingleSelectField, SingleSelectOption } from '@dhis2/ui'
 import React, { FC, useMemo, useState } from 'react'
 import type { PublicReferenceDataMetadata } from '../AppContext'
 import ReferenceDataCard from './ReferenceDataCard'
@@ -35,6 +30,10 @@ interface ReferenceDataSelectProps {
     /** `data-test` for the main result select, so the e2e suite can target
      *  it directly (mirrors the department picker's `data-test`). */
     dataTest?: string
+    /** Whether to offer the "(none)" option. `true` (default) for the Partner
+     *  benchmark (no benchmark is valid) and Reference-Report admins (who can
+     *  live-fetch); pass `false` for report users, who cannot render "(none)". */
+    allowNone?: boolean
 }
 
 const unique = (values: string[]): string[] => [...new Set(values)]
@@ -49,10 +48,11 @@ const optionLabel = (dataset: PublicReferenceDataMetadata): string =>
  * Shared faceted picker for a saved reference dataset. Used both for the
  * Reference Report's `referenceDataId` and (in Manual mode) the Partner
  * Report's benchmark `referenceDataFile`. Facets — reporting period,
- * country, cohort, and a name search — narrow the result select; the
- * full list is sorted latest-period-first. A metadata card summarises
- * the current selection. `@dhis2/ui` has no tree, so independent facets
- * fit the orthogonal dimensions better than a hierarchy would.
+ * country, and cohort — narrow the result select (whose own built-in filter
+ * handles name search); the full list is sorted latest-period-first. A
+ * metadata card summarises the current selection. `@dhis2/ui` has no tree, so
+ * independent facets fit the orthogonal dimensions better than a hierarchy
+ * would.
  */
 const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
     datasets,
@@ -64,11 +64,11 @@ const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
     approximate = false,
     countryNames,
     dataTest,
+    allowNone = true,
 }) => {
     const [period, setPeriod] = useState('')
     const [country, setCountry] = useState('')
     const [cohort, setCohort] = useState('')
-    const [search, setSearch] = useState('')
 
     const periods = useMemo(
         () =>
@@ -96,7 +96,6 @@ const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
     const selected = datasets.find((d) => d.id === value) ?? null
 
     const visible = useMemo(() => {
-        const term = search.trim().toLowerCase()
         const matches = datasets.filter(
             (d) =>
                 (period === '' ||
@@ -107,8 +106,7 @@ const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
                 (country === '' ||
                     (d.countries ?? []).length === 0 ||
                     (d.countries ?? []).includes(country)) &&
-                (cohort === '' || cohortLabel(d) === cohort) &&
-                (term === '' || d.displayName.toLowerCase().includes(term))
+                (cohort === '' || cohortLabel(d) === cohort)
         )
         // Keep the current selection visible even if facets would hide it.
         if (selected && !matches.some((d) => d.id === selected.id)) {
@@ -117,7 +115,7 @@ const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
         return matches.sort((a, b) =>
             periodSortKey(b).localeCompare(periodSortKey(a))
         )
-    }, [datasets, period, country, cohort, search, selected])
+    }, [datasets, period, country, cohort, selected])
 
     if (datasets.length === 0) {
         return (
@@ -129,20 +127,22 @@ const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
 
     return (
         <div>
-            <SingleSelectField
-                label={i18n.t('Reporting period')}
-                placeholder={i18n.t('Any')}
-                selected={period}
-                clearable
-                clearText={i18n.t('Any')}
-                disabled={disabled}
-                onChange={({ selected: s }) => setPeriod(s ?? '')}
-            >
-                {periods.map((p) => (
-                    <SingleSelectOption key={p} value={p} label={p} />
-                ))}
-            </SingleSelectField>
-            {countries.length > 0 && (
+            {periods.length > 1 && (
+                <SingleSelectField
+                    label={i18n.t('Reporting period')}
+                    placeholder={i18n.t('Any')}
+                    selected={period}
+                    clearable
+                    clearText={i18n.t('Any')}
+                    disabled={disabled}
+                    onChange={({ selected: s }) => setPeriod(s ?? '')}
+                >
+                    {periods.map((p) => (
+                        <SingleSelectOption key={p} value={p} label={p} />
+                    ))}
+                </SingleSelectField>
+            )}
+            {datasets.length > 1 && countries.length > 1 && (
                 <SingleSelectField
                     label={i18n.t('Country')}
                     placeholder={i18n.t('Any')}
@@ -161,26 +161,21 @@ const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
                     ))}
                 </SingleSelectField>
             )}
-            <SingleSelectField
-                label={i18n.t('Cohort')}
-                placeholder={i18n.t('Any')}
-                selected={cohort}
-                clearable
-                clearText={i18n.t('Any')}
-                disabled={disabled}
-                onChange={({ selected: s }) => setCohort(s ?? '')}
-            >
-                {cohorts.map((c) => (
-                    <SingleSelectOption key={c} value={c} label={c} />
-                ))}
-            </SingleSelectField>
-            <InputField
-                label={i18n.t('Search by name')}
-                value={search}
-                disabled={disabled}
-                onChange={({ value: v }) => setSearch(v ?? '')}
-            />
-
+            {cohorts.length > 1 && (
+                <SingleSelectField
+                    label={i18n.t('Cohort')}
+                    placeholder={i18n.t('Any')}
+                    selected={cohort}
+                    clearable
+                    clearText={i18n.t('Any')}
+                    disabled={disabled}
+                    onChange={({ selected: s }) => setCohort(s ?? '')}
+                >
+                    {cohorts.map((c) => (
+                        <SingleSelectOption key={c} value={c} label={c} />
+                    ))}
+                </SingleSelectField>
+            )}
             <SingleSelectField
                 label={label ?? i18n.t('Reference dataset')}
                 dataTest={dataTest}
@@ -192,7 +187,9 @@ const ReferenceDataSelect: FC<ReferenceDataSelectProps> = ({
                 noMatchText={i18n.t('No match')}
                 onChange={({ selected: s }) => onChange(s ?? '')}
             >
-                <SingleSelectOption value="" label={i18n.t('(none)')} />
+                {allowNone && (
+                    <SingleSelectOption value="" label={i18n.t('(none)')} />
+                )}
                 {visible.map((d) => (
                     <SingleSelectOption
                         key={d.id}

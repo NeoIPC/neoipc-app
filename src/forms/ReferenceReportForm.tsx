@@ -9,7 +9,7 @@ import {
     SingleSelectField,
     SingleSelectOption,
 } from '@dhis2/ui'
-import React, { FC, useMemo, useState } from 'react'
+import React, { FC, useEffect, useMemo, useState } from 'react'
 import { useAppContext } from '../AppContext'
 import { useAuthorities } from '../authority/useAuthorities'
 import { COUNTRY_GROUP_CODE, HOSPITAL_GROUP_CODE } from '../config/dhis2Constants'
@@ -136,6 +136,21 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
         [submitAttempted, values]
     )
 
+    // A report cannot render against "(none)", so preselect the first available
+    // saved dataset once the listing has loaded — leaving the user free to change
+    // it, or (as an admin) clear it for live-fetch. Guarded so it runs once and
+    // never overrides a later choice.
+    const [datasetPreselected, setDatasetPreselected] = useState(false)
+    useEffect(() => {
+        if (datasetPreselected || referenceDataSets.length === 0) return
+        setDatasetPreselected(true)
+        setValues((prev) =>
+            prev.referenceDataId === ''
+                ? { ...prev, referenceDataId: referenceDataSets[0].id }
+                : prev
+        )
+    }, [datasetPreselected, referenceDataSets])
+
     const presetLocked = preset !== CUSTOM_PRESET
     // Only offer a language picker when the backend advertises more than one
     // render-ready language; today English is the only one, so it stays hidden
@@ -199,6 +214,7 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                     value={values.referenceDataId}
                     onChange={setField('referenceDataId')}
                     dataTest="referenceDataId"
+                    allowNone={isAdmin}
                     countryNames={countryNames}
                     helpText={
                         isAdmin
@@ -208,8 +224,7 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                                       'admin filters below.'
                               )
                             : i18n.t(
-                                  'Pick a pre-computed reference dataset to ' +
-                                      'render against.'
+                                  'Pick a pre-computed reference dataset to render.'
                               )
                     }
                 />

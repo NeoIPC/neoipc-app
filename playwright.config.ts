@@ -29,9 +29,10 @@ const DEVICE: Record<(typeof ENGINES)[number], string> = {
 
 export default defineConfig({
     testDir: './e2e',
-    // The backend renders (Quarto/R via NeoIPC-Reporting) take up to ~10 min,
-    // so give each test generous headroom rather than the 30 s default.
-    timeout: 15 * 60 * 1000,
+    // The backend renders (Quarto/R via NeoIPC-Reporting) complete in ~10-30 s, so
+    // 90 s is ample headroom while letting a browser-side hang fail fast (with a
+    // retained trace) instead of stalling the whole suite for 15 min.
+    timeout: 90 * 1000,
     expect: { timeout: 30 * 1000 },
     // One worker, no intra-file parallelism: every engine shares one DHIS2
     // substrate and the singleton validation-exceptions resource, so admin

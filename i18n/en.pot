@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-07-05T13:52:11.475Z\n"
-"PO-Revision-Date: 2026-07-05T13:52:11.476Z\n"
+"POT-Creation-Date: 2026-07-05T19:01:45.623Z\n"
+"PO-Revision-Date: 2026-07-05T19:01:45.624Z\n"
 
 msgid "Upload"
 msgstr "Upload"
@@ -317,6 +317,23 @@ msgstr "Upload partner data file (JSON)"
 msgid "Departments"
 msgstr "Departments"
 
+msgid "No selectable departments"
+msgstr "No selectable departments"
+
+msgid ""
+"All departments in your scope are test units. Turn on \"Include test data\" "
+"under Advanced to select them."
+msgstr ""
+"All departments in your scope are test units. Turn on \"Include test data\" "
+"under Advanced to select them."
+
+msgid ""
+"All departments in your scope are test units, which are excluded from "
+"reports. Ask an administrator to include test data."
+msgstr ""
+"All departments in your scope are test units, which are excluded from "
+"reports. Ask an administrator to include test data."
+
 msgid "More options"
 msgstr "More options"
 
@@ -382,6 +399,21 @@ msgstr ""
 msgid "Period"
 msgstr "Period"
 
+msgid "Birth weight"
+msgstr "Birth weight"
+
+msgid "g"
+msgstr "g"
+
+msgid "Any"
+msgstr "Any"
+
+msgid "Gestational age"
+msgstr "Gestational age"
+
+msgid "w"
+msgstr "w"
+
 msgid "Cohort"
 msgstr "Cohort"
 
@@ -393,18 +425,6 @@ msgstr "until {{to}}"
 
 msgid "All periods"
 msgstr "All periods"
-
-msgid "g"
-msgstr "g"
-
-msgid "BW {{range}}"
-msgstr "BW {{range}}"
-
-msgid "w"
-msgstr "w"
-
-msgid "GA {{range}}"
-msgstr "GA {{range}}"
 
 msgid "all patients"
 msgstr "all patients"
@@ -418,6 +438,12 @@ msgstr "incl. test units"
 msgid "no test units"
 msgstr "no test units"
 
+msgid "BW {{range}}"
+msgstr "BW {{range}}"
+
+msgid "GA {{range}}"
+msgstr "GA {{range}}"
+
 msgid "All countries"
 msgstr "All countries"
 
@@ -427,20 +453,17 @@ msgstr "No reference datasets"
 msgid "No saved reference datasets are available yet."
 msgstr "No saved reference datasets are available yet."
 
-msgid "Any"
-msgstr "Any"
-
 msgid "Country"
 msgstr "Country"
-
-msgid "Search by name"
-msgstr "Search by name"
 
 msgid "Reference dataset"
 msgstr "Reference dataset"
 
 msgid "(none)"
 msgstr "(none)"
+
+msgid "Pick a pre-computed reference dataset to render."
+msgstr "Pick a pre-computed reference dataset to render."
 
 msgid "Live-fetch filters (admins only)"
 msgstr "Live-fetch filters (admins only)"

@@ -3,10 +3,11 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { dhis2FormLogin } from './dhis2-login'
 import {
+    NEOIPC_BASE,
     installApp,
     assertSeeded,
     orgUnitDisplayName,
-    uploadReferenceData,
+    listReferenceData,
     writeState,
     isPlaceholderFixture,
     REFERENCE_DATA_FIXTURE,
@@ -18,8 +19,8 @@ import {
  *  1. install the built app bundle into DHIS2;
  *  2. assert the play seed (departments + report users) is present;
  *  3. resolve seeded department displayNames for the picker spec;
- *  4. upload the reference-dataset fixture (reference-report.spec consumes it;
- *     global teardown deletes it).
+ *  4. ensure reference-data.json's content is stored (upload it; reuse an existing
+ *     dataset on a 409) for reference-report.spec + the admin-crud dedup 409 test.
  *
  * All of it runs under one DHIS2 admin session. The DHIS2 root superuser
  * (`ALL`) satisfies both NeoIPC authority tiers (see NeoIPC-Reporting
@@ -74,20 +75,38 @@ async function globalSetup(): Promise<void> {
             CH_TEST_TEST: await orgUnitDisplayName(ctx, 'CH_TEST_TEST'),
         }
 
-        // Upload the reference-dataset fixture unless it is still a placeholder
-        // (real datasets must be captured from a seeded stack — see
-        // e2e/fixtures/README.md); reference-report.spec skips when it is absent. A
-        // per-run displayName keeps parallel/repeat runs from colliding.
+        // Ensure `reference-data.json`'s content is stored: reference-report.spec
+        // renders a saved dataset, and the admin-crud 409 test relies on those
+        // exact bytes already being present. Upload it — a 409 means it is already
+        // stored (the seed's benchmark), so reuse an existing dataset for the render
+        // spec (owned:false, teardown leaves it); a 201 means we stored it
+        // (owned:true, teardown deletes it). Skip only when the fixture is still a
+        // placeholder (reference-report.spec then skips — see e2e/fixtures/README.md).
         let referenceFixture: E2EState['referenceFixture'] = null
         if (!isPlaceholderFixture(REFERENCE_DATA_FIXTURE)) {
-            const runId = Date.now().toString(36)
-            const displayName = `e2e-reference-${runId}`
-            const id = await uploadReferenceData(
-                ctx,
-                displayName,
-                fs.readFileSync(REFERENCE_DATA_FIXTURE)
-            )
-            referenceFixture = { id, displayName }
+            const displayName = `e2e-reference-${Date.now().toString(36)}`
+            const res = await ctx.post(`${NEOIPC_BASE}/admin/reference-data`, {
+                params: { displayName },
+                headers: { 'Content-Type': 'application/json' },
+                data: fs.readFileSync(REFERENCE_DATA_FIXTURE),
+            })
+            if (res.status() === 201) {
+                const { id } = (await res.json()) as { id: string }
+                referenceFixture = { id, displayName, owned: true }
+            } else if (res.status() === 409) {
+                const existing = await listReferenceData(ctx)
+                if (existing.length > 0) {
+                    referenceFixture = {
+                        id: existing[0].id,
+                        displayName: existing[0].displayName,
+                        owned: false,
+                    }
+                }
+            } else {
+                throw new Error(
+                    `reference-data upload failed: HTTP ${res.status()} — ${await res.text()}`
+                )
+            }
         }
 
         writeState({ referenceFixture, orgUnitDisplayNames })

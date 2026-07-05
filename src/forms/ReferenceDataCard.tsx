@@ -3,9 +3,10 @@ import { Card, NoticeBox } from '@dhis2/ui'
 import React, { FC } from 'react'
 import type { PublicReferenceDataMetadata } from '../AppContext'
 import {
-    cohortLabel,
     countriesLabel,
+    formatBound,
     formatReportingPeriod,
+    patientCohortLabel,
 } from './referenceDataFormat'
 
 interface ReferenceDataCardProps {
@@ -18,9 +19,11 @@ interface ReferenceDataCardProps {
 
 /**
  * Always-visible summary of a selected reference dataset — its period,
- * cohort, and country scope. Shared by {@link ReferenceDataSelect}'s
- * manual picker and the Partner Report's Auto-benchmark display so both
- * render the dataset identically.
+ * birth-weight and gestational-age bounds, cohort, and country scope. Shared
+ * by {@link ReferenceDataSelect}'s manual picker and the Partner Report's
+ * Auto-benchmark display so both render the dataset identically. Birth-weight
+ * and gestational-age get their own rows (showing "Any" when unbounded) since
+ * their absence is itself a meaningful attribute of the benchmark cohort.
  */
 const ReferenceDataCard: FC<ReferenceDataCardProps> = ({
     dataset,
@@ -44,7 +47,23 @@ const ReferenceDataCard: FC<ReferenceDataCardProps> = ({
             )}
         </p>
         <p>
-            <strong>{i18n.t('Cohort')}:</strong> {cohortLabel(dataset)}
+            <strong>{i18n.t('Birth weight')}:</strong>{' '}
+            {formatBound(
+                dataset.birthWeightFrom,
+                dataset.birthWeightTo,
+                i18n.t('g')
+            ) ?? i18n.t('Any')}
+        </p>
+        <p>
+            <strong>{i18n.t('Gestational age')}:</strong>{' '}
+            {formatBound(
+                dataset.gestationalAgeFrom,
+                dataset.gestationalAgeTo,
+                i18n.t('w')
+            ) ?? i18n.t('Any')}
+        </p>
+        <p>
+            <strong>{i18n.t('Cohort')}:</strong> {patientCohortLabel(dataset)}
         </p>
         <p>
             <strong>{i18n.t('Countries')}:</strong>{' '}

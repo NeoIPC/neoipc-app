@@ -1,5 +1,6 @@
 import {
     OrgUnitRow,
+    allCodedUnitsExcluded,
     ancestorCountryCodesForSelection,
     anySelectedInGroup,
     pickableCodeSet,
@@ -97,5 +98,27 @@ describe('pickableCodeSet', () => {
     it('keeps every coded row when no groups are excluded', () => {
         const rows = [row('D1', ['TEST_UNITS']), row('D2', [])]
         expect([...pickableCodeSet(rows, [])].sort()).toEqual(['D1', 'D2'])
+    })
+})
+
+describe('allCodedUnitsExcluded', () => {
+    it('is true when every coded unit is in an excluded group', () => {
+        const rows = [row('T1', ['NEO_DEPARTMENT', 'TEST_UNITS'])]
+        expect(allCodedUnitsExcluded(rows, ['TEST_UNITS'])).toBe(true)
+    })
+    it('is false when at least one coded unit survives exclusion', () => {
+        const rows = [
+            row('D1', ['NEO_DEPARTMENT']),
+            row('T1', ['NEO_DEPARTMENT', 'TEST_UNITS']),
+        ]
+        expect(allCodedUnitsExcluded(rows, ['TEST_UNITS'])).toBe(false)
+    })
+    it('is false when nothing is excluded', () => {
+        const rows = [row('T1', ['TEST_UNITS'])]
+        expect(allCodedUnitsExcluded(rows, [])).toBe(false)
+    })
+    it('is false when there are no coded units at all', () => {
+        const rows = [row(null, ['TEST_UNITS'])]
+        expect(allCodedUnitsExcluded(rows, ['TEST_UNITS'])).toBe(false)
     })
 })
