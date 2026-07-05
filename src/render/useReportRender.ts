@@ -30,8 +30,8 @@ interface UseReportRender<TValues> extends UseReportRenderState {
  *     so the body is short and human-friendly.
  *
  * `elapsedSeconds` ticks every second while loading; the long-poll
- * UX in the result panel uses it to reassure the user that a 5–10
- * minute render is still alive.
+ * UX in the result panel uses it to reassure the user that a slow
+ * render (a large dataset) is still alive.
  */
 export const useReportRender = <TValues>(
     render: (baseUrl: string, values: TValues) => Promise<RenderResult>

@@ -14,6 +14,7 @@ const withAuthorities = (authorities: string[]): void => {
     mockedUseAppContext.mockReturnValue({
         me: { id: 'u1', authorities },
         referenceDataSets: [],
+        reloadReferenceDataSets: jest.fn().mockResolvedValue(undefined),
     })
 }
 

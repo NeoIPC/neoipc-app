@@ -33,6 +33,13 @@ export interface PublicReferenceDataMetadata {
 export interface AppContextValue {
     me: MeData
     referenceDataSets: PublicReferenceDataMetadata[]
+    /**
+     * Re-fetch the public reference-dataset listing and update the shared
+     * value. The list is otherwise fetched once at startup, so call this after
+     * an admin upload/delete to keep the report forms' benchmark pickers in
+     * sync without a full app reload.
+     */
+    reloadReferenceDataSets: () => Promise<void>
 }
 
 const AppContext = React.createContext<AppContextValue | null>(null)

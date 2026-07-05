@@ -43,6 +43,19 @@ export const DEPARTMENT_GROUP_CODE = 'NEO_DEPARTMENT'
 export const ELIGIBLE_PATIENTS_GROUP_CODE = 'NEOIPC_ALL_PATIENTS_ELIGIBLE'
 
 /**
+ * Code of the org-unit group whose members are the synthetic test
+ * hierarchy (e.g. `AT_TEST`, `AT_TEST_TEST`). neoipcr drops these units
+ * from the metadata *before* it applies any department filter unless
+ * `include_test_data` is set (`dhis2-metadata.R`), so a department that
+ * is a `TEST_UNITS` member selected while test data is excluded resolves
+ * to an empty org-unit set and the render fails with an opaque DHIS2
+ * error. The department picker therefore offers `TEST_UNITS` departments
+ * only when "Include test data" is on, keying on direct `TEST_UNITS`
+ * group membership to match neoipcr's metadata filtering.
+ */
+export const TEST_UNITS_GROUP_CODE = 'TEST_UNITS'
+
+/**
  * Base path under which the new NeoIPC-Reporting service is mounted
  * in the DHIS2 deployment (see [`repos/neoipc-dhis2/config/default.conf.template`](../../../neoipc-dhis2/config/default.conf.template)).
  * Distinct from `/reporting/api` (legacy `neoipc-reporting-net`),

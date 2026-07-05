@@ -1,12 +1,10 @@
 /*
- * Layout for the Partner Report form. The form is an *input* surface, so it
- * gets its own bounded, multi-column layout — deliberately independent of the
- * (separate, full-width) rendered-report pane, which the report page mounts as
- * a sibling. Capping the form here does not touch the report output.
+ * Layout for the Partner Report form. Width is not capped here: the form
+ * fills the shared centred content column (ContentArea.module.css `.page`), so
+ * it lines up with the rendered report below it. Only the multi-column field
+ * groups are constrained, so single controls span the column while paired
+ * fields sit side by side.
  */
-.form {
-    max-width: 960px;
-}
 
 /*
  * Two equal columns for naturally-paired fields (From/To ranges, related

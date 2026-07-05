@@ -13,7 +13,7 @@ import {
     CssVariables,
     NoticeBox,
 } from '@dhis2/ui'
-import React, { FC, useEffect, useState } from 'react'
+import React, { FC, useCallback, useEffect, useState } from 'react'
 import { HashRouter } from 'react-router-dom'
 import {
     AppContextProvider,
@@ -49,33 +49,36 @@ const App: FC = () => {
     >(null)
     const [refDataError, setRefDataError] = useState<Error | null>(null)
 
+    // Fetch (and re-fetch) the shared reference-dataset listing. On success it
+    // updates the shared value seamlessly (no loading flash on a refresh); a
+    // 401/403 means no NeoIPC access, surfaced as an empty list so AppShell can
+    // show its dedicated notice. Any other error is re-thrown for the caller to
+    // handle — the initial load gates the app on it; an admin-triggered refresh
+    // keeps the existing list and swallows it (non-blocking).
+    const reloadReferenceDataSets = useCallback(async () => {
+        try {
+            setReferenceDataSets(await loadReferenceDataSets(baseUrl))
+        } catch (err) {
+            if (
+                err instanceof NeoipcReportingError &&
+                (err.response.status === 401 || err.response.status === 403)
+            ) {
+                setReferenceDataSets([])
+                return
+            }
+            throw err
+        }
+    }, [baseUrl])
+
     useEffect(() => {
         let cancelled = false
-        loadReferenceDataSets(baseUrl)
-            .then((sets) => {
-                if (!cancelled) setReferenceDataSets(sets)
-            })
-            .catch((err: Error) => {
-                if (cancelled) return
-                // A 401/403 here means the user has no NeoIPC access (or no
-                // session for the /neoipc/ mount). Treat as an empty list so
-                // AppShell can render its dedicated "No NeoIPC access" notice
-                // — keyed off the user's authorities — instead of the generic
-                // "Failed to load NeoIPC app data" error notice below.
-                if (
-                    err instanceof NeoipcReportingError &&
-                    (err.response.status === 401 ||
-                        err.response.status === 403)
-                ) {
-                    setReferenceDataSets([])
-                    return
-                }
-                setRefDataError(err)
-            })
+        reloadReferenceDataSets().catch((err: Error) => {
+            if (!cancelled) setRefDataError(err)
+        })
         return () => {
             cancelled = true
         }
-    }, [baseUrl])
+    }, [reloadReferenceDataSets])
 
     const loading = meLoading || (referenceDataSets === null && refDataError === null)
     const error = meError ?? refDataError
@@ -102,6 +105,7 @@ const App: FC = () => {
                     value={{
                         me: meData.me,
                         referenceDataSets,
+                        reloadReferenceDataSets,
                     }}
                 >
                     <HashRouter

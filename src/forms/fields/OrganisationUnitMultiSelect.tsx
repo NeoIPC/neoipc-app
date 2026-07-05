@@ -15,6 +15,16 @@ interface OrganisationUnitMultiSelectProps {
      */
     groupCode: string
     /**
+     * Optional org-unit group codes to *exclude* from the pickable
+     * options — the complement of {@link groupCode}'s include filter. A
+     * row belonging to any of these groups is dropped from the list and
+     * reconciled out of the current selection. The Partner form passes
+     * `TEST_UNITS` here unless "Include test data" is on, so test
+     * departments are only offered (and stay selected) when the data
+     * layer would actually include them.
+     */
+    excludeGroupCodes?: string[]
+    /**
      * Selected orgUnit codes. The picker emits and consumes `code`
      * strings (the wire format the report endpoints accept), not
      * orgUnit UIDs.
@@ -32,6 +42,28 @@ interface OrganisationUnitMultiSelectProps {
     onRowsLoaded?: (rows: OrgUnitRow[]) => void
     disabled?: boolean
     required?: boolean
+}
+
+/**
+ * The set of pickable `code`s in `rows`: those with a non-empty code that
+ * do not belong to any group in `excludeGroupCodes`. Shared by the option
+ * list, the crash-guard on `selected`, and the selection reconciliation so
+ * all three agree on exactly what is currently pickable.
+ */
+const pickableCodeSet = (
+    rows: OrgUnitRow[],
+    excludeGroupCodes: readonly string[]
+): Set<string> => {
+    const excluded = new Set(excludeGroupCodes)
+    const codes = new Set<string>()
+    for (const row of rows) {
+        if (row.code === null || row.code === '') continue
+        const inExcluded = (row.organisationUnitGroups ?? []).some(
+            (group) => group.code !== null && excluded.has(group.code)
+        )
+        if (!inExcluded) codes.add(row.code)
+    }
+    return codes
 }
 
 /**
@@ -56,6 +88,7 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
     label,
     helpText,
     groupCode,
+    excludeGroupCodes,
     selectedCodes,
     onChange,
     showParentInLabel = false,
@@ -71,6 +104,12 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
     // re-trigger the fetch effect (which keys only on engine + groupCode).
     const onRowsLoadedRef = useRef(onRowsLoaded)
     onRowsLoadedRef.current = onRowsLoaded
+
+    // Held in a ref so the reconcile effect can call the latest onChange
+    // without depending on it — its identity changes every render in the
+    // usual `setField('unitCodes')` caller.
+    const onChangeRef = useRef(onChange)
+    onChangeRef.current = onChange
 
     useEffect(() => {
         let cancelled = false
@@ -112,6 +151,25 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
         }
     }, [engine, groupCode])
 
+    // Keep the parent's selection ⊆ the pickable options once the list has
+    // loaded. It must not run while loading (`rows === null`): the option
+    // set is empty then, and clearing a valid-but-not-yet-loaded selection
+    // would drop it. After load it drops codes that are genuinely
+    // unavailable — a decommissioned unit, or a `TEST_UNITS` department
+    // once "Include test data" is switched off (it leaves the option set
+    // via `excludeGroupCodes`).
+    const excludeKey = (excludeGroupCodes ?? []).join(',')
+    useEffect(() => {
+        if (rows === null) return
+        const available = pickableCodeSet(rows, excludeGroupCodes ?? [])
+        const reconciled = selectedCodes.filter((code) => available.has(code))
+        if (reconciled.length !== selectedCodes.length) {
+            onChangeRef.current(reconciled)
+        }
+        // excludeGroupCodes is captured via excludeKey to avoid array-identity churn.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [rows, excludeKey, selectedCodes])
+
     if (error) {
         return (
             <NoticeBox error title={label}>
@@ -127,8 +185,12 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
     const rowsWithoutCode = loadedRows.filter(
         (row) => row.code === null || row.code === ''
     )
+    const pickableCodes = pickableCodeSet(loadedRows, excludeGroupCodes ?? [])
     const options = loadedRows
-        .filter((row) => row.code !== null && row.code !== '')
+        .filter(
+            (row): row is OrgUnitRow & { code: string } =>
+                row.code !== null && pickableCodes.has(row.code)
+        )
         .map((row) => ({
             value: row.code,
             label:
@@ -165,7 +227,7 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
             clearText={i18n.t('Clear')}
             filterPlaceholder={i18n.t('Search')}
             noMatchText={i18n.t('No match')}
-            selected={selectedCodes}
+            selected={selectedCodes.filter((code) => pickableCodes.has(code))}
             onChange={({ selected }) => onChange(selected)}
         >
             {options.map((option) => (

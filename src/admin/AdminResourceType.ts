@@ -37,6 +37,14 @@ export interface AdminResourceType<
     uploadContentType: string | null
     /** Help text for the displayName input, if any. */
     displayNameHelp?: () => string
+    /**
+     * When `true`, a successful upload/delete of this resource re-fetches the
+     * app-level `referenceDataSets` (via {@link AppContextValue.reloadReferenceDataSets})
+     * so the report forms' benchmark pickers reflect the change immediately.
+     * Set only on the reference-data resource — the forms read no other admin
+     * resource.
+     */
+    refreshesAppReferenceData?: boolean
     /** Resource-specific columns rendered after the standard ones. */
     extraColumns: ReadonlyArray<AdminResourceColumn<T>>
 }

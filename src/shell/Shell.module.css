@@ -15,6 +15,10 @@
 .contentArea {
     padding: var(--spacers-dp24);
     overflow-y: auto;
+    /* Light page background so the centred white content cards (forms and the
+     * rendered-report card) read as a document on a surface rather than
+     * white-on-white. */
+    background: var(--colors-grey100, #f3f5f7);
 }
 
 /* Mobile nav-drawer controls — hidden on desktop (shown in the media query). */
