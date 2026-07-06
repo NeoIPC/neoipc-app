@@ -1,0 +1,55 @@
+name: release
+
+# Build the DHIS2 app bundle and attach it to a published GitHub Release, so each neoipc-app version
+# is an immutable, reproducible release (the .zip a DHIS2 instance installs) rather than a moving
+# branch. Releasing is a deliberate human step: a maintainer publishes the Release (marking it
+# pre-release while the app is alpha) — CI only validates + builds + attaches. Manual dispatch builds
+# the bundle without attaching (a build smoke-test).
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify the release tag matches package.json
+        # The tag (minus a leading v) must equal package.json's version, so a release is always cut
+        # from a commit whose version declares exactly that version — no tag/manifest drift. The
+        # d2-app-scripts build reads the version from package.json (d2.config.js sets no version).
+        if: github.event_name == 'release'
+        shell: bash
+        run: |
+          tag="${{ github.event.release.tag_name }}"
+          ver="${tag#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$ver" != "$pkg" ]; then
+            echo "::error::Release tag '$tag' (version $ver) does not match package.json ('$pkg'). Bump package.json to match before releasing."
+            exit 1
+          fi
+          echo "Release tag matches package.json ($pkg)."
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - run: yarn install --frozen-lockfile
+
+      - name: Build the app bundle
+        # d2-app-scripts build packs by default → build/bundle/neoipc-app-<version>.zip (the installable
+        # DHIS2 app). Offline build; no DHIS2 API access.
+        run: yarn build
+
+      - name: Attach the app bundle to the Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh release upload "${{ github.event.release.tag_name }}" build/bundle/*.zip --clobber
