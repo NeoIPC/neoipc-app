@@ -1,0 +1,33 @@
+name: build-and-test
+
+# Runs the same validate gate the release workflow runs (typecheck + DHIS2 schema-drift check + tests),
+# plus a bundle build smoke-test, on every push to main and PR -- so a regression is caught before a tag
+# is ever cut. Offline; no DHIS2 API access.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Typecheck + schema drift + tests + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - name: Validate (typecheck + schema drift + tests)
+        run: yarn validate
+      - name: Build the app bundle (smoke-test)
+        run: yarn build
