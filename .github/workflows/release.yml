@@ -100,4 +100,11 @@ jobs:
         run: |
           tag="$GITHUB_REF_NAME"
           pre=""; case "$tag" in *-*) pre="--prerelease";; esac
-          gh release create "$tag" --generate-notes $pre build/bundle/*.zip
+          # Idempotent: an Actions re-run reuses the original push payload. If the Release already exists (a
+          # prior run created it), re-attach the freshly built bundle rather than failing on create.
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Release $tag already exists; re-attaching the bundle."
+            gh release upload "$tag" build/bundle/*.zip --clobber
+          else
+            gh release create "$tag" --generate-notes $pre build/bundle/*.zip
+          fi
