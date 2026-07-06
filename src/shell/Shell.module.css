@@ -97,11 +97,17 @@
         background: var(--colors-white);
         border-right: 1px solid var(--colors-grey300);
         transform: translateX(-100%);
-        transition: transform 0.2s ease;
+        /* Hide the closed drawer from tab order and the a11y tree (React 18 has no
+         * native `inert`). The visibility flip is delayed 0.2s so it lands after
+         * the slide-out finishes; .leftNavOpen flips it back immediately. */
+        visibility: hidden;
+        transition: transform 0.2s ease, visibility 0s linear 0.2s;
     }
 
     .leftNavOpen {
         transform: translateX(0);
+        visibility: visible;
+        transition: transform 0.2s ease;
         box-shadow: 2px 0 16px rgba(0, 0, 0, 0.25);
     }
 
