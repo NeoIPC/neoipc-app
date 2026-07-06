@@ -19,10 +19,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
       - name: Verify the release tag matches package.json
         # The tag (minus a leading v) must equal package.json's version, so a release is always cut
         # from a commit whose version declares exactly that version — no tag/manifest drift. The
         # d2-app-scripts build reads the version from package.json (d2.config.js sets no version).
+        # setup-node runs first so this check uses the pinned Node, not whatever the runner preinstalls.
         if: github.event_name == 'release'
         shell: bash
         run: |
@@ -34,11 +40,6 @@ jobs:
             exit 1
           fi
           echo "Release tag matches package.json ($pkg)."
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: yarn
 
       - run: yarn install --frozen-lockfile
 
