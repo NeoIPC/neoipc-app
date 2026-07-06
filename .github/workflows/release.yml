@@ -1,13 +1,13 @@
 name: release
 
-# Build the DHIS2 app bundle and attach it to a published GitHub Release, so each neoipc-app version
-# is an immutable, reproducible release (the .zip a DHIS2 instance installs) rather than a moving
-# branch. Releasing is a deliberate human step: a maintainer publishes the Release (marking it
-# pre-release while the app is alpha) — CI only validates + builds + attaches. Manual dispatch builds
-# the bundle without attaching (a build smoke-test).
+# Build the DHIS2 app bundle and publish it as a GitHub Release, so each neoipc-app version is an
+# immutable, reproducible release (the .zip a DHIS2 instance installs) rather than a moving branch.
+# Releasing is a deliberate step: push a `v*` tag -> CI verifies the version, runs the validate gate,
+# builds the bundle, then creates the Release (pre-release for a pre-release version) and attaches the
+# .zip. Manual dispatch builds the bundle without releasing (a build smoke-test).
 on:
-  release:
-    types: [published]
+  push:
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
@@ -18,6 +18,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # full tag history for the monotonic check
 
       - uses: actions/setup-node@v4
         with:
@@ -25,15 +27,13 @@ jobs:
           cache: yarn
 
       - name: Verify the release tag matches package.json
-        # The tag (minus a leading v) must equal package.json's version, so a release is always cut
-        # from a commit whose version declares exactly that version — no tag/manifest drift. The
-        # d2-app-scripts build reads the version from package.json (d2.config.js sets no version).
-        # setup-node runs first so this check uses the pinned Node, not whatever the runner preinstalls.
-        if: github.event_name == 'release'
+        # The tag (minus a leading v) must equal package.json's version, so a release is always cut from a
+        # commit whose version declares exactly that version -- no tag/manifest drift. setup-node runs
+        # first so this uses the pinned Node.
+        if: github.event_name == 'push'
         shell: bash
         run: |
-          tag="${{ github.event.release.tag_name }}"
-          ver="${tag#v}"
+          tag="$GITHUB_REF_NAME"; ver="${tag#v}"
           pkg="$(node -p "require('./package.json').version")"
           if [ "$ver" != "$pkg" ]; then
             echo "::error::Release tag '$tag' (version $ver) does not match package.json ('$pkg'). Bump package.json to match before releasing."
@@ -41,16 +41,52 @@ jobs:
           fi
           echo "Release tag matches package.json ($pkg)."
 
+      - name: Enforce monotonic version (per-line, semver-correct)
+        # Reject a duplicate tag or a within-line version regression; a new major.minor line (and backports
+        # on older lines) are allowed. Map a pre-release '-' -> '~' before `sort -V` so its tilde rule
+        # orders 0.0.1-alpha BEFORE 0.0.1 (correct semver precedence).
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          tag="$GITHUB_REF_NAME"; ver="${tag#v}"
+          line="$(cut -d. -f1-2 <<<"$ver")."
+          mapfile -t vers < <(git tag -l 'v*' | sed 's/^v//')
+          if printf '%s\n' "${vers[@]}" | grep -qxF "$ver"; then
+            echo "::error::Release tag '$tag' already exists."; exit 1
+          fi
+          same="$(printf '%s\n' "${vers[@]}" | grep -E "^${line//./\\.}" | sed 's/-/~/' | sort -V | sed 's/~/-/' | tail -1 || true)"
+          if [ -n "$same" ]; then
+            hi="$(printf '%s\n%s\n' "$same" "$ver" | sed 's/-/~/' | sort -V | sed 's/~/-/' | tail -1)"
+            if [ "$hi" != "$ver" ]; then
+              echo "::error::Release '$ver' is not greater than the last released '$same' on the ${line%.} line."
+              exit 1
+            fi
+            echo "Monotonic OK: $ver > $same (line ${line%.})."
+          else
+            echo "Monotonic OK: new ${line%.} line."
+          fi
+
       - run: yarn install --frozen-lockfile
 
+      - name: Validate (typecheck + schema drift + tests)
+        # The same gate as build-and-test.yml. A release must never ship a bundle that fails its own
+        # typecheck, the DHIS2 schema-drift check, or its tests.
+        run: yarn validate
+
       - name: Build the app bundle
-        # d2-app-scripts build packs by default → build/bundle/neoipc-app-<version>.zip (the installable
-        # DHIS2 app). Offline build; no DHIS2 API access.
+        # d2-app-scripts build packs by default -> build/bundle/neoipc-app-<version>.zip (the installable
+        # DHIS2 app). Offline build.
         run: yarn build
 
-      - name: Attach the app bundle to the Release
-        if: github.event_name == 'release'
+      - name: Create the Release and attach the bundle
+        # Tag-driven: after a successful build, create the GitHub Release (generated notes; pre-release
+        # when the version carries a pre-release suffix, e.g. -alpha) and attach the bundle .zip.
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-        run: gh release upload "${{ github.event.release.tag_name }}" build/bundle/*.zip --clobber
+        shell: bash
+        run: |
+          tag="$GITHUB_REF_NAME"
+          pre=""; case "$tag" in *-*) pre="--prerelease";; esac
+          gh release create "$tag" --generate-notes $pre build/bundle/*.zip
