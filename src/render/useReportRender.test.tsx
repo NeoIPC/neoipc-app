@@ -89,7 +89,7 @@ describe('useReportRender', () => {
         expect(result.current.loading).toBe(false)
         expect(result.current.result).toBeNull()
         expect(result.current.error?.message).toBe(
-            '400 Bad Request: Invalid period — from is after to'
+            'Invalid period — from is after to'
         )
     })
 

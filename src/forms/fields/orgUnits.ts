@@ -113,3 +113,40 @@ export const ancestorCountryCodesForSelection = (
     }
     return [...countries]
 }
+
+/**
+ * The set of pickable `code`s in `rows`: those with a non-empty code that do
+ * not belong to any group in `excludeGroupCodes`. `OrganisationUnitMultiSelect`
+ * shares one call across the option list, the crash-guard on `selected`, and
+ * the selection reconciliation, so all three agree on exactly what is
+ * currently pickable.
+ */
+export const pickableCodeSet = (
+    rows: OrgUnitRow[],
+    excludeGroupCodes: readonly string[]
+): Set<string> => {
+    const excluded = new Set(excludeGroupCodes)
+    const codes = new Set<string>()
+    for (const row of rows) {
+        if (row.code === null || row.code === '') continue
+        const inExcluded = (row.organisationUnitGroups ?? []).some(
+            (group) => group.code !== null && excluded.has(group.code)
+        )
+        if (!inExcluded) codes.add(row.code)
+    }
+    return codes
+}
+
+/**
+ * True when `rows` has coded units but every one is removed by
+ * `excludeGroupCodes` — i.e. the picker is empty *because of the exclusion*,
+ * not because the scope is empty. Drives the Partner form's "all your
+ * departments are excluded test units" notice, so a non-admin scoped only to
+ * test units gets an explanation instead of a silent empty picker.
+ */
+export const allCodedUnitsExcluded = (
+    rows: OrgUnitRow[],
+    excludeGroupCodes: readonly string[]
+): boolean =>
+    pickableCodeSet(rows, []).size > 0 &&
+    pickableCodeSet(rows, excludeGroupCodes).size === 0

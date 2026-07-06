@@ -13,13 +13,13 @@ import {
 /**
  * Partner report, data-file mode: render from an uploaded partner-data JSON (no
  * org unit / period needed — the file is the data). Both output formats. Skipped
- * until a real `partner-data.json` is captured (see e2e/data/README.md).
+ * until a real `partner-data.json` is captured (see e2e/fixtures/README.md).
  */
 test.describe('partner report — data-file mode', () => {
     test.use({ storageState: userByKey('atReport').storageState })
     test.skip(
         isPlaceholderFixture(PARTNER_DATA_FIXTURE),
-        'needs a real partner-data.json fixture — see e2e/data/README.md'
+        'needs a real partner-data.json fixture — see e2e/fixtures/README.md'
     )
 
     test('HTML output from an uploaded data file mounts a report fragment', async ({

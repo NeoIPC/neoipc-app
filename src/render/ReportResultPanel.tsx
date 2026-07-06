@@ -13,8 +13,8 @@ interface ReportResultPanelProps {
 /**
  * Render the result region under a report form. While a request is
  * in flight we show a centred {@link CircularLoader} plus an elapsed
- * counter (renders can take 5–10 minutes, so a static spinner reads
- * as "frozen" without the counter). On error we show a
+ * counter (a large dataset can take a little while, so a static spinner
+ * would read as "frozen" without the counter). On error we show a
  * {@link NoticeBox} with the enriched message from
  * {@link useReportRender}. On success-with-fragment we mount
  * {@link InlineHtmlReport}; PDF success is handled out-of-band as a
@@ -32,10 +32,9 @@ const ReportResultPanel: FC<ReportResultPanelProps> = ({
                 <div>
                     <CircularLoader />
                     <p>
-                        {i18n.t(
-                            'Rendering report... (elapsed {{seconds}}s — can take up to 10 minutes)',
-                            { seconds: elapsedSeconds }
-                        )}
+                        {i18n.t('Rendering report... (elapsed {{seconds}}s)', {
+                            seconds: elapsedSeconds,
+                        })}
                     </p>
                 </div>
             </Center>

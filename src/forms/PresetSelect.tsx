@@ -40,13 +40,19 @@ interface PresetSelectProps {
  */
 const PresetSelect: FC<PresetSelectProps> = ({ presets, value, onChange }) => {
     const names = presets ? Object.keys(presets) : []
+    // @dhis2/ui SingleSelect throws if `selected` names an option that
+    // isn't rendered — which happens in the window before the server
+    // presets load (`names` is empty, but `value` is already a preset
+    // name). Pass the value only once it is option-backed; the empty
+    // selection during loading shows the spinner rather than crashing.
+    const optionValues = new Set([...names, CUSTOM_PRESET])
     return (
         <SingleSelectField
             label={i18n.t('Content preset')}
             helpText={i18n.t(
                 'A preset fills the content options below. Choose "Custom" to edit each one yourself.'
             )}
-            selected={value}
+            selected={optionValues.has(value) ? value : undefined}
             loading={presets === null}
             onChange={({ selected }) => onChange(selected)}
         >

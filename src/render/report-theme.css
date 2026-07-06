@@ -15,7 +15,28 @@
     font-family: var(--theme-fonts, 'Roboto, sans-serif');
     color: var(--colors-grey900, #212934);
     line-height: 1.5;
-    padding: var(--spacers-dp16, 16px);
+    /*
+     * The rendered report is a document surface — a white card within the
+     * shared centred content column (ContentArea.module.css `.page`), so it
+     * lines up with the input form above it and reads as one centred document
+     * rather than stretching edge to edge. The column supplies the reading
+     * measure; this supplies the card's padding/background/border. Over-wide
+     * tables scroll inside their own container (below) instead of widening it.
+     */
+    padding: var(--spacers-dp24, 24px);
+    background: var(--colors-white, #ffffff);
+    border: 1px solid var(--colors-grey300, #d5dde5);
+    border-radius: 4px;
+}
+
+/*
+ * A table with more columns than the reading measure fits scrolls on its
+ * own instead of widening the document. `width: 100%` above still makes a
+ * narrow table fill the measure.
+ */
+#neoipc-rendered-report .cell-output-display:has(> table),
+#neoipc-rendered-report figure:has(> table) {
+    overflow-x: auto;
 }
 
 #neoipc-rendered-report h1,
@@ -93,5 +114,7 @@
         top: 0;
         width: 100%;
         padding: 0;
+        border: none;
+        background: none;
     }
 }

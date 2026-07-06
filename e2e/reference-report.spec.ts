@@ -14,7 +14,7 @@ import {
  * Reference report, stored-data mode: render the reference dataset that global
  * setup uploaded, as the AT report user (report-only — the admin live-fetch
  * filters are hidden, and Generate is disabled until a dataset is picked).
- * Skipped when no fixture was uploaded (placeholder — see e2e/data/README.md).
+ * Skipped when no fixture was uploaded (placeholder — see e2e/fixtures/README.md).
  */
 test.describe('reference report — stored dataset', () => {
     test.use({ storageState: userByKey('atReport').storageState })
@@ -25,7 +25,7 @@ test.describe('reference report — stored dataset', () => {
         const { referenceFixture } = readState()
         test.skip(
             !referenceFixture,
-            'no reference dataset uploaded — provide a real reference-data.json (see e2e/data/README.md)'
+            'no reference dataset uploaded — provide a real reference-data.json (see e2e/fixtures/README.md)'
         )
         await gotoApp(page, '/reports/reference')
         await selectReferenceDataset(page, referenceFixture!.displayName)
@@ -42,7 +42,7 @@ test.describe('reference report — stored dataset', () => {
         const { referenceFixture } = readState()
         test.skip(
             !referenceFixture,
-            'no reference dataset uploaded — provide a real reference-data.json (see e2e/data/README.md)'
+            'no reference dataset uploaded — provide a real reference-data.json (see e2e/fixtures/README.md)'
         )
         await gotoApp(page, '/reports/reference')
         await selectReferenceDataset(page, referenceFixture!.displayName)

@@ -15,8 +15,9 @@ import {
     adminGetSingle,
     adminPutSingle,
 } from '../api/admin'
+import { enrichError } from '../api/problemDetails'
 import { AdminResourceType } from './AdminResourceType'
-import { enrichError, formatBytes, formatDate } from './adminFormat'
+import { formatBytes, formatDate } from './adminFormat'
 
 interface AdminSingletonPageProps<T extends AdminResourceMetadata> {
     resource: AdminResourceType<T>
@@ -156,6 +157,7 @@ function AdminSingletonPage<T extends AdminResourceMetadata>({
                     />
                     <FileInput
                         name="file"
+                        buttonLabel={i18n.t('Choose file')}
                         accept={resource.accept}
                         onChange={({ files }) => setFile(files?.[0] ?? null)}
                         disabled={uploading}

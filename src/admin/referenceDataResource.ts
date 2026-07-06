@@ -34,6 +34,7 @@ export const referenceDataResource: AdminResourceType<AdminReferenceDataMetadata
         plural: () => i18n.t('Reference datasets'),
         accept: 'application/json',
         uploadContentType: 'application/json',
+        refreshesAppReferenceData: true,
         displayNameHelp: () =>
             i18n.t(
                 'Operator-facing label that appears in the picker on the Reference Report form.'

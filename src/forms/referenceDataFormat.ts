@@ -36,11 +36,30 @@ export const formatReportingPeriod = (
 }
 
 /**
+ * Patient-scope part of the cohort — core-vs-all-patients and test-units —
+ * always shown because it distinguishes otherwise-identical cohorts. Split out
+ * so the reference-data card can put birth-weight / gestational-age on their
+ * own rows (including "Any") and this on a dedicated cohort row, without
+ * duplicating the bounds.
+ */
+export const patientCohortLabel = (
+    dataset: PublicReferenceDataMetadata
+): string =>
+    [
+        dataset.includeNonCorePatients
+            ? i18n.t('all patients')
+            : i18n.t('core only'),
+        dataset.includeTestUnits
+            ? i18n.t('incl. test units')
+            : i18n.t('no test units'),
+    ].join(' · ')
+
+/**
  * One-line composite cohort label, e.g.
  * `BW 0–1500 g · GA <32 w · core only · no test units`. Birth-weight /
- * gestational-age clauses are omitted when unbounded; the
- * core-vs-all-patients and test-units clauses are always shown because
- * they distinguish otherwise-identical cohorts.
+ * gestational-age clauses are omitted when unbounded (the reference-data card
+ * shows those as dedicated "Any" rows instead); the patient-scope clauses are
+ * always shown because they distinguish otherwise-identical cohorts.
  */
 export const cohortLabel = (dataset: PublicReferenceDataMetadata): string => {
     const parts: string[] = []
@@ -56,16 +75,7 @@ export const cohortLabel = (dataset: PublicReferenceDataMetadata): string => {
         i18n.t('w')
     )
     if (ga) parts.push(i18n.t('GA {{range}}', { range: ga }))
-    parts.push(
-        dataset.includeNonCorePatients
-            ? i18n.t('all patients')
-            : i18n.t('core only')
-    )
-    parts.push(
-        dataset.includeTestUnits
-            ? i18n.t('incl. test units')
-            : i18n.t('no test units')
-    )
+    parts.push(patientCohortLabel(dataset))
     return parts.join(' · ')
 }
 

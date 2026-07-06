@@ -1,3 +1,5 @@
+import renderMathInElement from 'katex/contrib/auto-render'
+import 'katex/dist/katex.min.css'
 import React, { FC, useEffect, useRef } from 'react'
 
 /**
@@ -11,6 +13,32 @@ export const REPORT_CONTAINER_ID = 'neoipc-rendered-report'
 
 interface InlineHtmlReportProps {
     fragmentHtml: string
+}
+
+/**
+ * Typeset the LaTeX math the report emits as literal `$$…$$` text.
+ *
+ * The math originates in gt table footnotes (`md("$$…$$")`), which gt passes
+ * through as raw text — and Quarto's `minimal` HTML ships no math renderer of
+ * its own (its MathJax loader lives in the stripped `<head>`), so the app
+ * renders it here with bundled KaTeX: no CDN, CSP-safe. Only `$$`/`\[`/`\(`
+ * delimiters are recognised (not bare `$`) to avoid mis-parsing stray dollar
+ * signs in the report body. `throwOnError: false` renders a malformed formula
+ * as its source rather than aborting the whole pass.
+ */
+const typesetMath = (container: HTMLElement): void => {
+    try {
+        renderMathInElement(container, {
+            delimiters: [
+                { left: '$$', right: '$$', display: true },
+                { left: '\\[', right: '\\]', display: true },
+                { left: '\\(', right: '\\)', display: false },
+            ],
+            throwOnError: false,
+        })
+    } catch (err) {
+        console.error('Failed to typeset report math', err)
+    }
 }
 
 /**
@@ -45,6 +73,7 @@ const InlineHtmlReport: FC<InlineHtmlReportProps> = ({ fragmentHtml }) => {
 
         let cancelled = false
         container.innerHTML = fragmentHtml
+        typesetMath(container)
 
         const reExecute = async () => {
             const scripts = Array.from(container.querySelectorAll('script'))

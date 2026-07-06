@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-07-01T10:40:21.859Z\n"
-"PO-Revision-Date: 2026-07-01T10:40:21.860Z\n"
+"POT-Creation-Date: 2026-07-05T19:01:45.623Z\n"
+"PO-Revision-Date: 2026-07-05T19:01:45.624Z\n"
 
 msgid "Upload"
 msgstr "Upload"
@@ -19,6 +19,9 @@ msgstr "Display name"
 
 msgid "Optional; blank uses a timestamp-based default."
 msgstr "Optional; blank uses a timestamp-based default."
+
+msgid "Choose file"
+msgstr "Choose file"
 
 msgid "Failed to load list"
 msgstr "Failed to load list"
@@ -102,6 +105,55 @@ msgid ""
 msgstr ""
 "Operator-facing label. Partners reference this file by ID when generating a "
 "report."
+
+msgid "Select at least one department."
+msgstr "Select at least one department."
+
+msgid "Choose a data file to upload."
+msgstr "Choose a data file to upload."
+
+msgid "The selected confidence-interval option is not valid."
+msgstr "The selected confidence-interval option is not valid."
+
+msgid "The selected benchmark dataset is no longer available — choose another."
+msgstr "The selected benchmark dataset is no longer available — choose another."
+
+msgid "The selected report language is not available."
+msgstr "The selected report language is not available."
+
+msgid ""
+"A saved reference dataset and live-fetch filters cannot be combined — clear "
+"one of them."
+msgstr ""
+"A saved reference dataset and live-fetch filters cannot be combined — clear "
+"one of them."
+
+msgid "One of the values contains characters that are not allowed."
+msgstr "One of the values contains characters that are not allowed."
+
+msgid "The uploaded file is not a valid reference dataset."
+msgstr "The uploaded file is not a valid reference dataset."
+
+msgid "The uploaded file type is not supported."
+msgstr "The uploaded file type is not supported."
+
+msgid "The requested item no longer exists."
+msgstr "The requested item no longer exists."
+
+msgid "You do not have permission to perform this action."
+msgstr "You do not have permission to perform this action."
+
+msgid "The request was not valid."
+msgstr "The request was not valid."
+
+msgid "Something went wrong while generating the report. Please try again."
+msgstr "Something went wrong while generating the report. Please try again."
+
+msgid "The report is not available in the requested format or language."
+msgstr "The report is not available in the requested format or language."
+
+msgid "The request could not be completed."
+msgstr "The request could not be completed."
 
 msgid "Please select a data file before submitting."
 msgstr "Please select a data file before submitting."
@@ -187,6 +239,63 @@ msgstr "Search"
 msgid "No match"
 msgstr "No match"
 
+msgid "Patient population filters"
+msgstr "Patient population filters"
+
+msgid "Birth weight (g)"
+msgstr "Birth weight (g)"
+
+msgid "Gestational age (weeks)"
+msgstr "Gestational age (weeks)"
+
+msgid "Include non-core patients"
+msgstr "Include non-core patients"
+
+msgid "Benchmark dataset"
+msgstr "Benchmark dataset"
+
+msgid "Reference dataset to compare against"
+msgstr "Reference dataset to compare against"
+
+msgid "Automatic — best match for these settings"
+msgstr "Automatic — best match for these settings"
+
+msgid "Choose a dataset manually"
+msgstr "Choose a dataset manually"
+
+msgid "None — show only your data"
+msgstr "None — show only your data"
+
+msgid "No benchmark"
+msgstr "No benchmark"
+
+msgid "No benchmark selected"
+msgstr "No benchmark selected"
+
+msgid "Confidence intervals"
+msgstr "Confidence intervals"
+
+msgid "Backend default if unset."
+msgstr "Backend default if unset."
+
+msgid "(backend default)"
+msgstr "(backend default)"
+
+msgid "Include introduction texts"
+msgstr "Include introduction texts"
+
+msgid "Include methods texts"
+msgstr "Include methods texts"
+
+msgid "Report language"
+msgstr "Report language"
+
+msgid "Leave blank to use the locale from your DHIS2 user setting."
+msgstr "Leave blank to use the locale from your DHIS2 user setting."
+
+msgid "(use DHIS2 user setting)"
+msgstr "(use DHIS2 user setting)"
+
 msgid "Output format"
 msgstr "Output format"
 
@@ -208,71 +317,37 @@ msgstr "Upload partner data file (JSON)"
 msgid "Departments"
 msgstr "Departments"
 
+msgid "No selectable departments"
+msgstr "No selectable departments"
+
+msgid ""
+"All departments in your scope are test units. Turn on \"Include test data\" "
+"under Advanced to select them."
+msgstr ""
+"All departments in your scope are test units. Turn on \"Include test data\" "
+"under Advanced to select them."
+
+msgid ""
+"All departments in your scope are test units, which are excluded from "
+"reports. Ask an administrator to include test data."
+msgstr ""
+"All departments in your scope are test units, which are excluded from "
+"reports. Ask an administrator to include test data."
+
 msgid "More options"
 msgstr "More options"
-
-msgid "Patient population filters"
-msgstr "Patient population filters"
-
-msgid "Birth weight (g)"
-msgstr "Birth weight (g)"
-
-msgid "Gestational age (weeks)"
-msgstr "Gestational age (weeks)"
-
-msgid "Include non-core patients"
-msgstr "Include non-core patients"
 
 msgid "Benchmark"
 msgstr "Benchmark"
 
-msgid "Reference dataset to compare against"
-msgstr "Reference dataset to compare against"
-
-msgid "Automatic — best match for these settings"
-msgstr "Automatic — best match for these settings"
-
-msgid "Choose a dataset manually"
-msgstr "Choose a dataset manually"
-
-msgid "No benchmark selected"
-msgstr "No benchmark selected"
-
-msgid "Benchmark dataset"
-msgstr "Benchmark dataset"
-
 msgid "Content"
 msgstr "Content"
-
-msgid "Confidence intervals"
-msgstr "Confidence intervals"
-
-msgid "Backend default if unset."
-msgstr "Backend default if unset."
-
-msgid "(backend default)"
-msgstr "(backend default)"
-
-msgid "Include introduction texts"
-msgstr "Include introduction texts"
-
-msgid "Include methods texts"
-msgstr "Include methods texts"
 
 msgid "Language"
 msgstr "Language"
 
-msgid "Report language"
-msgstr "Report language"
-
-msgid "Leave blank to use the locale from your DHIS2 user setting."
-msgstr "Leave blank to use the locale from your DHIS2 user setting."
-
-msgid "(use DHIS2 user setting)"
-msgstr "(use DHIS2 user setting)"
-
-msgid "Advanced"
-msgstr "Advanced"
+msgid "Advanced (admins only)"
+msgstr "Advanced (admins only)"
 
 msgid "Include test data"
 msgstr "Include test data"
@@ -282,6 +357,9 @@ msgstr "Sparse data threshold"
 
 msgid "Include outlier interpretation"
 msgstr "Include outlier interpretation"
+
+msgid "Please correct the highlighted fields"
+msgstr "Please correct the highlighted fields"
 
 msgid "Generate"
 msgstr "Generate"
@@ -321,6 +399,21 @@ msgstr ""
 msgid "Period"
 msgstr "Period"
 
+msgid "Birth weight"
+msgstr "Birth weight"
+
+msgid "g"
+msgstr "g"
+
+msgid "Any"
+msgstr "Any"
+
+msgid "Gestational age"
+msgstr "Gestational age"
+
+msgid "w"
+msgstr "w"
+
 msgid "Cohort"
 msgstr "Cohort"
 
@@ -332,18 +425,6 @@ msgstr "until {{to}}"
 
 msgid "All periods"
 msgstr "All periods"
-
-msgid "g"
-msgstr "g"
-
-msgid "BW {{range}}"
-msgstr "BW {{range}}"
-
-msgid "w"
-msgstr "w"
-
-msgid "GA {{range}}"
-msgstr "GA {{range}}"
 
 msgid "all patients"
 msgstr "all patients"
@@ -357,6 +438,12 @@ msgstr "incl. test units"
 msgid "no test units"
 msgstr "no test units"
 
+msgid "BW {{range}}"
+msgstr "BW {{range}}"
+
+msgid "GA {{range}}"
+msgstr "GA {{range}}"
+
 msgid "All countries"
 msgstr "All countries"
 
@@ -366,14 +453,8 @@ msgstr "No reference datasets"
 msgid "No saved reference datasets are available yet."
 msgstr "No saved reference datasets are available yet."
 
-msgid "Any"
-msgstr "Any"
-
 msgid "Country"
 msgstr "Country"
-
-msgid "Search by name"
-msgstr "Search by name"
 
 msgid "Reference dataset"
 msgstr "Reference dataset"
@@ -381,8 +462,11 @@ msgstr "Reference dataset"
 msgid "(none)"
 msgstr "(none)"
 
-msgid "Live-fetch filters"
-msgstr "Live-fetch filters"
+msgid "Pick a pre-computed reference dataset to render."
+msgstr "Pick a pre-computed reference dataset to render."
+
+msgid "Live-fetch filters (admins only)"
+msgstr "Live-fetch filters (admins only)"
 
 msgid "Disabled — a saved dataset is selected above."
 msgstr "Disabled — a saved dataset is selected above."
@@ -411,20 +495,29 @@ msgstr "Apply"
 msgid "Skip"
 msgstr "Skip"
 
+msgid "The \"from\" value must not exceed the \"to\" value."
+msgstr "The \"from\" value must not exceed the \"to\" value."
+
+msgid "The start date must not be after the end date."
+msgstr "The start date must not be after the end date."
+
 msgid "Partner Report"
 msgstr "Partner Report"
 
 msgid "Reference Report"
 msgstr "Reference Report"
 
-msgid "Rendering report... (elapsed {{seconds}}s — can take up to 10 minutes)"
-msgstr "Rendering report... (elapsed {{seconds}}s — can take up to 10 minutes)"
+msgid "Rendering report... (elapsed {{seconds}}s)"
+msgstr "Rendering report... (elapsed {{seconds}}s)"
 
 msgid "Report rendering failed"
 msgstr "Report rendering failed"
 
 msgid "No NeoIPC access"
 msgstr "No NeoIPC access"
+
+msgid "Open navigation menu"
+msgstr "Open navigation menu"
 
 msgctxt "Application title"
 msgid "__MANIFEST_APP_TITLE"

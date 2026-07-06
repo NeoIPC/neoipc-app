@@ -1,7 +1,9 @@
 import {
     OrgUnitRow,
+    allCodedUnitsExcluded,
     ancestorCountryCodesForSelection,
     anySelectedInGroup,
+    pickableCodeSet,
 } from './orgUnits'
 
 const row = (
@@ -74,5 +76,49 @@ describe('ancestorCountryCodesForSelection', () => {
         expect(ancestorCountryCodesForSelection(rows, ['D2'], COUNTRY)).toEqual(
             []
         )
+    })
+})
+
+describe('pickableCodeSet', () => {
+    it('includes coded rows and drops codeless ones', () => {
+        const rows = [row('D1', ['NEO_DEPARTMENT']), row(null, ['NEO_DEPARTMENT'])]
+        expect([...pickableCodeSet(rows, [])]).toEqual(['D1'])
+    })
+
+    it('drops rows belonging to an excluded group', () => {
+        const rows = [
+            row('D1', ['NEO_DEPARTMENT']),
+            row('T1', ['NEO_DEPARTMENT', 'TEST_UNITS']),
+        ]
+        const set = pickableCodeSet(rows, ['TEST_UNITS'])
+        expect(set.has('D1')).toBe(true)
+        expect(set.has('T1')).toBe(false)
+    })
+
+    it('keeps every coded row when no groups are excluded', () => {
+        const rows = [row('D1', ['TEST_UNITS']), row('D2', [])]
+        expect([...pickableCodeSet(rows, [])].sort()).toEqual(['D1', 'D2'])
+    })
+})
+
+describe('allCodedUnitsExcluded', () => {
+    it('is true when every coded unit is in an excluded group', () => {
+        const rows = [row('T1', ['NEO_DEPARTMENT', 'TEST_UNITS'])]
+        expect(allCodedUnitsExcluded(rows, ['TEST_UNITS'])).toBe(true)
+    })
+    it('is false when at least one coded unit survives exclusion', () => {
+        const rows = [
+            row('D1', ['NEO_DEPARTMENT']),
+            row('T1', ['NEO_DEPARTMENT', 'TEST_UNITS']),
+        ]
+        expect(allCodedUnitsExcluded(rows, ['TEST_UNITS'])).toBe(false)
+    })
+    it('is false when nothing is excluded', () => {
+        const rows = [row('T1', ['TEST_UNITS'])]
+        expect(allCodedUnitsExcluded(rows, [])).toBe(false)
+    })
+    it('is false when there are no coded units at all', () => {
+        const rows = [row(null, ['TEST_UNITS'])]
+        expect(allCodedUnitsExcluded(rows, ['TEST_UNITS'])).toBe(false)
     })
 })

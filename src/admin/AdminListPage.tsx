@@ -15,6 +15,7 @@ import {
     NoticeBox,
 } from '@dhis2/ui'
 import React, { FC, useCallback, useEffect, useState } from 'react'
+import { useAppContext } from '../AppContext'
 import {
     AdminResourceMetadata,
     adminDelete,
@@ -22,7 +23,8 @@ import {
     adminList,
     adminUpload,
 } from '../api/admin'
-import { enrichError, formatBytes, formatDate } from './adminFormat'
+import { enrichError } from '../api/problemDetails'
+import { formatBytes, formatDate } from './adminFormat'
 import { AdminResourceType } from './AdminResourceType'
 
 interface AdminListPageProps<T extends AdminResourceMetadata> {
@@ -50,6 +52,7 @@ function AdminListPage<T extends AdminResourceMetadata>({
     resource,
 }: AdminListPageProps<T>): ReturnType<FC> {
     const { baseUrl } = useConfig()
+    const { reloadReferenceDataSets } = useAppContext()
     const [items, setItems] = useState<T[] | null>(null)
     const [loadError, setLoadError] = useState<Error | null>(null)
     const [actionError, setActionError] = useState<Error | null>(null)
@@ -73,6 +76,15 @@ function AdminListPage<T extends AdminResourceMetadata>({
         void reload()
     }, [reload])
 
+    // A reference-data mutation changes the list the report forms read from
+    // AppContext, so refresh it (their benchmark pickers otherwise stay stale
+    // until a full reload). Non-blocking — the admin list already reflects the
+    // change locally, so a failed refresh doesn't undo the mutation.
+    const refreshAppData = useCallback(() => {
+        if (!resource.refreshesAppReferenceData) return
+        void reloadReferenceDataSets().catch(() => {})
+    }, [resource.refreshesAppReferenceData, reloadReferenceDataSets])
+
     const onUpload = async (event: React.FormEvent) => {
         event.preventDefault()
         if (!file) return
@@ -89,6 +101,7 @@ function AdminListPage<T extends AdminResourceMetadata>({
             setItems((prev) => (prev === null ? [created] : [created, ...prev]))
             setFile(null)
             setDisplayName('')
+            refreshAppData()
         } catch (err) {
             setActionError(await enrichError(err))
         } finally {
@@ -104,6 +117,7 @@ function AdminListPage<T extends AdminResourceMetadata>({
             setItems((prev) =>
                 prev === null ? prev : prev.filter((i) => i.id !== item.id)
             )
+            refreshAppData()
         } catch (err) {
             setActionError(await enrichError(err))
         } finally {
@@ -135,6 +149,7 @@ function AdminListPage<T extends AdminResourceMetadata>({
                     />
                     <FileInput
                         name="file"
+                        buttonLabel={i18n.t('Choose file')}
                         accept={resource.accept}
                         onChange={({ files }) =>
                             setFile(files?.[0] ?? null)

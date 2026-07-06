@@ -1,6 +1,6 @@
 import { useConfig } from '@dhis2/app-runtime'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { NeoipcReportingError } from '../api/neoipcReporting'
+import { enrichError } from '../api/problemDetails'
 import { downloadBlob, RenderResult } from '../api/reports'
 
 interface UseReportRenderState {
@@ -30,8 +30,8 @@ interface UseReportRender<TValues> extends UseReportRenderState {
  *     so the body is short and human-friendly.
  *
  * `elapsedSeconds` ticks every second while loading; the long-poll
- * UX in the result panel uses it to reassure the user that a 5–10
- * minute render is still alive.
+ * UX in the result panel uses it to reassure the user that a slow
+ * render (a large dataset) is still alive.
  */
 export const useReportRender = <TValues>(
     render: (baseUrl: string, values: TValues) => Promise<RenderResult>
@@ -120,42 +120,4 @@ export const useReportRender = <TValues>(
     }, [stopTimer])
 
     return { ...state, submit, reset }
-}
-
-/**
- * Read the `Response` body of a {@link NeoipcReportingError} and fold
- * it into a richer `Error` message. The backend emits RFC 7807
- * `application/problem+json` with `title` + `detail` fields; falls
- * back to the raw text or the original error if the body can't be
- * parsed.
- */
-const enrichError = async (err: unknown): Promise<Error> => {
-    if (!(err instanceof NeoipcReportingError)) {
-        return err instanceof Error ? err : new Error(String(err))
-    }
-    try {
-        const contentType = err.response.headers.get('content-type') ?? ''
-        if (contentType.includes('json')) {
-            const body = (await err.response.json()) as {
-                title?: string
-                detail?: string
-            }
-            const parts = [body.title, body.detail].filter(Boolean)
-            if (parts.length > 0) {
-                return new Error(
-                    `${err.response.status} ${err.response.statusText}: ${parts.join(' — ')}`
-                )
-            }
-        } else {
-            const text = await err.response.text()
-            if (text) {
-                return new Error(
-                    `${err.response.status} ${err.response.statusText}: ${text.slice(0, 500)}`
-                )
-            }
-        }
-    } catch {
-        // Falls through to the bare status-line error below.
-    }
-    return err
 }

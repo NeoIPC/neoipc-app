@@ -1,4 +1,5 @@
 .shell {
+    position: relative;
     display: grid;
     grid-template-columns: 256px 1fr;
     height: 100%;
@@ -14,6 +15,19 @@
 .contentArea {
     padding: var(--spacers-dp24);
     overflow-y: auto;
+    /* Light page background so the centred white content cards (forms and the
+     * rendered-report card) read as a document on a surface rather than
+     * white-on-white. */
+    background: var(--colors-grey100, #f3f5f7);
+}
+
+/* Mobile nav-drawer controls — hidden on desktop (shown in the media query). */
+.hamburger {
+    display: none;
+}
+
+.backdrop {
+    display: none;
 }
 
 .noAccess {
@@ -22,4 +36,86 @@
     height: 100%;
     min-height: 100vh;
     padding: var(--spacers-dp24);
+}
+
+/*
+ * Narrow viewports (phones, split-screen windows): the fixed 256px sidebar
+ * would crush the content pane (at 402px it leaves ~146px). Collapse to a
+ * single column — content spans full width and the nav becomes an off-canvas
+ * drawer opened by the hamburger. The form's own field grids collapse to one
+ * column via their own breakpoints.
+ */
+@media (max-width: 768px) {
+    .shell {
+        grid-template-columns: 1fr;
+    }
+
+    /*
+     * Compact toggle overlaid at the top-left, taken out of the content flow
+     * so it reserves only its own height (not a full grid row) uniformly on
+     * every page.
+     */
+    .hamburger {
+        position: absolute;
+        top: var(--spacers-dp8);
+        left: var(--spacers-dp8);
+        z-index: 5;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--spacers-dp4);
+        border: none;
+        border-radius: 4px;
+        background: none;
+        color: var(--colors-grey900);
+        cursor: pointer;
+    }
+
+    .hamburger:hover {
+        background: var(--colors-grey200);
+    }
+
+    /* Single column, full width; top padding clears the overlaid hamburger. */
+    .contentArea {
+        padding: var(--spacers-dp12);
+        padding-top: var(--spacers-dp48, 48px);
+    }
+
+    /*
+     * Off-canvas drawer + backdrop are absolute within the (relative) shell —
+     * NOT fixed to the viewport — so they start below the DHIS2 header bar
+     * (which sits above the shell) instead of covering it.
+     */
+    .leftNav {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 256px;
+        max-width: 80vw;
+        z-index: 1001;
+        background: var(--colors-white);
+        border-right: 1px solid var(--colors-grey300);
+        transform: translateX(-100%);
+        /* Hide the closed drawer from tab order and the a11y tree (React 18 has no
+         * native `inert`). The visibility flip is delayed 0.2s so it lands after
+         * the slide-out finishes; .leftNavOpen flips it back immediately. */
+        visibility: hidden;
+        transition: transform 0.2s ease, visibility 0s linear 0.2s;
+    }
+
+    .leftNavOpen {
+        transform: translateX(0);
+        visibility: visible;
+        transition: transform 0.2s ease;
+        box-shadow: 2px 0 16px rgba(0, 0, 0, 0.25);
+    }
+
+    .backdrop {
+        display: block;
+        position: absolute;
+        inset: 0;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.32);
+    }
 }

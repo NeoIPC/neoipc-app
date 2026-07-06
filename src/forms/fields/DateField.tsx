@@ -10,6 +10,9 @@ interface DateFieldProps {
     onChange: (value: string) => void
     disabled?: boolean
     required?: boolean
+    /** Mark the field invalid (red) with an inline message. */
+    error?: boolean
+    validationText?: string
 }
 
 /**
@@ -28,6 +31,8 @@ const DateField: FC<DateFieldProps> = ({
     onChange,
     disabled,
     required,
+    error,
+    validationText,
 }) => (
     <CalendarInput
         name={name}
@@ -42,6 +47,8 @@ const DateField: FC<DateFieldProps> = ({
         }
         disabled={disabled}
         required={required}
+        error={error}
+        validationText={error ? validationText : undefined}
     />
 )
 

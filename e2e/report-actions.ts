@@ -141,14 +141,41 @@ export async function clickGenerate(page: Page): Promise<void> {
 }
 
 /**
- * Open the reference-dataset select (`data-test="referenceDataId"`) and pick
- * the option carrying `displayName` (its label is "displayName — period", so a
- * substring name match selects it).
+ * Ensure the reference-dataset select (`data-test="referenceDataId"`) shows the
+ * dataset carrying `displayName` (its label is "displayName — period", so a
+ * substring text match identifies it).
+ *
+ * The form preselects the first saved dataset *asynchronously*, so the wanted one
+ * usually surfaces on its own (in the select's value display and its summary
+ * card). Wait for it — a retrying `waitFor`, not a point-in-time check, so the
+ * decision doesn't race preselection — and return without touching the picker:
+ * re-picking an already-selected `@dhis2/ui` option is a no-op that leaves the
+ * menu (and its click-blocking backdrop) open, which then swallows the next
+ * click. Only when a *different* dataset was preselected (the wanted label never
+ * appears) do we open the menu and pick it. The option is matched inside
+ * `#dhis2-portal-root`, where the open menu renders: `@dhis2/ui`'s
+ * `SingleSelectOption` is a plain `<div>`, not an ARIA `option` (so
+ * `getByRole('option')` never resolves), and scoping to the portal avoids
+ * matching the value display, which sits behind the backdrop while the menu is
+ * open. The trailing `Escape` guarantees the menu is closed even if the pick ever
+ * lands on an already-selected option.
  */
 export async function selectReferenceDataset(
     page: Page,
     displayName: string
 ): Promise<void> {
+    const preselected = await page
+        .getByText(displayName, { exact: false })
+        .first()
+        .waitFor({ state: 'visible', timeout: 5000 })
+        .then(() => true)
+        .catch(() => false)
+    if (preselected) return
     await page.locator('[data-test="referenceDataId"]').click()
-    await page.getByRole('option', { name: displayName }).click()
+    await page
+        .locator('#dhis2-portal-root')
+        .getByText(displayName, { exact: false })
+        .first()
+        .click()
+    await page.keyboard.press('Escape')
 }
