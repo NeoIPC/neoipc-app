@@ -1,5 +1,5 @@
 import { request } from '@playwright/test'
-import { dhis2FormLogin } from './dhis2-login'
+import { dhis2Login } from './dhis2-login'
 import { deleteReferenceData, readState } from './api'
 
 /**
@@ -22,9 +22,8 @@ async function globalTeardown(): Promise<void> {
     const adminUser = process.env.DHIS2_ADMIN_USER ?? 'admin'
     const adminPass = process.env.DHIS2_ADMIN_PASS ?? 'district'
 
-    const ctx = await request.newContext({ baseURL, ignoreHTTPSErrors: true })
+    const ctx = await dhis2Login(request, baseURL, adminUser, adminPass)
     try {
-        await dhis2FormLogin(ctx, adminUser, adminPass)
         await deleteReferenceData(ctx, fixtureId)
     } finally {
         await ctx.dispose()
