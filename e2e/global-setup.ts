@@ -1,7 +1,7 @@
 import { request } from '@playwright/test'
 import fs from 'node:fs'
 import path from 'node:path'
-import { dhis2FormLogin } from './dhis2-login'
+import { dhis2Login } from './dhis2-login'
 import {
     NEOIPC_BASE,
     installApp,
@@ -52,10 +52,8 @@ async function globalSetup(): Promise<void> {
     const adminUser = process.env.DHIS2_ADMIN_USER ?? 'admin'
     const adminPass = process.env.DHIS2_ADMIN_PASS ?? 'district'
 
-    const ctx = await request.newContext({ baseURL, ignoreHTTPSErrors: true })
+    const ctx = await dhis2Login(request, baseURL, adminUser, adminPass)
     try {
-        await dhis2FormLogin(ctx, adminUser, adminPass)
-
         const appDir = path.resolve(__dirname, '..')
         const pkg = JSON.parse(
             fs.readFileSync(path.join(appDir, 'package.json'), 'utf8')
