@@ -64,7 +64,7 @@ export async function dhis2Login(
             // A transport-level failure (timeout, ECONNRESET, connection refused)
             // rejects the login POST/storageState; record it and fall through to
             // the next endpoint rather than aborting the whole helper.
-            diagnostics.push(`${label}: threw ${(err as Error).message}`)
+            diagnostics.push(`${label}: threw ${err instanceof Error ? err.message : String(err)}`)
         }
         await ctx.dispose()
     }
