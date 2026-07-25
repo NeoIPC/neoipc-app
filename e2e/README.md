@@ -17,6 +17,7 @@ DHIS2 origin — production fidelity, not the `yarn start:dev` proxy.
 | `reference-report` | Render a stored reference dataset, both formats. *(needs a real fixture)* |
 | `admin-crud` | reference-data list (upload → row → delete); validation-exceptions singleton (upload → current file → remove). |
 | `locale-switch` | `keyUiLocale=de` + reload flips the translated nav label. |
+| `a11y` | axe-core (WCAG 2.1 A + AA) over the main routes per persona, tolerating only known `@dhis2/ui` component defects. Chromium only — axe evaluates the DOM, which is identical across engines. |
 
 ## Prerequisites
 
