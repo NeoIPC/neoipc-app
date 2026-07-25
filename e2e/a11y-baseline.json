@@ -1,0 +1,4 @@
+{
+  "_readme": "Accessibility-regression baseline for the axe (WCAG 2.1 AA) e2e gate in a11y.spec.ts. `ignoredRules` lists axe rule ids that are known @dhis2/ui vendor issues the app cannot fix directly; violations of those rules are tolerated, anything new fails the gate. Populate by running the a11y spec once, reviewing each test's attached `axe-<route>` result, fixing what is in the app's own markup, and moving genuine vendor rule ids here (keep the list minimal and revisit when @dhis2/ui is upgraded).",
+  "ignoredRules": []
+}
