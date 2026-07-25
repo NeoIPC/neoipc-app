@@ -26,6 +26,16 @@ async function revealRouteContent(page: Page): Promise<void> {
     // The routed page owns the only <h1>; the shell chrome has none.
     await expect(page.locator('main h1').first()).toBeVisible()
 
+    // The <h1> can paint in the same commit that starts the page's data fetch, so
+    // it alone does not mean the pane is populated — on the admin routes, which
+    // have no disclosures for the loop below to wait on, it would be the only
+    // barrier. Both admin pages render a CircularLoader while their data is in
+    // flight, so its absence is the settle that makes their coverage as real as
+    // the report routes'.
+    await expect(
+        page.locator('main [data-test="dhis2-uicore-circularloader"]')
+    ).toHaveCount(0)
+
     // Expand every collapsed disclosure, re-querying each pass because expanding
     // one section can reveal another nested inside it. Each click expands exactly
     // one, so waiting for the expanded count to rise settles the DOM before the
