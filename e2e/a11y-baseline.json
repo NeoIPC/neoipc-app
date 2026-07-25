@@ -1,4 +1,25 @@
 {
-  "_readme": "Accessibility-regression baseline for the axe (WCAG 2.1 AA) e2e gate in a11y.spec.ts. The gate audits the whole page — including the app's own shell chrome (hamburger button, <nav> wrapper) — and tolerates only the specific @dhis2/ui vendor NODES listed in `ignored`, matched by axe rule id + a distinctive substring of the node's target selector. Per-node (not per-rule) on purpose: it never silences a rule for future markup, so a new app-introduced violation — even the same rule on a different element — still fails. Add an entry only for a genuinely-unfixable @dhis2/ui node, and revisit on each @dhis2/ui upgrade.",
-  "ignored": []
+  "_readme": "Accessibility baseline for the axe (WCAG 2.1 AA) e2e gate in a11y.spec.ts. The gate scans the whole page — nothing is excluded — and tolerates a violation only when its node sits inside one of the @dhis2/ui components listed below, matched by axe rule id plus that component's own data-test selector. Anchoring on the component rather than on a page region or an individual element is deliberate: adding a nav entry or another shell element does not turn the gate red for a defect the vendor already owns, yet every other rule on those components, and every rule on the app's own markup wherever it sits, still fails. Add an entry only for a defect that is genuinely unfixable from the app, quote the vendor source that causes it, and re-check the list on each @dhis2/ui upgrade.",
+  "ignored": [
+    {
+      "rule": "aria-required-children",
+      "within": "[data-test=\"dhis2-uicore-menulist\"]",
+      "note": "@dhis2/ui <Menu> renders <ul role=\"menu\"> (menu/menu.js) whose <li> children carry role=\"presentation\" together with a tabindex (menu-item/menu-item.js). A focusable element's presentation role is conflict-resolved back to its implicit role, so the menu's owned children compute as listitem. Structural to the component — it fires for every MenuItem regardless of the props the app passes."
+    },
+    {
+      "rule": "aria-required-parent",
+      "within": "[data-test=\"dhis2-uicore-menuitem\"]",
+      "note": "The same @dhis2/ui <Menu> defect seen from the child side: each <a role=\"menuitem\"> sits inside the conflict-resolved <li>, so its parent computes as listitem instead of menu."
+    },
+    {
+      "rule": "button-name",
+      "within": "[data-test=\"headerbar-apps-icon\"]",
+      "note": "@dhis2/ui <HeaderBar> apps-menu toggle (header-bar/apps.js): an icon-only <button> holding just an IconApps24 svg, with no aria-label and no text content."
+    },
+    {
+      "rule": "link-name",
+      "within": "[data-test=\"headerbar-logo\"]",
+      "note": "@dhis2/ui <HeaderBar> logo link (header-bar/logo.js): <a href={baseUrl}> wrapping a nameless LogoIconWhite svg. Fires only while the instance has no custom logo banner configured — the custom-logo branch renders an <img> that carries an alt attribute."
+    }
+  ]
 }

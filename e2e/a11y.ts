@@ -6,41 +6,59 @@ import path from 'node:path'
 const BASELINE_PATH = path.join(__dirname, 'a11y-baseline.json')
 
 /**
- * One tolerated violation *node*: a specific axe rule failing on a specific
- * element, identified by a distinctive substring of that node's target selector.
- * Keyed per node (not per rule) on purpose — ignoring a whole rule id would
- * silence it for all future markup too, whereas this tolerates only the exact
- * known element and still fails the gate on any new violation, including the
- * same rule on a different node.
+ * One tolerated accessibility violation: an axe rule that fails inside a
+ * specific third-party component, identified by that component's own stable
+ * `data-test` hook — not by page region, and not by the offending element's own
+ * selector.
+ *
+ * Anchoring to the component keeps the tolerance narrow in both directions. It
+ * survives the app rendering another instance of the component (a new nav entry
+ * hits the very same vendor defect, so the gate does not turn red merely for
+ * adding a menu item), while any *other* rule on that component — and every rule
+ * everywhere else on the page, including the app's own chrome inside `<header>`
+ * and `<nav>` — still fails.
  */
-interface IgnoredNode {
-    /** axe rule id, e.g. "button-name". */
+interface ToleratedVendorNode {
+    /** axe rule id, e.g. `button-name`. */
     rule: string
-    /** Substring that must appear in the node's target selector to match. */
-    selector: string
-    /** Why this node is tolerated (which vendor component, and why unfixable here). */
+    /** CSS selector of the vendor component the offending node is, or sits in. */
+    within: string
+    /** Which component is at fault, and why the app cannot fix it. */
     note: string
 }
 
 interface A11yBaseline {
-    ignored: IgnoredNode[]
+    ignored: ToleratedVendorNode[]
 }
 
 function loadBaseline(): A11yBaseline {
-    if (!fs.existsSync(BASELINE_PATH)) return { ignored: [] }
     return JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8')) as A11yBaseline
 }
 
 /**
- * Run axe-core (WCAG 2.1 level A + AA) and fail on any violation node not covered
- * by the triaged baseline. Everything is audited except the two `@dhis2/ui` shell
- * regions whose a11y is fixable only in the component library — the HeaderBar
- * (`<header>`) and the left-nav `<Menu>` (`<nav>`); the app's own chrome (the
- * hamburger button) and page content stay in scope, so an app-introduced
- * regression is caught. The `ignored` baseline is a secondary, per-node net (rule
- * id + distinctive selector substring) for a residual vendor node — kept per node,
- * never per rule, so it never silences a rule for future markup. The complete
- * violation set is attached as `axe-<label>` for review regardless of pass/fail.
+ * The single CSS selector axe used to point at a violating node, or `null` when
+ * the node cannot be addressed by one — axe reports a node reached through an
+ * iframe or a shadow root as a multi-step selector path. `null` never matches a
+ * baseline entry, so an un-addressable node fails the gate instead of slipping
+ * through it.
+ */
+function selectorFor(target: readonly unknown[]): string | null {
+    return target.length === 1 && typeof target[0] === 'string'
+        ? target[0]
+        : null
+}
+
+/**
+ * Run axe-core (WCAG 2.1 level A + AA) over the **whole page** and fail on every
+ * violation node except those the baseline attributes to a known `@dhis2/ui`
+ * component defect. Nothing is excluded from the scan: the shell chrome the app
+ * owns — the hamburger button, the `<nav>` wrapper, anything later added beside
+ * them — is audited like the page content, so an app-introduced regression is
+ * caught wherever it lands. Tolerance is granted per vendor component (see
+ * {@link ToleratedVendorNode}), never per rule and never per region.
+ *
+ * The complete violation set is attached as `axe-<label>` for review regardless
+ * of pass or fail.
  *
  * @param label stable identifier for the checked view (the route) — used as the
  *   attachment name and in the failure message.
@@ -51,12 +69,6 @@ export async function expectNoNewA11yViolations(
     label: string
 ): Promise<void> {
     const { violations } = await new AxeBuilder({ page })
-        // Exclude the two @dhis2/ui shell regions whose a11y is fixable only in the
-        // component library: the HeaderBar (<header>) and the left-nav <Menu> (<nav>).
-        // Everything else — the app's own hamburger button and the page content —
-        // stays audited, so a new app-introduced violation still fails the gate.
-        .exclude('header')
-        .exclude('nav')
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
         .analyze()
 
@@ -66,24 +78,62 @@ export async function expectNoNewA11yViolations(
     })
 
     const { ignored } = loadBaseline()
-    const offending: string[] = []
-    for (const v of violations) {
-        for (const node of v.nodes) {
-            const target = (node.target ?? []).join(' ')
-            const tolerated = ignored.some(
-                (e) => e.rule === v.id && target.includes(e.selector)
-            )
-            if (!tolerated) {
-                offending.push(`${v.id} [${v.impact}] ${target} — ${v.help}`)
-            }
+    const nodes = violations.flatMap((violation) =>
+        violation.nodes.map((node) => ({
+            rule: violation.id,
+            impact: violation.impact,
+            help: violation.help,
+            selector: selectorFor(node.target),
+        }))
+    )
+
+    // Ask the page which of the baseline's vendor components each violating node
+    // sits inside. Read-only observation — querySelector and closest inspect the
+    // DOM axe just scanned without altering it.
+    const containedBy = await page.evaluate(
+        ({ selectors, containers }) =>
+            selectors.map((selector) => {
+                if (selector === null) return []
+                let element: Element | null = null
+                try {
+                    element = document.querySelector(selector)
+                } catch {
+                    return []
+                }
+                if (element === null) return []
+                const found = element
+                return containers.filter(
+                    (container) => found.closest(container) !== null
+                )
+            }),
+        {
+            selectors: nodes.map((node) => node.selector),
+            containers: [...new Set(ignored.map((entry) => entry.within))],
         }
-    }
+    )
+
+    const offending = nodes
+        .filter(
+            (node, index) =>
+                !ignored.some(
+                    (entry) =>
+                        entry.rule === node.rule &&
+                        containedBy[index].includes(entry.within)
+                )
+        )
+        .map(
+            (node) =>
+                `${node.rule} [${node.impact}] ` +
+                `${node.selector ?? '<node not addressable by a single selector>'}` +
+                ` — ${node.help}`
+        )
 
     expect(
         offending,
-        `WCAG 2.1 AA violation(s) on ${label} not in the baseline. Fix them in the ` +
-            `app's markup; only if a node is a @dhis2/ui vendor issue outside the ` +
-            `app's control, add a { rule, selector, note } entry to ` +
-            `e2e/a11y-baseline.json (ignored) targeting that exact node.`
+        `WCAG 2.1 AA violation(s) on ${label} not covered by the baseline. Fix ` +
+            `them in the app's markup; only if a node is a @dhis2/ui component ` +
+            `defect outside the app's control, add a { rule, within, note } entry ` +
+            `to e2e/a11y-baseline.json, where "within" is that component's own ` +
+            `data-test selector.`
     ).toEqual([])
 }
