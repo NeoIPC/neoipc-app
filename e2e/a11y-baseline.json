@@ -1,9 +1,4 @@
 {
-  "_readme": "Accessibility-regression baseline for the axe (WCAG 2.1 AA) e2e gate in a11y.spec.ts. `ignoredRules` lists axe rule ids that are known @dhis2/ui vendor issues the app cannot fix directly; violations of those rules are tolerated, anything new fails the gate. The rules below were triaged from a first run and confirmed against the source: all four appear identically on every route (both report forms and both admin pages, both personas), so they originate in the shared @dhis2/ui shell, not the app's markup — the left-nav is @dhis2/ui's <Menu>/<MenuItem> (src/shell/LeftNav.tsx), whose role structure trips aria-required-parent/children, and the HeaderBar renders the un-named icon button (button-name) and logo link (link-name). The app labels what it does control (e.g. the nav toggle, src/shell/AppShell.tsx). Fixing these needs a @dhis2/ui change, so revisit the list on each @dhis2/ui upgrade. Trade-off: ignored by rule id, so an app-introduced instance of the same rule would also be tolerated — tighten to specific selectors if that becomes a concern.",
-  "ignoredRules": [
-    "aria-required-children",
-    "aria-required-parent",
-    "button-name",
-    "link-name"
-  ]
+  "_readme": "Accessibility-regression baseline for the axe (WCAG 2.1 AA) e2e gate in a11y.spec.ts. The gate audits the whole page — including the app's own shell chrome (hamburger button, <nav> wrapper) — and tolerates only the specific @dhis2/ui vendor NODES listed in `ignored`, matched by axe rule id + a distinctive substring of the node's target selector. Per-node (not per-rule) on purpose: it never silences a rule for future markup, so a new app-introduced violation — even the same rule on a different element — still fails. Add an entry only for a genuinely-unfixable @dhis2/ui node, and revisit on each @dhis2/ui upgrade.",
+  "ignored": []
 }
