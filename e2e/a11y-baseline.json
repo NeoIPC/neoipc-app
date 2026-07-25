@@ -1,4 +1,9 @@
 {
-  "_readme": "Accessibility-regression baseline for the axe (WCAG 2.1 AA) e2e gate in a11y.spec.ts. `ignoredRules` lists axe rule ids that are known @dhis2/ui vendor issues the app cannot fix directly; violations of those rules are tolerated, anything new fails the gate. Populate by running the a11y spec once, reviewing each test's attached `axe-<route>` result, fixing what is in the app's own markup, and moving genuine vendor rule ids here (keep the list minimal and revisit when @dhis2/ui is upgraded).",
-  "ignoredRules": []
+  "_readme": "Accessibility-regression baseline for the axe (WCAG 2.1 AA) e2e gate in a11y.spec.ts. `ignoredRules` lists axe rule ids that are known @dhis2/ui vendor issues the app cannot fix directly; violations of those rules are tolerated, anything new fails the gate. The rules below were triaged from a first run and confirmed against the source: all four appear identically on every route (both report forms and both admin pages, both personas), so they originate in the shared @dhis2/ui shell, not the app's markup — the left-nav is @dhis2/ui's <Menu>/<MenuItem> (src/shell/LeftNav.tsx), whose role structure trips aria-required-parent/children, and the HeaderBar renders the un-named icon button (button-name) and logo link (link-name). The app labels what it does control (e.g. the nav toggle, src/shell/AppShell.tsx). Fixing these needs a @dhis2/ui change, so revisit the list on each @dhis2/ui upgrade. Trade-off: ignored by rule id, so an app-introduced instance of the same rule would also be tolerated — tighten to specific selectors if that becomes a concern.",
+  "ignoredRules": [
+    "aria-required-children",
+    "aria-required-parent",
+    "button-name",
+    "link-name"
+  ]
 }
