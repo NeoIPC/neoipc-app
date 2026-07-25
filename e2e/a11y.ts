@@ -51,11 +51,19 @@ function selectorFor(target: readonly unknown[]): string | null {
 /**
  * Run axe-core (WCAG 2.1 level A + AA) over the **whole page** and fail on every
  * violation node except those the baseline attributes to a known `@dhis2/ui`
- * component defect. Nothing is excluded from the scan: the shell chrome the app
+ * component defect. No region is excluded from the scan: the shell chrome the app
  * owns — the hamburger button, the `<nav>` wrapper, anything later added beside
  * them — is audited like the page content, so an app-introduced regression is
  * caught wherever it lands. Tolerance is granted per vendor component (see
  * {@link ToleratedVendorNode}), never per rule and never per region.
+ *
+ * Scope caveat: axe can only see the DOM as it stands when this runs. Markup that
+ * is *absent* rather than hidden — a collapsed `CollapsibleSection` renders
+ * `{open && children}`, a dialog that has not been opened, a menu that has not
+ * been expanded — is not audited. Callers are responsible for bringing the state
+ * they care about into the DOM first; `a11y.spec.ts` expands every disclosure
+ * before calling. Unexercised states (validation-error rendering, calendar
+ * overlays, select popovers) remain uncovered.
  *
  * The complete violation set is attached as `axe-<label>` for review regardless
  * of pass or fail.
