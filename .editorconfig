@@ -1,0 +1,33 @@
+# Editor-side half of the LF policy declared in .gitattributes. Git normalizes what is committed;
+# this stops an editor writing CRLF into the working tree in the first place, so a diff never shows
+# a whole file changed because someone opened it in a tool with different defaults.
+#
+# Coverage is uneven, which is why this file is not the whole story. The JetBrains IDEs honour it
+# natively. **VS Code does not** — it needs the EditorConfig.EditorConfig extension — so the same
+# settings are repeated in .vscode/settings.json (files.eol / files.encoding).
+#
+# On the JavaScript side there is nothing further to pin and no repository-local Prettier config:
+# @dhis2/cli-style (a devDependency) ships a Prettier config that already sets endOfLine: 'lf', so the
+# tooling agrees with this file. A second, repository-local Prettier config would only create a
+# competing source of truth next to the DHIS2 one.
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Markdown uses two trailing spaces as a hard line break, so trailing whitespace is significant.
+[*.md]
+trim_trailing_whitespace = false
+
+# gettext catalogues are machine-written and must round-trip byte-for-byte; leave every byte alone.
+[*.{po,pot}]
+insert_final_newline = false
+trim_trailing_whitespace = false
+
+# Machine-maintained by yarn.
+[yarn.lock]
+insert_final_newline = false
+trim_trailing_whitespace = false
