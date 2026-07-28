@@ -1,0 +1,12 @@
+{
+  // Line endings and encoding are declared in .gitattributes and .editorconfig, but VS Code does not
+  // honour .editorconfig without the EditorConfig.EditorConfig extension — so these two are repeated
+  // here to cover an editor that does not have it installed. Only the settings that apply universally
+  // are duplicated; the per-glob carve-outs (.po, .pot, yarn.lock) stay in .editorconfig, which can
+  // express them and VS Code settings cannot.
+  //
+  // @dhis2/cli-style's Prettier config already sets endOfLine: 'lf', so the JavaScript tooling agrees
+  // with this; no repository-local Prettier config is added, to avoid a competing source of truth.
+  "files.eol": "\n",
+  "files.encoding": "utf8"
+}

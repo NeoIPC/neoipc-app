@@ -1,0 +1,33 @@
+# Line endings are LF everywhere, by repository contract rather than by machine configuration.
+#
+# Without this file the result depends on each developer's core.autocrlf, whose Git-for-Windows
+# installer default is `true` — that checks text files out as CRLF, and every tool that then reads
+# and rewrites one carries the CRLF back in. Declaring it here makes the outcome the same on every
+# checkout: normalize to LF on commit, and write LF into the working tree on checkout.
+#
+# This is the only line-ending pin this repository needs on the JavaScript side. @dhis2/cli-style
+# (a devDependency) ships a Prettier config that already sets endOfLine: 'lf', so the two agree and
+# there is nothing to reconcile; no repository-local Prettier config is added, because a second
+# config would only create a competing source of truth next to the DHIS2 one.
+* text=auto eol=lf
+
+# Binary files must never be touched by end-of-line conversion. `text=auto` guesses from content and
+# is usually right, but a file it misclassifies is corrupted rather than merely reformatted, so the
+# formats actually stored in this repository are declared explicitly.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+
+# The lockfile is machine-maintained; collapse it by default in review UIs. It is still text and
+# still line-ending-normalized by the rule above.
+yarn.lock linguist-generated=true
