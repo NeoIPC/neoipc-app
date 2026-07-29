@@ -13,7 +13,7 @@ DHIS2 origin — production fidelity, not the `yarn start:dev` proxy.
 | `nav-authority` | Authority-filtered left-nav: superuser sees all four items; a report-only user sees the two report items and neither admin item. |
 | `org-unit-picker` | Per-user department scoping (`withinUserHierarchy`): each report user sees only their country's department. |
 | `partner-report-online` | Online render: HTML mounts `#neoipc-rendered-report`; PDF triggers a `partner-report.pdf` download. |
-| `partner-report-data-file` | Render from an uploaded partner-data JSON, both formats. *(needs a real fixture — see `data/README.md`)* |
+| `partner-report-data-file` | Render from an uploaded partner-data JSON, both formats. *(needs a real fixture — see [`fixtures/README.md`](fixtures/README.md); the spec self-skips without one)* |
 | `reference-report` | Render a stored reference dataset, both formats. *(needs a real fixture)* |
 | `admin-crud` | reference-data list (upload → row → delete); validation-exceptions singleton (upload → current file → remove). |
 | `locale-switch` | `keyUiLocale=de` + reload flips the translated nav label. |
@@ -33,9 +33,12 @@ DHIS2 origin — production fidelity, not the `yarn start:dev` proxy.
 
 ## Auth model
 
-Each persona is logged in **once** via DHIS2 form login
-(`POST /dhis-web-commons-security/login.action`) and its `JSESSIONID` session is
-saved as a Playwright `storageState` (`e2e/.auth/<user>.json`, git-ignored).
+Each persona is logged in **once**, and its `JSESSIONID` session is saved as a
+Playwright `storageState` (`e2e/.auth/<user>.json`, git-ignored). The login is
+**version-aware**, because the two supported DHIS2 lines do not share a mechanism:
+2.41+ takes the JSON login at `POST /api/auth/login`, while 2.40 has only the
+legacy Struts form-login at `POST /dhis-web-commons-security/login.action`.
+`dhis2-login.ts` tries the modern route first and falls back.
 Basic auth is deliberately **not** used: DHIS2's API is stateless
 (`SessionCreationPolicy.NEVER`), so a Basic-auth call mints no auth-bearing
 session, and the `/neoipc` reporting mount authenticates *only* by validating
