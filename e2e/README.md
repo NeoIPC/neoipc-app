@@ -72,7 +72,7 @@ render can take ~10 min).
 
 ## Fixtures
 
-See [`data/README.md`](data/README.md). Two dataset fixtures are committed as
+See [`fixtures/README.md`](fixtures/README.md). Two dataset fixtures are committed as
 placeholders and their dependent specs skip until real captures are dropped in.
 
 ## First-run notes
