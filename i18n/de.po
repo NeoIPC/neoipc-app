@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: NeoIPC-Support@charite.de\n"
-"PO-Revision-Date: 2026-07-30 16:09+0000\n"
+"PO-Revision-Date: 2026-07-30 21:13+0000\n"
 "Language-Team: German <https://hosted.weblate.org/projects/neoipc/neoipc-app/de/>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
@@ -15,113 +15,113 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 msgid "Upload"
-msgstr ""
+msgstr "Hochladen"
 
 msgid "Action failed"
-msgstr ""
+msgstr "Aktion fehlgeschlagen"
 
 msgid "Display name"
-msgstr ""
+msgstr "Anzeigename"
 
 msgid "Optional; blank uses a timestamp-based default."
-msgstr ""
+msgstr "Optional; leer verwendet einen zeitstempelbasierten Standard."
 
 msgid "Choose file"
-msgstr ""
+msgstr "Datei auswählen"
 
 msgid "Failed to load list"
-msgstr ""
+msgstr "Liste konnte nicht geladen werden"
 
 msgid "No items."
-msgstr ""
+msgstr "Keine Einträge."
 
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 msgid "Size"
-msgstr ""
+msgstr "Größe"
 
 msgid "Uploaded"
-msgstr ""
+msgstr "Hochgeladen"
 
 msgid "Actions"
-msgstr ""
+msgstr "Aktionen"
 
 msgid "Delete"
-msgstr ""
+msgstr "Löschen"
 
 msgid "..."
-msgstr ""
+msgstr "..."
 
 msgid "Current file"
-msgstr ""
+msgstr "Aktuelle Datei"
 
 msgid "Failed to load"
-msgstr ""
+msgstr "Das Laden ist fehlgeschlagen"
 
 msgid "No {{singular}} uploaded."
 msgstr ""
 
 msgid "uploaded {{when}}"
-msgstr ""
+msgstr "hochgeladen {{when}}"
 
 msgid "Remove"
-msgstr ""
+msgstr "Entfernen"
 
 msgid "Replace"
-msgstr ""
+msgstr "Ersetzen"
 
 msgid "Reference data"
-msgstr ""
+msgstr "Referenzdaten"
 
 msgid "reference dataset"
-msgstr ""
+msgstr "Referenzdatensatz"
 
 msgid "Reference datasets"
-msgstr ""
+msgstr "Referenzdatensätze"
 
 msgid ""
 "Operator-facing label that appears in the picker on the Reference Report "
 "form."
-msgstr ""
+msgstr "Eine für den Bediener bestimmte Beschriftung, die im Auswahlfeld des Formulars „Referenzbericht“ angezeigt wird."
 
 msgid "Reporting period"
-msgstr ""
+msgstr "Berichtszeitraum"
 
 msgid "Countries"
-msgstr ""
+msgstr "Länder"
 
 msgid "(any)"
-msgstr ""
+msgstr "(beliebig)"
 
 msgid "Validation exceptions"
-msgstr ""
+msgstr "Validierungsausnahmen"
 
 msgid "validation exception file"
-msgstr ""
+msgstr "Validierungsausnahmedatei"
 
 msgid "Validation exception files"
-msgstr ""
+msgstr "Validierungsausnahmedateien"
 
 msgid ""
 "Operator-facing label. Partners reference this file by ID when generating a "
 "report."
-msgstr ""
+msgstr "Etikett für den Bediener. Partner beziehen sich bei der Erstellung eines Berichts anhand der ID auf diese Datei."
 
 msgid "Select at least one department."
-msgstr ""
+msgstr "Wählen Sie mindestens eine Abteilung aus."
 
 msgid "Choose a data file to upload."
-msgstr ""
+msgstr "Wählen Sie eine Datendatei zum Hochladen aus."
 
 msgid "The selected confidence-interval option is not valid."
-msgstr ""
+msgstr "Die ausgewählte Option für das Konfidenzintervall ist ungültig."
 
 msgid "The selected benchmark dataset is no longer available — choose another."
-msgstr ""
+msgstr "Der ausgewählte Benchmark-Datensatz ist nicht mehr verfügbar – wählen Sie einen anderen aus."
 
 msgid "The selected report language is not available."
-msgstr ""
+msgstr "Die ausgewählte Berichts-Sprache ist nicht verfügbar."
 
 msgid ""
 "A saved reference dataset and live-fetch filters cannot be combined — clear "
