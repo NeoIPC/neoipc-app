@@ -17,6 +17,119 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  catalogue-ownership:
+    # This repository owns i18n/en.pot; Weblate owns every i18n/<lang>.po and is their only writer. Two
+    # writers on one catalogue is what conflicts every language at once — both sides rewrite adjacent header
+    # lines inside a single hunk git cannot auto-merge — and here the prose rule stood alone: the guardrail
+    # said "do not hand-edit a catalogue" while nothing could catch it, so a pull request doing exactly that
+    # would simply have collided with Weblate's next write. This enforces it.
+    name: Catalogue ownership
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Need the base commit to diff against; a shallow clone has neither side.
+          fetch-depth: 0
+
+      - name: Reject hand-written changes to Weblate-owned catalogues
+        shell: bash
+        run: |
+          base="origin/${{ github.base_ref }}"
+          # The pull request's own tip, NOT HEAD. On a pull_request event actions/checkout checks out
+          # refs/pull/N/merge, a synthetic merge commit GitHub creates and commits under its own identity.
+          # That commit touches a .po whenever both sides changed one, so a committer check against HEAD
+          # rejects pull requests whose every real commit is Weblate's.
+          head="${{ github.event.pull_request.head.sha }}"
+          # i18n/en.pot is deliberately absent: it is this repository's, generated from the source by
+          # `yarn i18n:extract`, and a run that changes a string is expected to commit it.
+          owned='i18n/[^/]*\.po'
+          # Weblate commits everything it pushes under this one identity, whoever wrote the translation, so a
+          # per-commit committer check recognises Weblate's own output no matter who opened the pull request.
+          # Verified against this repository's own first drain rather than assumed. Exempting by pull-request
+          # author instead would reject the drain pull requests we open ourselves from weblate-app, whose
+          # commits are Weblate's throughout — and would wave through a stray hand-written commit riding along
+          # in a Weblate-authored one.
+          #
+          # Do not try to confirm this identity by reading `main`: the drains are rebase-merged, which rewrites
+          # each commit and makes the merger the committer, so every commit on `main` shows GitHub's identity
+          # and none shows Weblate's. The identity is visible only on the pull-request branch — which is what
+          # this gate inspects. The obvious check is the misleading one.
+          weblate='hosted@weblate.org'
+
+          # --no-renames matters: with rename detection on, git prints only a rename's DESTINATION, so
+          # `git mv i18n/de.po elsewhere.po` plus a hand edit shows a path that cannot match the pattern and
+          # the file escapes the gate entirely. Splitting renames into delete+add surfaces the owned source
+          # path. Assigned separately from the grep so that a git failure cannot be swallowed by the `|| true`
+          # and read as "nothing offending".
+          if ! changed=$(git diff --name-only --no-renames "$base...$head"); then
+            echo "::error::Could not diff $base...$head — the gate cannot vouch for this pull request."
+            exit 1
+          fi
+
+          offending=""
+          matched=$(printf '%s\n' "$changed" | grep -E "^($owned)$" || true)
+          # `while IFS= read -r`, not `for f in $(…)`: the unquoted expansion word-splits on IFS, so a
+          # matching path containing a space arrives as two fragments, neither of which names a real file —
+          # `git log -- i18n/de` returns nothing, the loop reads that as "no non-Weblate committers", and the
+          # gate passes. Same shape as the two fail-opens below: an error state indistinguishable from the
+          # clean state. Reachable only via a hand-created path, since Weblate's own `language_regex` cannot
+          # produce one — but "correct because today's filemask happens to yield space-free paths" is a
+          # property of the data, not of this gate.
+          #
+          # Fed by a here-string rather than a pipe: a piped `while` runs in a SUBSHELL, so every
+          # `offending=` assignment would be discarded at `done` and the gate would pass on precisely the
+          # files it had just rejected.
+          while IFS= read -r f; do
+            # A here-string always emits at least one line, so an empty match list arrives here as a single
+            # empty string rather than as no iterations at all.
+            [ -n "$f" ] || continue
+            # The git call is separated from the grep deliberately. With `|| true` spanning the whole
+            # pipeline, a git failure — a missing ref, an unreadable path — produced an empty string, which
+            # this loop reads as "no non-Weblate committers" and the gate then PASSES. A guard whose error
+            # path is indistinguishable from its success path fails open, which is the one direction it must
+            # never fail. Only the grep's own "no matches" status is ignored, because that is its way of
+            # saying the file is clean.
+            if ! committers=$(git log --format='%ce' "$base".."$head" -- "$f"); then
+              echo "::error::Could not read the commit history of $f — the gate cannot vouch for this pull request."
+              exit 1
+            fi
+            # Not `grep -q`: it exits on the first hit, and SIGPIPE plus `pipefail` would then report the
+            # pipeline as failed, which reads here as "no offence found" and silently passes.
+            others=$(printf '%s\n' "$committers" | grep -vFx "$weblate" || true)
+            if [ -n "$others" ]; then offending="${offending}${f}"$'\n'; fi
+          done <<< "$matched"
+          if [ -n "$offending" ]; then
+            echo "::error::This pull request modifies Weblate-owned catalogues. Weblate is their only writer."
+            # `|| continue`, not `[ -n "$f" ] && echo`: `$offending` ends in a newline and `echo` adds
+            # another, so the last iteration reads "" and the `&&` short-circuits to status 1. That becomes
+            # the loop's exit status, and under Actions' `bash --noprofile --norc -eo pipefail` it ends the
+            # step right here — discarding every guidance line below, which is the whole point of the failure
+            # path. The gate still rejects correctly; the person who tripped it just loses everything written
+            # to help them fix it. The checking loop above already uses `|| continue` for this reason, and a
+            # here-string rather than a pipe keeps the two loops the same shape.
+            while IFS= read -r f; do
+              [ -n "$f" ] || continue
+              echo "::error file=$f::$f is owned by Weblate — make the change there, not here."
+            done <<< "$offending"
+            echo
+            echo "Translations go through https://hosted.weblate.org/projects/neoipc/neoipc-app/"
+            echo
+            echo "Nothing in this repository writes these files, so a hand edit is the likely route:"
+            # Single-quoted deliberately: backticks inside double quotes are command substitution, so the
+            # unquoted form would try to RUN yarn from inside the failure message.
+            echo '  yarn i18n:extract writes i18n/en.pot alone and never a .po, and yarn build only reads'
+            echo '  them to generate src/locales/, which is untracked.'
+            echo
+            echo "Restore them from the BASE branch, not from HEAD — by the time this gate fires the change is"
+            echo "already committed, so --source=HEAD would restore the very version being rejected:"
+            # $base, not a hard-coded origin/main: the job already computed the real base ref, and a literal
+            # would print the wrong instruction the moment this runs against any other base branch.
+            echo "  git restore --source=$base --worktree -- i18n/*.po"
+            exit 1
+          fi
+          echo "No Weblate-owned catalogue was modified outside Weblate."
+
   text-hygiene:
     # LF line endings and UTF-8 without a BOM on every committed text file.
     #
