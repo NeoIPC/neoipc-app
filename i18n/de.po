@@ -6,7 +6,7 @@
 msgid ""
 msgstr ""
 "Report-Msgid-Bugs-To: NeoIPC-Support@charite.de\n"
-"PO-Revision-Date: 2026-07-30 14:52+0000\n"
+"PO-Revision-Date: 2026-07-30 16:09+0000\n"
 "Language-Team: German <https://hosted.weblate.org/projects/neoipc/neoipc-app/de/>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
