@@ -1,8 +1,530 @@
+# Brar Piening <brar@gmx.de>, 2026.
 msgid ""
 msgstr ""
-"Project-Id-Version: neoipc-app\n"
+"Project-Id-Version: i18next-conv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"POT-Creation-Date: 2026-07-05T19:01:45.623Z\n"
+"PO-Revision-Date: 2026-07-05T19:01:45.624Z\n"
 "Language: el\n"
+"Language-Team: none\n"
+
+msgid "Upload"
+msgstr ""
+
+msgid "Action failed"
+msgstr ""
+
+msgid "Display name"
+msgstr ""
+
+msgid "Optional; blank uses a timestamp-based default."
+msgstr ""
+
+msgid "Choose file"
+msgstr ""
+
+msgid "Failed to load list"
+msgstr ""
+
+msgid "No items."
+msgstr ""
+
+msgid "ID"
+msgstr ""
+
+msgid "Size"
+msgstr ""
+
+msgid "Uploaded"
+msgstr ""
+
+msgid "Actions"
+msgstr ""
+
+msgid "Delete"
+msgstr ""
+
+msgid "..."
+msgstr ""
+
+msgid "Current file"
+msgstr ""
+
+msgid "Failed to load"
+msgstr ""
+
+msgid "No {{singular}} uploaded."
+msgstr ""
+
+msgid "uploaded {{when}}"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Replace"
+msgstr ""
+
+msgid "Reference data"
+msgstr ""
+
+msgid "reference dataset"
+msgstr ""
+
+msgid "Reference datasets"
+msgstr ""
+
+msgid ""
+"Operator-facing label that appears in the picker on the Reference Report "
+"form."
+msgstr ""
+
+msgid "Reporting period"
+msgstr ""
+
+msgid "Countries"
+msgstr ""
+
+msgid "(any)"
+msgstr ""
+
+msgid "Validation exceptions"
+msgstr ""
+
+msgid "validation exception file"
+msgstr ""
+
+msgid "Validation exception files"
+msgstr ""
+
+msgid ""
+"Operator-facing label. Partners reference this file by ID when generating a "
+"report."
+msgstr ""
+
+msgid "Select at least one department."
+msgstr ""
+
+msgid "Choose a data file to upload."
+msgstr ""
+
+msgid "The selected confidence-interval option is not valid."
+msgstr ""
+
+msgid "The selected benchmark dataset is no longer available — choose another."
+msgstr ""
+
+msgid "The selected report language is not available."
+msgstr ""
+
+msgid ""
+"A saved reference dataset and live-fetch filters cannot be combined — clear "
+"one of them."
+msgstr ""
+
+msgid "One of the values contains characters that are not allowed."
+msgstr ""
+
+msgid "The uploaded file is not a valid reference dataset."
+msgstr ""
+
+msgid "The uploaded file type is not supported."
+msgstr ""
+
+msgid "The requested item no longer exists."
+msgstr ""
+
+msgid "You do not have permission to perform this action."
+msgstr ""
+
+msgid "The request was not valid."
+msgstr ""
+
+msgid "Something went wrong while generating the report. Please try again."
+msgstr ""
+
+msgid "The report is not available in the requested format or language."
+msgstr ""
+
+msgid "The request could not be completed."
+msgstr ""
+
+msgid "Please select a data file before submitting."
+msgstr ""
+
+msgid "Failed to load NeoIPC app data"
+msgstr ""
+
+msgid "Unknown error"
+msgstr ""
+
+msgid "All"
+msgstr ""
+
+msgid "Rate"
+msgstr ""
+
+msgid "None"
+msgstr ""
+
+msgid "Birth weight figure"
+msgstr ""
+
+msgid "Gestational age figure"
+msgstr ""
+
+msgid "Incidence density table"
+msgstr ""
+
+msgid "Device-associated incidence density table"
+msgstr ""
+
+msgid "Agent per infection rate table"
+msgstr ""
+
+msgid "Infectious agent detection rate table"
+msgstr ""
+
+msgid "Risk density rate table"
+msgstr ""
+
+msgid "Antibiotic utilisation table"
+msgstr ""
+
+msgid "Surgical procedure rate table"
+msgstr ""
+
+msgid "Resistant pathogen infection rate table"
+msgstr ""
+
+msgid "Organism resistance rate table"
+msgstr ""
+
+msgid "Antibiotic resistance test rate table"
+msgstr ""
+
+msgid "Secondary BSI rate table"
+msgstr ""
+
+msgid "From"
+msgstr ""
+
+msgid "To"
+msgstr ""
+
+msgid "Failed to load organisation units — {{message}}"
+msgstr ""
+
+msgid ""
+"These org units cannot be picked because they have no `code` set in DHIS2 "
+"metadata. Ask the NeoIPC metadata maintainers to add a code so they can be "
+"included in reports."
+msgstr ""
+
+msgid "Clear"
+msgstr ""
+
+msgid "Search"
+msgstr ""
+
+msgid "No match"
+msgstr ""
+
+msgid "Patient population filters"
+msgstr ""
+
+msgid "Birth weight (g)"
+msgstr ""
+
+msgid "Gestational age (weeks)"
+msgstr ""
+
+msgid "Include non-core patients"
+msgstr ""
+
+msgid "Benchmark dataset"
+msgstr ""
+
+msgid "Reference dataset to compare against"
+msgstr ""
+
+msgid "Automatic — best match for these settings"
+msgstr ""
+
+msgid "Choose a dataset manually"
+msgstr ""
+
+msgid "None — show only your data"
+msgstr ""
+
+msgid "No benchmark"
+msgstr ""
+
+msgid "No benchmark selected"
+msgstr ""
+
+msgid "Confidence intervals"
+msgstr ""
+
+msgid "Backend default if unset."
+msgstr ""
+
+msgid "(backend default)"
+msgstr ""
+
+msgid "Include introduction texts"
+msgstr ""
+
+msgid "Include methods texts"
+msgstr ""
+
+msgid "Report language"
+msgstr ""
+
+msgid "Leave blank to use the locale from your DHIS2 user setting."
+msgstr ""
+
+msgid "(use DHIS2 user setting)"
+msgstr ""
+
+msgid "Output format"
+msgstr ""
+
+msgid "View as HTML"
+msgstr ""
+
+msgid "Download as PDF"
+msgstr ""
+
+msgid "Data source"
+msgstr ""
+
+msgid "Online — pull current DHIS2 data"
+msgstr ""
+
+msgid "Upload partner data file (JSON)"
+msgstr ""
+
+msgid "Departments"
+msgstr ""
+
+msgid "No selectable departments"
+msgstr ""
+
+msgid ""
+"All departments in your scope are test units. Turn on \"Include test data\" "
+"under Advanced to select them."
+msgstr ""
+
+msgid ""
+"All departments in your scope are test units, which are excluded from "
+"reports. Ask an administrator to include test data."
+msgstr ""
+
+msgid "More options"
+msgstr ""
+
+msgid "Benchmark"
+msgstr ""
+
+msgid "Content"
+msgstr ""
+
+msgid "Language"
+msgstr ""
+
+msgid "Advanced (admins only)"
+msgstr ""
+
+msgid "Include test data"
+msgstr ""
+
+msgid "Sparse data threshold"
+msgstr ""
+
+msgid "Include outlier interpretation"
+msgstr ""
+
+msgid "Please correct the highlighted fields"
+msgstr ""
+
+msgid "Generate"
+msgstr ""
+
+msgid "Default"
+msgstr ""
+
+msgid "Minimal"
+msgstr ""
+
+msgid "Full"
+msgstr ""
+
+msgid "Custom"
+msgstr ""
+
+msgid "Content preset"
+msgstr ""
+
+msgid ""
+"A preset fills the content options below. Choose \"Custom\" to edit each "
+"one yourself."
+msgstr ""
+
+msgid "Approximate match"
+msgstr ""
+
+msgid ""
+"No dataset matched your cohort and country exactly; the closest available "
+"was chosen. Switch to manual selection to override."
+msgstr ""
+
+msgid "Period"
+msgstr ""
+
+msgid "Birth weight"
+msgstr ""
+
+msgid "g"
+msgstr ""
+
+msgid "Any"
+msgstr ""
+
+msgid "Gestational age"
+msgstr ""
+
+msgid "w"
+msgstr ""
+
+msgid "Cohort"
+msgstr ""
+
+msgid "from {{from}}"
+msgstr ""
+
+msgid "until {{to}}"
+msgstr ""
+
+msgid "All periods"
+msgstr ""
+
+msgid "all patients"
+msgstr ""
+
+msgid "core only"
+msgstr ""
+
+msgid "incl. test units"
+msgstr ""
+
+msgid "no test units"
+msgstr ""
+
+msgid "BW {{range}}"
+msgstr ""
+
+msgid "GA {{range}}"
+msgstr ""
+
+msgid "All countries"
+msgstr ""
+
+msgid "No reference datasets"
+msgstr ""
+
+msgid "No saved reference datasets are available yet."
+msgstr ""
+
+msgid "Country"
+msgstr ""
+
+msgid "Reference dataset"
+msgstr ""
+
+msgid "(none)"
+msgstr ""
+
+msgid "Pick a pre-computed reference dataset to render."
+msgstr ""
+
+msgid "Live-fetch filters (admins only)"
+msgstr ""
+
+msgid "Disabled — a saved dataset is selected above."
+msgstr ""
+
+msgid "Used when no saved reference dataset is selected."
+msgstr ""
+
+msgid "Hospitals"
+msgstr ""
+
+msgid "Test units"
+msgstr ""
+
+msgid "Include"
+msgstr ""
+
+msgid "Exclude"
+msgstr ""
+
+msgid "Default patient filter"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "Skip"
+msgstr ""
+
+msgid "The \"from\" value must not exceed the \"to\" value."
+msgstr ""
+
+msgid "The start date must not be after the end date."
+msgstr ""
+
+msgid "Partner Report"
+msgstr ""
+
+msgid "Reference Report"
+msgstr ""
+
+msgid "Rendering report... (elapsed {{seconds}}s)"
+msgstr ""
+
+msgid "Report rendering failed"
+msgstr ""
+
+msgid "No NeoIPC access"
+msgstr ""
+
+msgid "Open navigation menu"
+msgstr ""
+
+msgctxt "Application title"
+msgid "__MANIFEST_APP_TITLE"
+msgstr ""
+
+msgctxt "Application description"
+msgid "__MANIFEST_APP_DESCRIPTION"
+msgstr ""
+
+msgctxt "Title for shortcut used by command palette"
+msgid "__MANIFEST_SHORTCUT_Partner Report"
+msgstr ""
+
+msgctxt "Title for shortcut used by command palette"
+msgid "__MANIFEST_SHORTCUT_Reference Report"
+msgstr ""
+
+msgctxt "Title for shortcut used by command palette"
+msgid "__MANIFEST_SHORTCUT_Reference data"
+msgstr ""
+
+msgctxt "Title for shortcut used by command palette"
+msgid "__MANIFEST_SHORTCUT_Validation exceptions"
+msgstr ""
