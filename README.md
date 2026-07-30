@@ -97,19 +97,26 @@ diffs them.
 Issues and pull requests are welcome. The app is pre-alpha and moving quickly, so it is
 worth raising an issue before a larger change.
 
-**Translations are the most useful thing an outside contributor can offer right now.** The
-app's own interface strings live in [`i18n/`](i18n/) as gettext catalogues, extracted from
-the source with `yarn i18n:extract` and bundled by `yarn build` — and they are very nearly
-empty in every language. Filling one in and opening a pull request is a genuinely valuable,
-self-contained contribution that needs no knowledge of the rest of the system.
+**Translations are the most useful thing an outside contributor can offer right now**, and they
+go through [Weblate](https://hosted.weblate.org/projects/neoipc/neoipc-app/) rather than through
+this repository. No git knowledge is needed, and the app's interface is very nearly untranslated
+in every language, so filling one in is a genuinely valuable, self-contained contribution.
+
+Please do **not** edit `i18n/*.po` here and open a pull request. Weblate is the only writer of
+those files: it commits translations back itself, so a change made here is either overwritten or
+turns into a conflict. The template they are generated from, `i18n/en.pot`, belongs to this
+repository — it is produced from the source by `yarn i18n:extract`, and `yarn build` bundles the
+translated catalogues into the app.
 
 The surveillance content the reports themselves carry — the protocol, the report text, the
-infectious-agent names — is translated separately, on
-[Weblate](https://hosted.weblate.org/projects/neoipc/), where no git knowledge is needed.
+infectious-agent names — is translated on the same Weblate project, under its own components.
 
 ## Licensing
 
 - **Code** — MIT License (see [LICENSE](LICENSE)).
+- **Interface translations** — MIT License, with the code: the catalogues in [`i18n/`](i18n/) are part of
+  the application rather than documentation. This is what the Weblate component declares, and what
+  contributors accept before translating, so the two statements agree.
 - **Documentation / content** — Creative Commons Attribution (CC-BY).
 - **NeoIPC symbol & icon assets** — the app icons in [`public/`](public/) and the icon sources in [`design/`](design/) depict the NeoIPC symbol, © Fondazione Penta ETS, used under the NeoIPC brand guideline. They are **not** covered by the MIT or CC-BY licences — see [COPYRIGHT](COPYRIGHT).
 
