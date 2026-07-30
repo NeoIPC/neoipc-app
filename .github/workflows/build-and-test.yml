@@ -50,6 +50,11 @@ jobs:
           # author instead would reject the drain pull requests we open ourselves from weblate-app, whose
           # commits are Weblate's throughout — and would wave through a stray hand-written commit riding along
           # in a Weblate-authored one.
+          #
+          # Do not try to confirm this identity by reading `main`: the drains are rebase-merged, which rewrites
+          # each commit and makes the merger the committer, so every commit on `main` shows GitHub's identity
+          # and none shows Weblate's. The identity is visible only on the pull-request branch — which is what
+          # this gate inspects. The obvious check is the misleading one.
           weblate='hosted@weblate.org'
 
           # --no-renames matters: with rename detection on, git prints only a rename's DESTINATION, so
@@ -64,9 +69,19 @@ jobs:
 
           offending=""
           for f in $(printf '%s\n' "$changed" | grep -E "^($owned)$" || true); do
+            # The git call is separated from the grep deliberately. With `|| true` spanning the whole
+            # pipeline, a git failure — a missing ref, an unreadable path — produced an empty string, which
+            # this loop reads as "no non-Weblate committers" and the gate then PASSES. A guard whose error
+            # path is indistinguishable from its success path fails open, which is the one direction it must
+            # never fail. Only the grep's own "no matches" status is ignored, because that is its way of
+            # saying the file is clean.
+            if ! committers=$(git log --format='%ce' "$base".."$head" -- "$f"); then
+              echo "::error::Could not read the commit history of $f — the gate cannot vouch for this pull request."
+              exit 1
+            fi
             # Not `grep -q`: it exits on the first hit, and SIGPIPE plus `pipefail` would then report the
             # pipeline as failed, which reads here as "no offence found" and silently passes.
-            others=$(git log --format='%ce' "$base".."$head" -- "$f" | grep -vFx "$weblate" || true)
+            others=$(printf '%s\n' "$committers" | grep -vFx "$weblate" || true)
             if [ -n "$others" ]; then offending="${offending}${f}"$'\n'; fi
           done
           if [ -n "$offending" ]; then
@@ -83,7 +98,9 @@ jobs:
             echo
             echo "Restore them from the BASE branch, not from HEAD — by the time this gate fires the change is"
             echo "already committed, so --source=HEAD would restore the very version being rejected:"
-            echo "  git restore --source=origin/main --worktree -- i18n/*.po"
+            # $base, not a hard-coded origin/main: the job already computed the real base ref, and a literal
+            # would print the wrong instruction the moment this runs against any other base branch.
+            echo "  git restore --source=$base --worktree -- i18n/*.po"
             exit 1
           fi
           echo "No Weblate-owned catalogue was modified outside Weblate."
