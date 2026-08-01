@@ -27,7 +27,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # Need the base commit to diff against; a shallow clone has neither side.
           fetch-depth: 0
@@ -51,7 +51,7 @@ jobs:
           # commits are Weblate's throughout — and would wave through a stray hand-written commit riding along
           # in a Weblate-authored one.
           #
-          # Do not try to confirm this identity by reading `main`: the drains are rebase-merged, which rewrites
+          # Do not try to confirm this identity by reading `main`: the drains are squash-merged, which rewrites
           # each commit and makes the merger the committer, so every commit on `main` shows GitHub's identity
           # and none shows Weblate's. The identity is visible only on the pull-request branch — which is what
           # this gate inspects. The obvious check is the misleading one.
@@ -166,7 +166,7 @@ jobs:
     name: Text-file hygiene
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check line endings and encoding
         shell: pwsh
         run: |
@@ -238,8 +238,8 @@ jobs:
     name: Typecheck + schema drift + tests + build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: yarn
