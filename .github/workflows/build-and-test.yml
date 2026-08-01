@@ -27,7 +27,7 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # Need the base commit to diff against; a shallow clone has neither side.
           fetch-depth: 0
@@ -166,7 +166,7 @@ jobs:
     name: Text-file hygiene
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check line endings and encoding
         shell: pwsh
         run: |
@@ -238,8 +238,8 @@ jobs:
     name: Typecheck + schema drift + tests + build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: yarn
