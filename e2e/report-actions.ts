@@ -144,9 +144,27 @@ export async function selectDepartment(
 ): Promise<void> {
     const collapsed = page.locator('[data-test="unitCodes-single"]')
     const picker = page.locator('[data-test="unitCodes"]')
-    await expect(collapsed.or(picker).first()).toBeVisible()
 
-    if ((await collapsed.count()) > 0) {
+    // Wait for the collapsed value, and treat its absence as the answer.
+    //
+    // The obvious barrier — wait for either control, then branch — does not
+    // work: @dhis2-ui/field puts `dataTest` on its root unconditionally, so the
+    // picker is in the DOM *while the org units are still loading*, and the
+    // component only decides to collapse once they arrive. The barrier
+    // therefore resolves on a loading picker, the branch chooses wrong, and the
+    // click races the swap — which is a timeout on the slower engines rather
+    // than an assertion anyone can read. A closed MultiSelectField offers no
+    // loading signal either: `loading` only changes the open menu's contents.
+    //
+    // So wait for the settled state that can be observed. A collapse always
+    // arrives once the rows do; a picker that never collapses costs this wait
+    // once, and is then certainly loaded by the time it is clicked.
+    const isCollapsed = await collapsed
+        .waitFor({ state: 'visible', timeout: 15000 })
+        .then(() => true)
+        .catch(() => false)
+
+    if (isCollapsed) {
         await expect(collapsed).toContainText(deptDisplayName)
         return
     }
