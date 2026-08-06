@@ -7,7 +7,7 @@ import {
     clickGenerate,
     selectReferenceDataset,
     expectRenderedReport,
-    expectPdfDownload,
+    expectDownload,
 } from './report-actions'
 
 /**
@@ -48,7 +48,7 @@ test.describe('reference report — stored dataset', () => {
         await selectReferenceDataset(page, referenceFixture!.displayName)
         await setOutputFormat(page, 'pdf')
 
-        const download = await expectPdfDownload(page, () => clickGenerate(page))
+        const download = await expectDownload(page, () => clickGenerate(page))
         expect(download.suggestedFilename()).toMatch(
             /^NeoIPC-Surveillance-Reference-Report_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.pdf$/
         )

@@ -9,21 +9,23 @@ import type { ReferenceReportFormValues } from '../forms/ReferenceReportForm'
  * `Accept` header on the request and the post-response branch in
  * {@link renderPartnerReport} / {@link renderReferenceReport}.
  */
-export type OutputFormat = 'html' | 'pdf'
+export type OutputFormat = 'html' | 'pdf' | 'json'
 
 /**
  * Successful render result. `html` carries the already-decoded body
- * fragment ready for `InlineHtmlReport`; `pdf` carries the response as
- * a {@link Blob} plus the filename to suggest in the browser-download
- * dialog (parsed from `Content-Disposition`, with a generic fallback).
+ * fragment ready for `InlineHtmlReport`; every other format carries the
+ * response as a {@link Blob} plus the filename to suggest in the
+ * browser-download dialog (parsed from `Content-Disposition`, with a
+ * generic fallback).
  */
 export type RenderResult =
     | { format: 'html'; fragmentHtml: string }
-    | { format: 'pdf'; blob: Blob; suggestedFileName: string }
+    | { format: 'pdf' | 'json'; blob: Blob; suggestedFileName: string }
 
 const ACCEPT_BY_FORMAT: Record<OutputFormat, string> = {
     html: 'text/html',
     pdf: 'application/pdf',
+    json: 'application/json',
 }
 
 const appendString = (
@@ -193,7 +195,7 @@ const parseAttachmentFileName = (
 const readRenderResult = async (
     response: Response,
     format: OutputFormat,
-    fallbackPdfName: string
+    fallbackBaseName: string
 ): Promise<RenderResult> => {
     if (format === 'html') {
         return { format, fragmentHtml: await response.text() }
@@ -201,10 +203,12 @@ const readRenderResult = async (
     return {
         format,
         blob: await response.blob(),
+        // The remaining formats are named after their own extension, so the
+        // fallback needs a stem rather than one spelling per format.
         suggestedFileName:
             parseAttachmentFileName(
                 response.headers.get('content-disposition')
-            ) ?? fallbackPdfName,
+            ) ?? `${fallbackBaseName}.${format}`,
     }
 }
 
@@ -227,7 +231,7 @@ export const renderReferenceReport = async (
             headers: { Accept: ACCEPT_BY_FORMAT[format] },
         }
     )
-    return readRenderResult(response, format, 'reference-report.pdf')
+    return readRenderResult(response, format, 'reference-report')
 }
 
 /**
@@ -269,7 +273,7 @@ export const renderPartnerReport = async (
               }
 
     const response = await fetchNeoipcReporting(baseUrl, path, init)
-    return readRenderResult(response, format, 'partner-report.pdf')
+    return readRenderResult(response, format, 'partner-report')
 }
 
 /**

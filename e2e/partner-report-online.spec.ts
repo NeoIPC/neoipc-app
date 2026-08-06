@@ -9,7 +9,7 @@ import {
     selectDepartment,
     clickGenerate,
     expectRenderedReport,
-    expectPdfDownload,
+    expectDownload,
 } from './report-actions'
 
 /**
@@ -75,7 +75,7 @@ test.describe('partner report — online mode', () => {
                     req.url().includes('/partner-report') &&
                     req.method() === 'GET'
             ),
-            expectPdfDownload(page, () => clickGenerate(page)),
+            expectDownload(page, () => clickGenerate(page)),
         ])
         expect(request.url()).toContain('reportingPeriodFrom=2020-01-01')
         expect(request.url()).toContain('reportingPeriodTo=2030-12-31')

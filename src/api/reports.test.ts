@@ -174,6 +174,31 @@ describe('buildPartnerReportQuery', () => {
         expect(
             buildPartnerReportQuery(partnerValues(), 'pdf').has('fragmentMode')
         ).toBe(false)
+        // fragmentMode asks for a body-only HTML fragment, which is meaningless
+        // for a dataset download — and sending it would make the request differ
+        // from the one the upload path's own bytes came from.
+        expect(
+            buildPartnerReportQuery(partnerValues(), 'json').has('fragmentMode')
+        ).toBe(false)
+    })
+
+    it('carries the live-fetch filters for the json dataset', () => {
+        // JSON is produced from the online path only, so the filters that
+        // choose the cohort have to reach it exactly as they reach a render:
+        // a dataset built from a different cohort than the report it backs
+        // would round-trip cleanly and still be wrong.
+        const qs = buildPartnerReportQuery(
+            partnerValues({
+                unitCodes: ['AT_TEST_TEST'],
+                reportingPeriodFrom: '2020-01-01',
+                reportingPeriodTo: '2030-12-31',
+            }),
+            'json'
+        )
+
+        expect(qs.getAll('unitCodes')).toEqual(['AT_TEST_TEST'])
+        expect(qs.get('reportingPeriodFrom')).toBe('2020-01-01')
+        expect(qs.get('reportingPeriodTo')).toBe('2030-12-31')
     })
 })
 

@@ -80,7 +80,7 @@ export const useReportRender = <TValues>(
             try {
                 const rendered = await render(baseUrl, values)
                 stopTimer()
-                if (rendered.format === 'pdf') {
+                if (rendered.format !== 'html') {
                     downloadBlob(rendered.blob, rendered.suggestedFileName)
                     setState({
                         loading: false,
