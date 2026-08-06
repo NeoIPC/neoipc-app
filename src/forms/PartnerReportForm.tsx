@@ -588,6 +588,13 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                             'Pick one or more departments. The report ' +
                                 'aggregates across the selected set.'
                         )}
+                        // The departments ARE the report's subject, so one
+                        // selectable department is an answer rather than a
+                        // choice. On the Reference form's country/hospital
+                        // filters the same collapse would be wrong: empty means
+                        // "all" there, so auto-selecting would narrow silently.
+                        collapseWhenSingle
+                        singleLabel={i18n.t('Department')}
                         groupCode={DEPARTMENT_GROUP_CODE}
                         excludeGroupCodes={departmentExcludeGroups}
                         showParentInLabel
