@@ -23,6 +23,7 @@ import {
 import { NeoipcReportingError } from './api/neoipcReporting'
 import { loadReferenceDataSets } from './api/referenceData'
 import './render/report-theme.css'
+import './shell/headerBar.css'
 import AppShell from './shell/AppShell'
 
 interface MeQueryResult {

@@ -20,11 +20,6 @@
       "rule": "link-name",
       "within": "[data-test=\"headerbar-logo\"]",
       "note": "@dhis2/ui <HeaderBar> logo link (header-bar/logo.js): <a href={baseUrl}> wrapping a nameless LogoIconWhite svg. Fires only while the instance has no custom logo banner configured — the custom-logo branch renders an <img> that carries an alt attribute."
-    },
-    {
-      "rule": "color-contrast",
-      "within": "[data-test=\"headerbar-messages-count\"]",
-      "note": "@dhis2-ui/header-bar 10.16.0 notification-icon.js: the unread badge is styled `background-color: theme.secondary500; color: colors.white; font-size: 13px; font-weight: 600`. secondary500 resolves to colors.teal500 = #00897b, giving 4.32:1 against white where AA wants 4.5:1 — 13px at weight 600 is not WCAG large text, which needs 18.66px bold or 24px. The app cannot reach it: @dhis2/app-adapter's ConnectedHeaderBar passes only appName, the PWA update props and skipI18n, so no colour is ours to set. Note the badge renders only under `count > 0` (notification-icon.js), so a route is green whenever the signed-in user has no unread messages — the gate is quiet by circumstance, not by conformance. The same component draws the interpretations badge from the same rule, so headerbar-interpretations-count fails identically once it carries a count; it is not listed here because it has not been observed failing."
     }
   ]
 }

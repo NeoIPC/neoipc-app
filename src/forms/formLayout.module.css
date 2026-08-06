@@ -25,6 +25,12 @@
  * means "nothing to decide". Typography follows @dhis2/ui's field label so the
  * two states of the same field look alike.
  */
+/* The pair is a <dl>, whose default block margins would otherwise space it
+   differently from the fields it sits among. */
+.staticField {
+    margin: 0;
+}
+
 .staticFieldLabel {
     display: block;
     font-size: 14px;

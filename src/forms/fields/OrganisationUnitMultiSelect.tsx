@@ -245,21 +245,25 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
                         )}
                     </NoticeBox>
                 )}
-                <div>
-                    <span
-                        id={`${name}-single-label`}
-                        className={styles.staticFieldLabel}
-                    >
+                {/* A description list, not a labelled paragraph: this is a
+                    term and its value, and the pairing is then native rather
+                    than asserted. `aria-labelledby` is a prohibited attribute
+                    on a paragraph, so the earlier markup left the label and
+                    the value as two unrelated text nodes to a screen reader —
+                    and axe reports that as `incomplete` rather than a
+                    violation whenever the element has text, so the gate could
+                    not have caught it either. */}
+                <dl className={styles.staticField}>
+                    <dt className={styles.staticFieldLabel}>
                         {singleLabel ?? label}
-                    </span>
-                    <p
+                    </dt>
+                    <dd
                         className={styles.staticFieldValue}
-                        aria-labelledby={`${name}-single-label`}
                         data-test={`${name}-single`}
                     >
                         {onlyOption.label}
-                    </p>
-                </div>
+                    </dd>
+                </dl>
             </>
         )
     }
