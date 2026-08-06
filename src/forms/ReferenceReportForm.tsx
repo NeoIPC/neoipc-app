@@ -248,6 +248,22 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                                   'Used when no saved reference dataset is selected.'
                               )}
                     </p>
+                    {/* `testUnitFilter` is an apply-the-filter flag, so true —
+                        its backend default — is what *excludes* test units.
+                        The checkbox states the outcome the user gets, which
+                        makes the mapping inverted; unchecking omits the
+                        parameter rather than sending true, leaving the
+                        exclusion to the same default a preset-free request
+                        already gets. */}
+                    <CheckboxField
+                        name="testUnitFilter"
+                        label={i18n.t('Include test data')}
+                        checked={values.testUnitFilter === false}
+                        onChange={({ checked }) =>
+                            setField('testUnitFilter')(checked ? false : null)
+                        }
+                        disabled={usingSavedDataset}
+                    />
                     <OrganisationUnitMultiSelect
                         name="countryFilter"
                         label={i18n.t('Countries')}
@@ -264,26 +280,6 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                         onChange={setField('hospitalFilter')}
                         disabled={usingSavedDataset}
                     />
-                    <SingleSelectField
-                        label={i18n.t('Test units')}
-                        selected={
-                            values.testUnitFilter === null
-                                ? ''
-                                : values.testUnitFilter
-                                  ? 'true'
-                                  : 'false'
-                        }
-                        onChange={({ selected }) =>
-                            setField('testUnitFilter')(
-                                selected === '' ? null : selected === 'true'
-                            )
-                        }
-                        disabled={usingSavedDataset}
-                    >
-                        <SingleSelectOption value="" label={i18n.t('(backend default)')} />
-                        <SingleSelectOption value="true" label={i18n.t('Include')} />
-                        <SingleSelectOption value="false" label={i18n.t('Exclude')} />
-                    </SingleSelectField>
                     <SingleSelectField
                         label={i18n.t('Default patient filter')}
                         selected={
