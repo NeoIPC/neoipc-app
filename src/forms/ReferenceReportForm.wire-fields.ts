@@ -22,7 +22,7 @@ export const referenceReportWireFields = [
     'gestationalAgeFrom',
     'gestationalAgeTo',
     'countryFilter',
-    'hospitalFilter',
+    'departmentFilter',
     'testUnitFilter',
     'defaultPatientFilter',
     'sparseDataThreshold',

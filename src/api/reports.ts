@@ -96,7 +96,7 @@ export const buildReferenceReportQuery = (
         appendNumber(qs, 'gestationalAgeFrom', values.gestationalAgeFrom)
         appendNumber(qs, 'gestationalAgeTo', values.gestationalAgeTo)
         appendArray(qs, 'countryFilter', values.countryFilter)
-        appendArray(qs, 'hospitalFilter', values.hospitalFilter)
+        appendArray(qs, 'departmentFilter', values.departmentFilter)
         appendBool(qs, 'testUnitFilter', values.testUnitFilter)
         appendBool(qs, 'defaultPatientFilter', values.defaultPatientFilter)
     }

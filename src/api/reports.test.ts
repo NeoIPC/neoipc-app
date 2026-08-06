@@ -56,7 +56,7 @@ const referenceValues = (
     gestationalAgeFrom: null,
     gestationalAgeTo: null,
     countryFilter: [],
-    hospitalFilter: [],
+    departmentFilter: [],
     testUnitFilter: null,
     defaultPatientFilter: null,
     sparseDataThreshold: null,
@@ -204,7 +204,7 @@ describe('buildReferenceReportQuery', () => {
                 reportingPeriodFrom: '2025-01-01',
                 birthWeightFrom: 500,
                 countryFilter: ['DE'],
-                hospitalFilter: ['H1'],
+                departmentFilter: ['AT_TEST_TEST'],
                 testUnitFilter: true,
                 defaultPatientFilter: true,
                 includeIncidenceDensityTable: true,
@@ -217,7 +217,7 @@ describe('buildReferenceReportQuery', () => {
         expect(qs.has('reportingPeriodFrom')).toBe(false)
         expect(qs.has('birthWeightFrom')).toBe(false)
         expect(qs.has('countryFilter')).toBe(false)
-        expect(qs.has('hospitalFilter')).toBe(false)
+        expect(qs.has('departmentFilter')).toBe(false)
         expect(qs.has('testUnitFilter')).toBe(false)
         expect(qs.has('defaultPatientFilter')).toBe(false)
         // content flags are not live-fetch filters → still sent

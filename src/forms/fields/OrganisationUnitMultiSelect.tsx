@@ -25,10 +25,10 @@ interface OrganisationUnitMultiSelectProps {
      * Optional org-unit group codes to *exclude* from the pickable
      * options — the complement of {@link groupCode}'s include filter. A
      * row belonging to any of these groups is dropped from the list and
-     * reconciled out of the current selection. The Partner form passes
-     * `TEST_UNITS` here unless "Include test data" is on, so test
-     * departments are only offered (and stay selected) when the data
-     * layer would actually include them.
+     * reconciled out of the current selection. Both report forms pass
+     * `TEST_UNITS` on their department picker unless "Include test data"
+     * is on, so test departments are only offered (and stay selected)
+     * when the data layer would actually include them.
      */
     excludeGroupCodes?: string[]
     /**
