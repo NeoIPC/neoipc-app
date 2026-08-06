@@ -29,7 +29,7 @@ DHIS2 origin — production fidelity, not the `yarn start:dev` proxy.
    `play.admin`, `play.at.report1`, `play.ch.report1`) and synthetic patients
    under `AT_TEST_TEST`. Global setup **installs the app bundle** into DHIS2 and
    asserts the seed is present; it does not seed.
-3. **A built bundle** at `build/bundle/neoipc-app-<version>.zip` (`yarn build`).
+3. **A built bundle** at `build/bundle/NeoIPC-<version>.zip` (`yarn build`).
 
 ## Auth model
 

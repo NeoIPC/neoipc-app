@@ -24,7 +24,16 @@ const dhis2ProxyOptions = {
 /** @type {import('@dhis2/cli-app-scripts').D2Config} */
 const config = {
     type: 'app',
-    name: 'neoipc-app',
+    // `name` becomes the manifest's `short_name`, from which DHIS2 derives two
+    // things by two different rules: the See-App authority
+    // (`"M_" + short_name` with non-alphanumerics stripped -> `M_NeoIPC`) and
+    // the installed app's key / URL slug (`getUrlFriendlyName()`, which keeps
+    // hyphens -> `NeoIPC`). The authority is the one that matters: DHIS2 has no
+    // translation for a third-party app's authority, so `AuthoritiesController`
+    // synthesizes a display name from this string, and `neoipc-app` rendered as
+    // "neoipcapp app" — sorted under "n", away from every other NeoIPC entry in
+    // the user-role editor. Changing it here is the only lever on that name.
+    name: 'NeoIPC',
     title: 'NeoIPC',
     description: 'NeoIPC report generation and administration',
     entryPoints: {
@@ -32,7 +41,14 @@ const config = {
     },
     minDHIS2Version: '2.40',
     customAuthorities: ['F_NEOIPC_ADMIN', 'F_NEOIPC_REPORT'],
-    dataStoreNamespace: 'neoipc-app',
+    // Renamed with `name`, which also removes an install-order constraint:
+    // DHIS2 refuses to install an app whose dataStore namespace is already held
+    // by an app with a *different* key, so renaming the key alone would have
+    // required deleting the old app first. Moving the namespace too means the
+    // renamed app collides with nothing. The old `neoipc-app` namespace is left
+    // behind empty — the app has never written to the dataStore — and goes when
+    // the old app is uninstalled with its data.
+    dataStoreNamespace: 'NeoIPC',
     shortcuts: [
         { name: 'Partner Report', url: '#/reports/partner' },
         { name: 'Reference Report', url: '#/reports/reference' },
