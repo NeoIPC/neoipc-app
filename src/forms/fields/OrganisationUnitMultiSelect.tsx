@@ -89,7 +89,7 @@ interface OrganisationUnitMultiSelectProps {
  *
  * Values are orgUnit `code` strings — the wire format
  * `Partner-/Reference-Report`'s `UnitCodes` / `CountryFilter` /
- * `HospitalFilter` parameters expect. OrgUnits without a `code` are
+ * `DepartmentFilter` parameters expect. OrgUnits without a `code` are
  * filtered out (un-pickable) and a `NoticeBox` warning is rendered
  * alongside the select so operators know to ask the NeoIPC metadata
  * maintainers to add the missing codes upstream.

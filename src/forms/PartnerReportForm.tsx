@@ -630,7 +630,7 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                         )}
                         // The departments ARE the report's subject, so one
                         // selectable department is an answer rather than a
-                        // choice. On the Reference form's country/hospital
+                        // choice. On the Reference form's country/department
                         // filters the same collapse would be wrong: empty means
                         // "all" there, so auto-selecting would narrow silently.
                         collapseWhenSingle

@@ -110,10 +110,12 @@ export const buildReferenceReportQuery = (
 /**
  * Build the `URLSearchParams` for `GET /partner-report` (online mode)
  * or `POST /partner-report` (dataFile mode). Same rule: empty form
- * values are dropped. In dataFile mode the live-fetch filters
- * (`unitCodes`, period, weight/age, include-non-core / include-test)
- * are skipped because the backend ignores them — see
- * [PartnerReport.cs:114-120](repos/NeoIPC-Reporting/src/NeoIPC.Reporting/PartnerReport.cs#L114-L120).
+ * values are dropped. In dataFile mode the uploaded dataset fixes both
+ * the department and the cohort, so the live-fetch filters (`unitCodes`,
+ * period, weight/age, include-non-core / include-test) are not sent:
+ * the backend refuses `unitCodes` outright there, because the report's
+ * subtitle is front matter and cannot be corrected from the upload's
+ * metadata, and it ignores the rest.
  */
 export const buildPartnerReportQuery = (
     values: PartnerReportFormValues,

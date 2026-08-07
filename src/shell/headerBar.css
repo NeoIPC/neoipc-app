@@ -7,8 +7,10 @@
  * consumer, so the only lever the app has is CSS; the vendor rule carries no
  * `!important`, so one author declaration wins regardless of order.
  *
- * teal700 is the vendor's own next step down the same ramp, so the badge stays
- * on-brand at 6.61:1.
+ * teal700 (#00695c) is two steps darker on the vendor's own ramp, so the badge
+ * stays on-brand at 6.61:1. The intermediate teal600 also clears 4.5:1; teal700
+ * is taken for the headroom, since the badge's size and weight are the
+ * component's to change and a later restyle should not drop it back under.
  *
  * Both badges are drawn by that one component, so both are corrected here —
  * interpretations included, which has the same defect and merely needs a count

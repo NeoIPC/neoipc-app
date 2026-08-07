@@ -31,8 +31,10 @@ const config = {
     // hyphens -> `NeoIPC`). The authority is the one that matters: DHIS2 has no
     // translation for a third-party app's authority, so `AuthoritiesController`
     // synthesizes a display name from this string, and `neoipc-app` rendered as
-    // "neoipcapp app" — sorted under "n", away from every other NeoIPC entry in
-    // the user-role editor. Changing it here is the only lever on that name.
+    // "neoipcapp app" in the user-role editor. Changing it here is the only
+    // lever on that name. It does not change where the row sorts: DHIS2 orders
+    // that list by the rendered name lower-cased, so "NeoIPC app" still sorts
+    // under "n" — the gain is a name that reads as this app's, not a grouping.
     name: 'NeoIPC',
     title: 'NeoIPC',
     description: 'NeoIPC report generation and administration',
