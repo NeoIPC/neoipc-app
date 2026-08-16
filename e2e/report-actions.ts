@@ -38,10 +38,11 @@ export async function expectRenderedReport(
 }
 
 /**
- * Trigger a PDF render and return the download, failing fast if the app shows the
- * "Report rendering failed" panel instead of firing a download.
+ * Trigger a render whose result downloads rather than mounting inline (PDF, or
+ * the JSON dataset) and return the download, failing fast if the app shows the
+ * "Report rendering failed" panel instead of firing one.
  */
-export async function expectPdfDownload(
+export async function expectDownload(
     page: Page,
     trigger: () => Promise<void>,
     timeout = RENDER_TIMEOUT
@@ -60,11 +61,11 @@ export async function expectPdfDownload(
     ])
     if (outcome.kind === 'failed') {
         throw new Error(
-            'PDF render failed — the app showed the "Report rendering failed" panel.'
+            'Render failed — the app showed the "Report rendering failed" panel.'
         )
     }
     if (outcome.kind === 'timeout') {
-        throw new Error('PDF download did not fire within the timeout.')
+        throw new Error('Download did not fire within the timeout.')
     }
     return outcome.download
 }
@@ -80,10 +81,14 @@ export async function gotoApp(page: Page, route: string): Promise<void> {
     await expect(page.getByRole('menuitem').first()).toBeVisible()
 }
 
-/** Set the Partner-Report output format radio (`html` | `pdf`). */
+/**
+ * Set the output format radio. `json` is Partner-Report only, and selecting it
+ * also forces the data source to online — the form couples the two because the
+ * service produces that dataset only from the live path.
+ */
 export async function setOutputFormat(
     page: Page,
-    format: 'html' | 'pdf'
+    format: 'html' | 'pdf' | 'json'
 ): Promise<void> {
     await page.locator(`input[name="outputFormat"][value="${format}"]`).check()
 }
@@ -119,15 +124,52 @@ export async function setDateField(
 }
 
 /**
- * Open the department multiselect (`data-test="unitCodes"`) and select the
- * option carrying `deptDisplayName` (matched as a substring, since the option
- * label is "Hospital — Department" when `showParentInLabel` is set).
+ * Ensure the Partner Report covers `deptDisplayName` (matched as a substring,
+ * since the label is "Hospital — Department" when `showParentInLabel` is set).
+ *
+ * A user with exactly one pickable department gets a labelled value instead of
+ * a picker — the unit is already selected and there is nothing to choose. Which
+ * of the two renders depends on the persona and on "Include test data", so wait
+ * for whichever arrives rather than assuming: both appear only after the
+ * org-unit rows load, so a point-in-time check races that fetch.
+ *
+ * The collapsed branch still asserts the value names the wanted department. A
+ * bare early return would also pass if the picker collapsed onto the *wrong*
+ * unit — the failure this helper is most likely to hide, since every later
+ * assertion would then describe a report about a department nobody asked for.
  */
 export async function selectDepartment(
     page: Page,
     deptDisplayName: string
 ): Promise<void> {
-    await page.locator('[data-test="unitCodes"]').click()
+    const collapsed = page.locator('[data-test="unitCodes-single"]')
+    const picker = page.locator('[data-test="unitCodes"]')
+
+    // Wait for the collapsed value, and treat its absence as the answer.
+    //
+    // The obvious barrier — wait for either control, then branch — does not
+    // work: @dhis2-ui/field puts `dataTest` on its root unconditionally, so the
+    // picker is in the DOM *while the org units are still loading*, and the
+    // component only decides to collapse once they arrive. The barrier
+    // therefore resolves on a loading picker, the branch chooses wrong, and the
+    // click races the swap — which is a timeout on the slower engines rather
+    // than an assertion anyone can read. A closed MultiSelectField offers no
+    // loading signal either: `loading` only changes the open menu's contents.
+    //
+    // So wait for the settled state that can be observed. A collapse always
+    // arrives once the rows do; a picker that never collapses costs this wait
+    // once, and is then certainly loaded by the time it is clicked.
+    const isCollapsed = await collapsed
+        .waitFor({ state: 'visible', timeout: 15000 })
+        .then(() => true)
+        .catch(() => false)
+
+    if (isCollapsed) {
+        await expect(collapsed).toContainText(deptDisplayName)
+        return
+    }
+
+    await picker.click()
     await page
         .getByText(deptDisplayName, { exact: false })
         .first()

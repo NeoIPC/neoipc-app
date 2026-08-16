@@ -3,6 +3,7 @@ import {
     allCodedUnitsExcluded,
     ancestorCountryCodesForSelection,
     anySelectedInGroup,
+    desiredSelection,
     pickableCodeSet,
 } from './orgUnits'
 
@@ -120,5 +121,67 @@ describe('allCodedUnitsExcluded', () => {
     it('is false when there are no coded units at all', () => {
         const rows = [row(null, ['TEST_UNITS'])]
         expect(allCodedUnitsExcluded(rows, ['TEST_UNITS'])).toBe(false)
+    })
+})
+
+describe('desiredSelection', () => {
+    const TEST = 'TEST_UNITS'
+
+    describe('without collapseWhenSingle', () => {
+        const rows = [row('D1', ['NEO_DEPARTMENT'])]
+
+        it('leaves an empty selection empty even with one option', () => {
+            expect(desiredSelection(rows, [], [], false)).toEqual([])
+        })
+        it('still drops a selection that is no longer pickable', () => {
+            const withTest = [...rows, row('T1', ['NEO_DEPARTMENT', TEST])]
+            expect(desiredSelection(withTest, [TEST], ['D1', 'T1'], false)).toEqual(['D1'])
+        })
+    })
+
+    describe('with collapseWhenSingle', () => {
+        it('selects the only option when nothing is selected', () => {
+            const rows = [row('D1', ['NEO_DEPARTMENT'])]
+            expect(desiredSelection(rows, [], [], true)).toEqual(['D1'])
+        })
+        it('leaves a multi-option picker alone', () => {
+            const rows = [row('D1', ['NEO_DEPARTMENT']), row('D2', ['NEO_DEPARTMENT'])]
+            expect(desiredSelection(rows, [], [], true)).toEqual([])
+        })
+        it('does not auto-select when nothing is pickable', () => {
+            const rows = [row('T1', ['NEO_DEPARTMENT', TEST])]
+            expect(desiredSelection(rows, [TEST], [], true)).toEqual([])
+        })
+        it('replaces a stale selection with the only pickable option', () => {
+            // Same length before and after, so a length-only comparison would
+            // miss this and leave the picker holding an unavailable code.
+            const rows = [row('D1', ['NEO_DEPARTMENT']), row('T1', ['NEO_DEPARTMENT', TEST])]
+            expect(desiredSelection(rows, [TEST], ['T1'], true)).toEqual(['D1'])
+        })
+    })
+
+    // The corner case the collapse was designed around: an admin whose scope is
+    // one ordinary department plus test departments. The picker must collapse
+    // while test units are excluded and reappear — still holding the ordinary
+    // department — once they are included.
+    describe('across the "Include test data" toggle', () => {
+        const rows = [
+            row('AT_TEST_TEST', ['NEO_DEPARTMENT']),
+            row('AT_TEST_TEST2', ['NEO_DEPARTMENT', TEST]),
+        ]
+
+        it('collapses onto the non-test department while test units are excluded', () => {
+            expect(desiredSelection(rows, [TEST], [], true)).toEqual(['AT_TEST_TEST'])
+        })
+        it('keeps that department, and stops collapsing, once they are included', () => {
+            expect(desiredSelection(rows, [], ['AT_TEST_TEST'], true)).toEqual([
+                'AT_TEST_TEST',
+            ])
+        })
+        it('drops a test department again when they are re-excluded', () => {
+            expect(
+                desiredSelection(rows, [TEST], ['AT_TEST_TEST', 'AT_TEST_TEST2'], true)
+            ).toEqual(['AT_TEST_TEST'])
+        })
     })
 })

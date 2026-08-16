@@ -42,9 +42,20 @@ unsupported rather than untested.
 
 ## Installing a release
 
-Each release attaches an installable bundle, `neoipc-app-<version>.zip`. Install it on a
+Each release attaches an installable bundle, `NeoIPC-<version>.zip`. Install it on a
 DHIS2 instance through **App Management → Upload app**, or with `d2-app-scripts deploy`.
 [`RELEASING.md`](RELEASING.md) describes how a release is cut.
+
+The app installs under the key `NeoIPC` and is served from `/api/apps/NeoIPC/index.html`. Reaching it
+requires the `M_NeoIPC` authority — DHIS2 derives that from the app's `short_name` and grants no
+access without it, answering **404, not 403**, so "App 'NeoIPC' not found" from a non-superuser means
+the authority is missing rather than the app.
+
+The app's own `F_NEOIPC_REPORT` / `F_NEOIPC_ADMIN` authorities appear in the user-role editor under
+their raw codes rather than a readable name. That is how DHIS2 renders **any** third-party app's
+custom authority: it looks the name up in its own translation bundle and falls back to the key, and
+the bundle cannot be extended from outside. Upstream `master` is unchanged, so no DHIS2 upgrade will
+alter it.
 
 ## Development
 

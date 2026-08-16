@@ -1,0 +1,22 @@
+/*
+ * The DHIS2 header bar's unread badges fail WCAG 1.4.3 AA as shipped.
+ *
+ * @dhis2-ui/header-bar's notification-icon draws them white on
+ * theme.secondary500 (colors.teal500, #00897b) at 13px/600 — 4.32:1, where AA
+ * wants 4.5:1 for text this size. The component takes no colour from its
+ * consumer, so the only lever the app has is CSS; the vendor rule carries no
+ * `!important`, so one author declaration wins regardless of order.
+ *
+ * teal700 (#00695c) is two steps darker on the vendor's own ramp, so the badge
+ * stays on-brand at 6.61:1. The intermediate teal600 also clears 4.5:1; teal700
+ * is taken for the headroom, since the badge's size and weight are the
+ * component's to change and a later restyle should not drop it back under.
+ *
+ * Both badges are drawn by that one component, so both are corrected here —
+ * interpretations included, which has the same defect and merely needs a count
+ * above zero to show it.
+ */
+span[data-test='headerbar-messages-count'],
+span[data-test='headerbar-interpretations-count'] {
+    background-color: #00695c !important;
+}

@@ -12,7 +12,11 @@ import {
 import React, { FC, useEffect, useMemo, useState } from 'react'
 import { useAppContext } from '../AppContext'
 import { useAuthorities } from '../authority/useAuthorities'
-import { COUNTRY_GROUP_CODE, HOSPITAL_GROUP_CODE } from '../config/dhis2Constants'
+import {
+    COUNTRY_GROUP_CODE,
+    DEPARTMENT_GROUP_CODE,
+    TEST_UNITS_GROUP_CODE,
+} from '../config/dhis2Constants'
 import CollapsibleSection from './CollapsibleSection'
 import DateField from './fields/DateField'
 import NumberRangeField from './fields/NumberRangeField'
@@ -34,10 +38,9 @@ import {
 import styles from './formLayout.module.css'
 
 /**
- * Mirrors the on-the-wire shape the Reference-Report endpoint
- * accepts. Drift-checked against
- * `repos/NeoIPC-Reporting/src/NeoIPC.Reporting/ReferenceReportApiParameters.cs`
- * by `scripts/check-schema-drift.mjs`.
+ * Mirrors the on-the-wire shape the Reference-Report endpoint accepts.
+ * Drift-checked by `scripts/check-schema-drift.mjs` against the schema
+ * snapshot the reporting service publishes for this report.
  */
 export interface ReferenceReportFormValues {
     /** UID of a saved reference dataset (from {@link useAppContext}).
@@ -51,7 +54,7 @@ export interface ReferenceReportFormValues {
     gestationalAgeFrom: number | null
     gestationalAgeTo: number | null
     countryFilter: string[]
-    hospitalFilter: string[]
+    departmentFilter: string[]
     /** `null` = backend default. */
     testUnitFilter: boolean | null
     /** `null` = backend default. */
@@ -86,7 +89,7 @@ const defaultValues: ReferenceReportFormValues = {
     gestationalAgeFrom: null,
     gestationalAgeTo: null,
     countryFilter: [],
-    hospitalFilter: [],
+    departmentFilter: [],
     testUnitFilter: null,
     defaultPatientFilter: null,
     sparseDataThreshold: null,
@@ -177,6 +180,14 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
     }
 
     const usingSavedDataset = values.referenceDataId !== ''
+    // `TEST_UNITS` holds departments, so this is the one picker the setting
+    // can act on — offering a test department while the data layer drops it
+    // would resolve to an empty org-unit set at render time. Countries are
+    // never members, which is why that picker takes no exclusion.
+    const departmentExcludeGroups = useMemo(
+        () => (values.testUnitFilter === false ? [] : [TEST_UNITS_GROUP_CODE]),
+        [values.testUnitFilter]
+    )
 
     return (
         <form
@@ -248,6 +259,22 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                                   'Used when no saved reference dataset is selected.'
                               )}
                     </p>
+                    {/* `testUnitFilter` is an apply-the-filter flag, so true —
+                        its backend default — is what *excludes* test units.
+                        The checkbox states the outcome the user gets, which
+                        makes the mapping inverted; unchecking omits the
+                        parameter rather than sending true, leaving the
+                        exclusion to the same default a preset-free request
+                        already gets. */}
+                    <CheckboxField
+                        name="testUnitFilter"
+                        label={i18n.t('Include test data')}
+                        checked={values.testUnitFilter === false}
+                        onChange={({ checked }) =>
+                            setField('testUnitFilter')(checked ? false : null)
+                        }
+                        disabled={usingSavedDataset}
+                    />
                     <OrganisationUnitMultiSelect
                         name="countryFilter"
                         label={i18n.t('Countries')}
@@ -257,33 +284,14 @@ const ReferenceReportForm: FC<ReferenceReportFormProps> = ({
                         disabled={usingSavedDataset}
                     />
                     <OrganisationUnitMultiSelect
-                        name="hospitalFilter"
-                        label={i18n.t('Hospitals')}
-                        groupCode={HOSPITAL_GROUP_CODE}
-                        selectedCodes={values.hospitalFilter}
-                        onChange={setField('hospitalFilter')}
+                        name="departmentFilter"
+                        label={i18n.t('Departments')}
+                        groupCode={DEPARTMENT_GROUP_CODE}
+                        excludeGroupCodes={departmentExcludeGroups}
+                        selectedCodes={values.departmentFilter}
+                        onChange={setField('departmentFilter')}
                         disabled={usingSavedDataset}
                     />
-                    <SingleSelectField
-                        label={i18n.t('Test units')}
-                        selected={
-                            values.testUnitFilter === null
-                                ? ''
-                                : values.testUnitFilter
-                                  ? 'true'
-                                  : 'false'
-                        }
-                        onChange={({ selected }) =>
-                            setField('testUnitFilter')(
-                                selected === '' ? null : selected === 'true'
-                            )
-                        }
-                        disabled={usingSavedDataset}
-                    >
-                        <SingleSelectOption value="" label={i18n.t('(backend default)')} />
-                        <SingleSelectOption value="true" label={i18n.t('Include')} />
-                        <SingleSelectOption value="false" label={i18n.t('Exclude')} />
-                    </SingleSelectField>
                     <SingleSelectField
                         label={i18n.t('Default patient filter')}
                         selected={

@@ -138,6 +138,33 @@ export const pickableCodeSet = (
 }
 
 /**
+ * The selection the picker should hold, given what is currently pickable.
+ *
+ * Two rules, in order:
+ *  - with `collapseWhenSingle` and exactly one pickable option, that option —
+ *    it is the only valid non-empty selection, so it is taken rather than
+ *    asked for;
+ *  - otherwise the current selection minus anything no longer pickable (a
+ *    decommissioned unit, or a test department once "Include test data" is
+ *    switched off).
+ *
+ * Pure, so the picker's reconciliation can be reasoned about and tested without
+ * a data engine or a rendered component. Returns a new array; compare it to the
+ * current selection by **contents**, not length — replacing an unavailable code
+ * with the single available one leaves the length at 1.
+ */
+export const desiredSelection = (
+    rows: OrgUnitRow[],
+    excludeGroupCodes: readonly string[],
+    selectedCodes: string[],
+    collapseWhenSingle: boolean
+): string[] => {
+    const available = pickableCodeSet(rows, excludeGroupCodes)
+    if (collapseWhenSingle && available.size === 1) return [...available]
+    return selectedCodes.filter((code) => available.has(code))
+}
+
+/**
  * True when `rows` has coded units but every one is removed by
  * `excludeGroupCodes` — i.e. the picker is empty *because of the exclusion*,
  * not because the scope is empty. Drives the Partner form's "all your

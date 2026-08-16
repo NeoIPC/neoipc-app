@@ -10,6 +10,7 @@ import {
     Radio,
     SingleSelectField,
     SingleSelectOption,
+    Tooltip,
 } from '@dhis2/ui'
 import React, { FC, useEffect, useMemo, useState } from 'react'
 import { useAppContext } from '../AppContext'
@@ -35,6 +36,7 @@ import PresetSelect, { CUSTOM_PRESET } from './PresetSelect'
 import ReferenceDataCard from './ReferenceDataCard'
 import ReferenceDataSelect from './ReferenceDataSelect'
 import { matchReferenceData, BenchmarkMatch } from './referenceDataMatch'
+import type { OutputFormat } from '../api/reports'
 import { governedKeys, resolvePresetValues } from './applyPreset'
 import { languageLabel } from './languageLabel'
 import { hasErrors, validatePartnerReport } from './reportValidation'
@@ -55,9 +57,8 @@ type PartnerReportMode = 'online' | 'dataFile'
  * minus the file body (carried separately in `dataFile` mode) and the
  * locale override (lives in {@link PartnerReportFormValues.locale}).
  *
- * Drift-checked against
- * `repos/NeoIPC-Reporting/src/NeoIPC.Reporting/PartnerReportApiParameters.cs`
- * by `scripts/check-schema-drift.mjs`.
+ * Drift-checked by `scripts/check-schema-drift.mjs` against the schema
+ * snapshot the reporting service publishes for this report.
  */
 export interface PartnerReportFormValues {
     mode: PartnerReportMode
@@ -93,7 +94,7 @@ export interface PartnerReportFormValues {
     includeAntibioticResistanceTestRateTable: boolean
     includeSecondaryBsiRateTable: boolean
     locale: string
-    outputFormat: 'html' | 'pdf'
+    outputFormat: OutputFormat
 }
 
 const defaultValues: PartnerReportFormValues = {
@@ -502,6 +503,19 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
         </SingleSelectField>
     )
 
+    // Extracted because it renders both bare and wrapped in a Tooltip, and two
+    // inline copies would drift.
+    const uploadSourceRadio = (
+        <Radio
+            name="mode"
+            label={i18n.t('Upload partner data file (JSON)')}
+            value="dataFile"
+            checked={values.mode === 'dataFile'}
+            disabled={values.outputFormat === 'json'}
+            onChange={() => setField('mode')('dataFile')}
+        />
+    )
+
     return (
         <form
             onSubmit={(event) => {
@@ -528,6 +542,27 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                         checked={values.outputFormat === 'pdf'}
                         onChange={() => setField('outputFormat')('pdf')}
                     />
+                    {/* The same bytes the "Upload partner data file" source
+                        below consumes, so a report can be produced now and
+                        rendered later, or rendered somewhere without access
+                        to this instance. */}
+                    <Radio
+                        name="outputFormat"
+                        label={i18n.t('Download report data as JSON')}
+                        value="json"
+                        checked={values.outputFormat === 'json'}
+                        onChange={() =>
+                            setValues((prev) => ({
+                                ...prev,
+                                outputFormat: 'json',
+                                // Only the online path produces this data, so
+                                // the format decides the source rather than
+                                // the other way round — the source control
+                                // below disables its upload while this is set.
+                                mode: 'online',
+                            }))
+                        }
+                    />
                 </fieldset>
                 <fieldset>
                     <legend>{i18n.t('Data source')}</legend>
@@ -538,13 +573,17 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                         checked={values.mode === 'online'}
                         onChange={() => setField('mode')('online')}
                     />
-                    <Radio
-                        name="mode"
-                        label={i18n.t('Upload partner data file (JSON)')}
-                        value="dataFile"
-                        checked={values.mode === 'dataFile'}
-                        onChange={() => setField('mode')('dataFile')}
-                    />
+                    {values.outputFormat === 'json' ? (
+                        <Tooltip
+                            content={i18n.t(
+                                'An uploaded file already is this data.'
+                            )}
+                        >
+                            {uploadSourceRadio}
+                        </Tooltip>
+                    ) : (
+                        uploadSourceRadio
+                    )}
                     {values.mode === 'dataFile' && (
                         <Field
                             name="dataFile"
@@ -588,6 +627,13 @@ const PartnerReportForm: FC<PartnerReportFormProps> = ({
                             'Pick one or more departments. The report ' +
                                 'aggregates across the selected set.'
                         )}
+                        // The departments ARE the report's subject, so one
+                        // selectable department is an answer rather than a
+                        // choice. On the Reference form's country/department
+                        // filters the same collapse would be wrong: empty means
+                        // "all" there, so auto-selecting would narrow silently.
+                        collapseWhenSingle
+                        singleLabel={i18n.t('Department')}
                         groupCode={DEPARTMENT_GROUP_CODE}
                         excludeGroupCodes={departmentExcludeGroups}
                         showParentInLabel

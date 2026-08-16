@@ -3,8 +3,12 @@ import path from 'node:path'
 import type { APIRequestContext } from '@playwright/test'
 import { AUTH_DIR } from './users'
 
-/** App name from `d2.config.js`; installed custom apps are served here. */
-export const APP_NAME = 'neoipc-app'
+/**
+ * App name from `d2.config.js`; installed custom apps are served here.
+ * Case-sensitive: DHIS2 compares the path segment against the app's key with
+ * `equals`, so `/api/apps/neoipc/…` is a 404 while `/api/apps/NeoIPC/…` is not.
+ */
+export const APP_NAME = 'NeoIPC'
 export const APP_INDEX = `/api/apps/${APP_NAME}/index.html`
 
 /** Build an in-app URL: the installed bundle plus a HashRouter route. */

@@ -55,14 +55,21 @@ async function globalSetup(): Promise<void> {
     const ctx = await dhis2Login(request, baseURL, adminUser, adminPass)
     try {
         const appDir = path.resolve(__dirname, '..')
-        const pkg = JSON.parse(
-            fs.readFileSync(path.join(appDir, 'package.json'), 'utf8')
-        ) as { name: string; version: string }
+        // The archive is named from the d2 config, not from package.json —
+        // those disagree here, since the package is `neoipc-app` while the app
+        // is `NeoIPC`. Read the manifest the build wrote rather than
+        // reconstructing the name from the wrong source.
+        const manifest = JSON.parse(
+            fs.readFileSync(
+                path.join(appDir, 'build', 'app', 'manifest.webapp'),
+                'utf8'
+            )
+        ) as { short_name: string; version: string }
         const bundlePath = path.join(
             appDir,
             'build',
             'bundle',
-            `${pkg.name}-${pkg.version}.zip`
+            `${manifest.short_name}-${manifest.version}.zip`
         )
         await installApp(ctx, bundlePath)
 

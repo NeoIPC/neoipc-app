@@ -27,6 +27,24 @@ describe('enrichError', () => {
         expect(err.message).toBe('Select at least one department.')
     })
 
+    // The two mode-conflict codes must not collapse into one message. A mapped
+    // code wins over the server's own `detail`, so a shared code would state the
+    // wrong cause with full confidence — naming a reference dataset the user
+    // never chose when what they actually did was pick a department alongside an
+    // upload.
+    it('distinguishes the two mode-conflict codes', async () => {
+        const reference = await enrichError(
+            makeError(400, { code: 'mixed-mode-not-allowed' })
+        )
+        const upload = await enrichError(
+            makeError(400, { code: 'uploaded-data-fixes-scope' })
+        )
+
+        expect(reference.message).toContain('reference dataset')
+        expect(upload.message).toContain('data file')
+        expect(upload.message).not.toBe(reference.message)
+    })
+
     it('names the control for a stale/invalid benchmark dataset', async () => {
         const err = await enrichError(
             makeError(404, { code: 'reference-dataset-not-found' })

@@ -11,7 +11,8 @@ suffix like `v0.0.1-alpha` is valid). The version in `package.json` is the sourc
    **pre-release** while the app is alpha. Creating the Release is a deliberate human step.
 3. CI (`.github/workflows/release.yml`) then, on the published Release:
    - verifies the tag (minus `v`) equals `package.json`'s version (a mismatch fails the release);
-   - runs `yarn build`, producing the installable bundle `build/bundle/neoipc-app-<version>.zip`;
+   - runs `yarn build`, producing the installable bundle `build/bundle/NeoIPC-<version>.zip` (the
+     archive is named from `d2.config.js`'s `name`, not from `package.json`'s);
    - attaches the `.zip` to the Release.
 
 Manual `workflow_dispatch` builds the bundle without attaching (a build smoke-test).

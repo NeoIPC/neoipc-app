@@ -7,7 +7,7 @@ import {
     setOutputFormat,
     clickGenerate,
     expectRenderedReport,
-    expectPdfDownload,
+    expectDownload,
 } from './report-actions'
 
 /**
@@ -47,7 +47,7 @@ test.describe('partner report — data-file mode', () => {
             .setInputFiles(PARTNER_DATA_FIXTURE)
         await setOutputFormat(page, 'pdf')
 
-        const download = await expectPdfDownload(page, () => clickGenerate(page))
+        const download = await expectDownload(page, () => clickGenerate(page))
         expect(download.suggestedFilename()).toMatch(
             /^NeoIPC-Surveillance-Partner-Report_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.pdf$/
         )

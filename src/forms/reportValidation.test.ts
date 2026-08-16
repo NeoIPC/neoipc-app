@@ -55,7 +55,7 @@ const makeReference = (
     gestationalAgeFrom: null,
     gestationalAgeTo: null,
     countryFilter: [],
-    hospitalFilter: [],
+    departmentFilter: [],
     testUnitFilter: null,
     defaultPatientFilter: null,
     sparseDataThreshold: null,

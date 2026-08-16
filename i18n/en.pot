@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2026-07-05T19:01:45.623Z\n"
-"PO-Revision-Date: 2026-07-05T19:01:45.624Z\n"
+"POT-Creation-Date: 2026-08-07T16:03:59.643Z\n"
+"PO-Revision-Date: 2026-08-07T16:03:59.643Z\n"
 
 msgid "Upload"
 msgstr "Upload"
@@ -127,6 +127,13 @@ msgid ""
 msgstr ""
 "A saved reference dataset and live-fetch filters cannot be combined — clear "
 "one of them."
+
+msgid ""
+"The uploaded data file already determines the department, so a department "
+"cannot be chosen as well."
+msgstr ""
+"The uploaded data file already determines the department, so a department "
+"cannot be chosen as well."
 
 msgid "One of the values contains characters that are not allowed."
 msgstr "One of the values contains characters that are not allowed."
@@ -296,6 +303,9 @@ msgstr "Leave blank to use the locale from your DHIS2 user setting."
 msgid "(use DHIS2 user setting)"
 msgstr "(use DHIS2 user setting)"
 
+msgid "Upload partner data file (JSON)"
+msgstr "Upload partner data file (JSON)"
+
 msgid "Output format"
 msgstr "Output format"
 
@@ -305,14 +315,17 @@ msgstr "View as HTML"
 msgid "Download as PDF"
 msgstr "Download as PDF"
 
+msgid "Download report data as JSON"
+msgstr "Download report data as JSON"
+
 msgid "Data source"
 msgstr "Data source"
 
 msgid "Online — pull current DHIS2 data"
 msgstr "Online — pull current DHIS2 data"
 
-msgid "Upload partner data file (JSON)"
-msgstr "Upload partner data file (JSON)"
+msgid "An uploaded file already is this data."
+msgstr "An uploaded file already is this data."
 
 msgid "Departments"
 msgstr "Departments"
@@ -333,6 +346,9 @@ msgid ""
 msgstr ""
 "All departments in your scope are test units, which are excluded from "
 "reports. Ask an administrator to include test data."
+
+msgid "Department"
+msgstr "Department"
 
 msgid "More options"
 msgstr "More options"
@@ -473,18 +489,6 @@ msgstr "Disabled — a saved dataset is selected above."
 
 msgid "Used when no saved reference dataset is selected."
 msgstr "Used when no saved reference dataset is selected."
-
-msgid "Hospitals"
-msgstr "Hospitals"
-
-msgid "Test units"
-msgstr "Test units"
-
-msgid "Include"
-msgstr "Include"
-
-msgid "Exclude"
-msgstr "Exclude"
 
 msgid "Default patient filter"
 msgstr "Default patient filter"

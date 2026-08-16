@@ -85,8 +85,9 @@ jobs:
         run: yarn validate
 
       - name: Build the app bundle
-        # d2-app-scripts build packs by default -> build/bundle/neoipc-app-<version>.zip (the installable
-        # DHIS2 app). Offline build.
+        # d2-app-scripts build packs by default -> build/bundle/NeoIPC-<version>.zip (the installable
+        # DHIS2 app). The archive is named from d2.config.js's `name`, not from
+        # package.json's, and the two differ here. Offline build.
         run: yarn build
 
       - name: Create the Release and attach the bundle

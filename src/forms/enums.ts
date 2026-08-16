@@ -1,13 +1,12 @@
 import i18n from '@dhis2/d2-i18n'
 
 /**
- * Vendored copies of the backend's report-parameter enums / content
- * flags. Kept in sync with the corresponding C# definitions in
- * `repos/NeoIPC-Reporting/src/NeoIPC.Reporting/`:
+ * Vendored copies of the reporting service's report-parameter enums and
+ * content flags:
  *
- *   - {@link ConfidenceIntervalModeValues}: `ConfidenceIntervalMode.cs`
+ *   - {@link ConfidenceIntervalModeValues}: its `ConfidenceIntervalMode.cs`
  *   - {@link includeElementKeys}: the per-element `includeX` render flags
- *     on `PartnerReportApiParameters.cs` / `ReferenceReportApiParameters.cs`
+ *     on the Partner- and Reference-Report parameter surfaces
  *
  * The schema-as-contract drift check (`scripts/check-schema-drift.mjs`)
  * verifies the wire-field tuples against the vendored

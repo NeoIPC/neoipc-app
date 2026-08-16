@@ -20,10 +20,13 @@ interface UseReportRender<TValues> extends UseReportRenderState {
  * report pages. Wraps the per-report `render*Report` from
  * `src/api/reports.ts`:
  *
- *   - PDF responses are routed straight into a browser download via
- *     {@link downloadBlob} and never surface as `result`.
  *   - HTML responses are stored in `result` so the page can render
  *     them via `<InlineHtmlReport>`.
+ *   - Every other format — PDF, and the Partner Report's JSON dataset —
+ *     is routed straight into a browser download via
+ *     {@link downloadBlob} and never surfaces as `result`. The branch
+ *     tests for HTML rather than listing the downloadable formats, so a
+ *     format added later downloads by default instead of vanishing.
  *   - Errors are stored in `error` for inline display. `Response`
  *     bodies on `NeoipcReportingError` are read to enrich the
  *     message — the backend uses RFC 7807 `application/problem+json`
@@ -80,7 +83,7 @@ export const useReportRender = <TValues>(
             try {
                 const rendered = await render(baseUrl, values)
                 stopTimer()
-                if (rendered.format === 'pdf') {
+                if (rendered.format !== 'html') {
                     downloadBlob(rendered.blob, rendered.suggestedFileName)
                     setState({
                         loading: false,

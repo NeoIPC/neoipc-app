@@ -18,6 +18,34 @@
     align-items: start;
 }
 
+/*
+ * A field that has become a statement rather than a question: the value is
+ * displayed, not chosen, because only one choice exists. Deliberately not a
+ * disabled control — a greyed-out select reads as "not allowed" where this
+ * means "nothing to decide". Typography follows @dhis2/ui's field label so the
+ * two states of the same field look alike.
+ */
+/* The pair is a <dl>, whose default block margins would otherwise space it
+   differently from the fields it sits among. */
+.staticField {
+    margin: 0;
+}
+
+.staticFieldLabel {
+    display: block;
+    font-size: 14px;
+    line-height: 16px;
+    color: var(--colors-grey700);
+    margin-bottom: var(--spacers-dp4);
+}
+
+.staticFieldValue {
+    margin: 0;
+    font-size: 14px;
+    line-height: 19px;
+    color: var(--colors-grey900);
+}
+
 /* Flow the many boolean content toggles into as many columns as fit. */
 .checkboxGrid {
     display: grid;

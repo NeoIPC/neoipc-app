@@ -48,9 +48,9 @@
       "description": "ISO 3166-1 alpha-2 country codes to include."
     },
     {
-      "name": "hospitalFilter",
+      "name": "departmentFilter",
       "type": "character[]",
-      "description": "Hospital codes (NeoIPC site codes) to include."
+      "description": "Department codes (NeoIPC site codes) to include."
     },
     {
       "name": "testUnitFilter",

@@ -2,9 +2,11 @@ import { useDataEngine } from '@dhis2/app-runtime'
 import i18n from '@dhis2/d2-i18n'
 import { MultiSelectField, MultiSelectOption, NoticeBox } from '@dhis2/ui'
 import React, { FC, useEffect, useRef, useState } from 'react'
+import styles from '../formLayout.module.css'
 import {
     OrgUnitRow,
     OrgUnitsPage,
+    desiredSelection,
     orgUnitsQuery,
     pickableCodeSet,
 } from './orgUnits'
@@ -23,10 +25,10 @@ interface OrganisationUnitMultiSelectProps {
      * Optional org-unit group codes to *exclude* from the pickable
      * options — the complement of {@link groupCode}'s include filter. A
      * row belonging to any of these groups is dropped from the list and
-     * reconciled out of the current selection. The Partner form passes
-     * `TEST_UNITS` here unless "Include test data" is on, so test
-     * departments are only offered (and stay selected) when the data
-     * layer would actually include them.
+     * reconciled out of the current selection. Both report forms pass
+     * `TEST_UNITS` on their department picker unless "Include test data"
+     * is on, so test departments are only offered (and stay selected)
+     * when the data layer would actually include them.
      */
     excludeGroupCodes?: string[]
     /**
@@ -50,6 +52,29 @@ interface OrganisationUnitMultiSelectProps {
     /** Mark the select invalid (red) with an inline validation message. */
     error?: boolean
     validationText?: string
+    /**
+     * Collapse the picker to a read-only value when exactly one option is
+     * selectable, and select that option implicitly — a control offering one
+     * choice is a question with one answer.
+     *
+     * Opt-in, because it is only correct where the selection is the report's
+     * *subject*. On an optional filter an empty selection means "all", so
+     * auto-selecting a lone option would silently narrow the report instead of
+     * saving a click.
+     *
+     * The predicate is evaluated against the **currently** pickable set, so it
+     * tracks `excludeGroupCodes`: a picker that is collapsed while test units
+     * are excluded reappears, already holding its value, as soon as they are
+     * included and a second option exists.
+     */
+    collapseWhenSingle?: boolean
+    /**
+     * Label for the collapsed single-value state. Supplied separately from
+     * {@link label} because the two differ in grammatical number ("Departments"
+     * vs "Department") and neither is derivable from the other in every
+     * language.
+     */
+    singleLabel?: string
 }
 
 /**
@@ -64,7 +89,7 @@ interface OrganisationUnitMultiSelectProps {
  *
  * Values are orgUnit `code` strings — the wire format
  * `Partner-/Reference-Report`'s `UnitCodes` / `CountryFilter` /
- * `HospitalFilter` parameters expect. OrgUnits without a `code` are
+ * `DepartmentFilter` parameters expect. OrgUnits without a `code` are
  * filtered out (un-pickable) and a `NoticeBox` warning is rendered
  * alongside the select so operators know to ask the NeoIPC metadata
  * maintainers to add the missing codes upstream.
@@ -83,6 +108,8 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
     required,
     error: validationError,
     validationText,
+    collapseWhenSingle = false,
+    singleLabel,
 }) => {
     const engine = useDataEngine()
     const [rows, setRows] = useState<OrgUnitRow[] | null>(null)
@@ -149,14 +176,23 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
     const excludeKey = (excludeGroupCodes ?? []).join(',')
     useEffect(() => {
         if (rows === null) return
-        const available = pickableCodeSet(rows, excludeGroupCodes ?? [])
-        const reconciled = selectedCodes.filter((code) => available.has(code))
-        if (reconciled.length !== selectedCodes.length) {
-            onChangeRef.current(reconciled)
+        const desired = desiredSelection(
+            rows,
+            excludeGroupCodes ?? [],
+            selectedCodes,
+            collapseWhenSingle
+        )
+        // Compare contents, not just length: replacing a now-unavailable code
+        // with the single available one keeps the length at 1.
+        const changed =
+            desired.length !== selectedCodes.length ||
+            desired.some((code, i) => code !== selectedCodes[i])
+        if (changed) {
+            onChangeRef.current(desired)
         }
         // excludeGroupCodes is captured via excludeKey to avoid array-identity churn.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [rows, excludeKey, selectedCodes])
+    }, [rows, excludeKey, selectedCodes, collapseWhenSingle])
 
     if (error) {
         return (
@@ -187,6 +223,50 @@ const OrganisationUnitMultiSelect: FC<OrganisationUnitMultiSelectProps> = ({
                     : row.displayName,
         }))
         .sort((a, b) => a.label.localeCompare(b.label))
+
+    // Decided only once the rows are in: while loading, `pickableCodes` is empty
+    // and the picker would flash before collapsing.
+    const onlyOption =
+        collapseWhenSingle && !loading && options.length === 1 ? options[0] : null
+
+    if (onlyOption) {
+        return (
+            <>
+                {rowsWithoutCode.length > 0 && (
+                    <NoticeBox
+                        warning
+                        title={i18n.t(
+                            '{{count}} organisation unit(s) missing a code and not selectable',
+                            { count: rowsWithoutCode.length }
+                        )}
+                    >
+                        {i18n.t(
+                            'These org units cannot be picked because they have no `code` set in DHIS2 metadata. Ask the NeoIPC metadata maintainers to add a code so they can be included in reports.'
+                        )}
+                    </NoticeBox>
+                )}
+                {/* A description list, not a labelled paragraph: this is a
+                    term and its value, and the pairing is then native rather
+                    than asserted. `aria-labelledby` is a prohibited attribute
+                    on a paragraph, so the earlier markup left the label and
+                    the value as two unrelated text nodes to a screen reader —
+                    and axe reports that as `incomplete` rather than a
+                    violation whenever the element has text, so the gate could
+                    not have caught it either. */}
+                <dl className={styles.staticField}>
+                    <dt className={styles.staticFieldLabel}>
+                        {singleLabel ?? label}
+                    </dt>
+                    <dd
+                        className={styles.staticFieldValue}
+                        data-test={`${name}-single`}
+                    >
+                        {onlyOption.label}
+                    </dd>
+                </dl>
+            </>
+        )
+    }
 
     return (
         <>

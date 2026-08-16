@@ -41,6 +41,10 @@ const messageForCode = (code: string): string | null => {
             return i18n.t(
                 'A saved reference dataset and live-fetch filters cannot be combined — clear one of them.'
             )
+        case 'uploaded-data-fixes-scope':
+            return i18n.t(
+                'The uploaded data file already determines the department, so a department cannot be chosen as well.'
+            )
         case 'invalid-parameter-value':
             return i18n.t('One of the values contains characters that are not allowed.')
         case 'invalid-reference-data':

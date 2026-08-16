@@ -9,21 +9,23 @@ import type { ReferenceReportFormValues } from '../forms/ReferenceReportForm'
  * `Accept` header on the request and the post-response branch in
  * {@link renderPartnerReport} / {@link renderReferenceReport}.
  */
-export type OutputFormat = 'html' | 'pdf'
+export type OutputFormat = 'html' | 'pdf' | 'json'
 
 /**
  * Successful render result. `html` carries the already-decoded body
- * fragment ready for `InlineHtmlReport`; `pdf` carries the response as
- * a {@link Blob} plus the filename to suggest in the browser-download
- * dialog (parsed from `Content-Disposition`, with a generic fallback).
+ * fragment ready for `InlineHtmlReport`; every other format carries the
+ * response as a {@link Blob} plus the filename to suggest in the
+ * browser-download dialog (parsed from `Content-Disposition`, with a
+ * generic fallback).
  */
 export type RenderResult =
     | { format: 'html'; fragmentHtml: string }
-    | { format: 'pdf'; blob: Blob; suggestedFileName: string }
+    | { format: 'pdf' | 'json'; blob: Blob; suggestedFileName: string }
 
 const ACCEPT_BY_FORMAT: Record<OutputFormat, string> = {
     html: 'text/html',
     pdf: 'application/pdf',
+    json: 'application/json',
 }
 
 const appendString = (
@@ -70,8 +72,8 @@ const appendArray = (
  * `null` form values are dropped so the backend sees them as
  * "unspecified" rather than as zero / empty-string sentinels. When the
  * user picked a saved dataset, the live-fetch filters are skipped
- * unconditionally to match the backend's "no mixed mode" rule (see
- * [ReferenceReport.cs:86-95](repos/NeoIPC-Reporting/src/NeoIPC.Reporting/ReferenceReport.cs#L86-L95)).
+ * unconditionally: the saved dataset fixes the cohort, so the reporting
+ * service refuses those filters alongside it rather than ignoring them.
  */
 export const buildReferenceReportQuery = (
     values: ReferenceReportFormValues,
@@ -96,7 +98,7 @@ export const buildReferenceReportQuery = (
         appendNumber(qs, 'gestationalAgeFrom', values.gestationalAgeFrom)
         appendNumber(qs, 'gestationalAgeTo', values.gestationalAgeTo)
         appendArray(qs, 'countryFilter', values.countryFilter)
-        appendArray(qs, 'hospitalFilter', values.hospitalFilter)
+        appendArray(qs, 'departmentFilter', values.departmentFilter)
         appendBool(qs, 'testUnitFilter', values.testUnitFilter)
         appendBool(qs, 'defaultPatientFilter', values.defaultPatientFilter)
     }
@@ -108,10 +110,12 @@ export const buildReferenceReportQuery = (
 /**
  * Build the `URLSearchParams` for `GET /partner-report` (online mode)
  * or `POST /partner-report` (dataFile mode). Same rule: empty form
- * values are dropped. In dataFile mode the live-fetch filters
- * (`unitCodes`, period, weight/age, include-non-core / include-test)
- * are skipped because the backend ignores them — see
- * [PartnerReport.cs:114-120](repos/NeoIPC-Reporting/src/NeoIPC.Reporting/PartnerReport.cs#L114-L120).
+ * values are dropped. In dataFile mode the uploaded dataset fixes both
+ * the department and the cohort, so the live-fetch filters (`unitCodes`,
+ * period, weight/age, include-non-core / include-test) are not sent:
+ * the backend refuses `unitCodes` outright there, because the report's
+ * subtitle is front matter and cannot be corrected from the upload's
+ * metadata, and it ignores the rest.
  */
 export const buildPartnerReportQuery = (
     values: PartnerReportFormValues,
@@ -193,7 +197,7 @@ const parseAttachmentFileName = (
 const readRenderResult = async (
     response: Response,
     format: OutputFormat,
-    fallbackPdfName: string
+    fallbackBaseName: string
 ): Promise<RenderResult> => {
     if (format === 'html') {
         return { format, fragmentHtml: await response.text() }
@@ -201,10 +205,12 @@ const readRenderResult = async (
     return {
         format,
         blob: await response.blob(),
+        // The remaining formats are named after their own extension, so the
+        // fallback needs a stem rather than one spelling per format.
         suggestedFileName:
             parseAttachmentFileName(
                 response.headers.get('content-disposition')
-            ) ?? fallbackPdfName,
+            ) ?? `${fallbackBaseName}.${format}`,
     }
 }
 
@@ -227,15 +233,14 @@ export const renderReferenceReport = async (
             headers: { Accept: ACCEPT_BY_FORMAT[format] },
         }
     )
-    return readRenderResult(response, format, 'reference-report.pdf')
+    return readRenderResult(response, format, 'reference-report')
 }
 
 /**
  * Render the Partner Report. Online mode is `GET /partner-report`;
  * dataFile mode is `POST /partner-report` with the JSON file as the
- * raw request body. The backend disables antiforgery on the POST per
- * [Program.cs:112](repos/NeoIPC-Reporting/src/NeoIPC.Reporting/Program.cs#L112)
- * so no CSRF token is needed.
+ * raw request body. The reporting service disables antiforgery on that
+ * route, so no CSRF token is needed.
  */
 export const renderPartnerReport = async (
     baseUrl: string,
@@ -269,7 +274,7 @@ export const renderPartnerReport = async (
               }
 
     const response = await fetchNeoipcReporting(baseUrl, path, init)
-    return readRenderResult(response, format, 'partner-report.pdf')
+    return readRenderResult(response, format, 'partner-report')
 }
 
 /**

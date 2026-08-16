@@ -48,12 +48,10 @@ export const adminList = async <T extends AdminResourceMetadata>(
  * (on success) returns 201 with the new {@link T} metadata.
  *
  * `contentType` overrides the file's auto-detected MIME — required for
- * reference-data, which the backend rejects unless the request carries
- * `Content-Type: application/json` per
- * [ReferenceDataEndpoints.cs:73-77](repos/NeoIPC-Reporting/src/NeoIPC.Reporting/Resources/ReferenceDataEndpoints.cs#L73-L77).
- * Pass `null` to let the browser send the file's own type
- * (validation-exceptions accepts anything per
- * [ValidationExceptionEndpoints.cs:52-54](repos/NeoIPC-Reporting/src/NeoIPC.Reporting/Resources/ValidationExceptionEndpoints.cs#L52-L54)).
+ * reference-data, which the reporting service refuses with 415 unless the
+ * request carries `Content-Type: application/json`. Pass `null` to let the
+ * browser send the file's own type — the validation-exception endpoint
+ * accepts any.
  */
 export const adminUpload = async <T extends AdminResourceMetadata>(
     baseUrl: string,
