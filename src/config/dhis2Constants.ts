@@ -2,10 +2,9 @@
  * NeoIPC DHIS2 deployment constants.
  *
  * Pinned identifiers and paths that the app depends on. The values
- * are deployment-specific; verify against
- * `repos/neoipc-dhis2/dhis_metadata/metadata.json` and
- * `repos/neoipc-dhis2/config/default.conf.template` when the
- * deployment topology changes.
+ * are deployment-specific; when the deployment topology changes,
+ * verify them against the DHIS2 deployment's own metadata export and
+ * its reverse-proxy configuration.
  *
  * The three NeoIPC org-unit roles (Country / Hospital / Department) are
  * identified by **org-unit group code**, not by hierarchy *level*. The
@@ -56,8 +55,9 @@ export const ELIGIBLE_PATIENTS_GROUP_CODE = 'NEOIPC_ALL_PATIENTS_ELIGIBLE'
 export const TEST_UNITS_GROUP_CODE = 'TEST_UNITS'
 
 /**
- * Base path under which the new NeoIPC-Reporting service is mounted
- * in the DHIS2 deployment (see [`repos/neoipc-dhis2/config/default.conf.template`](../../../neoipc-dhis2/config/default.conf.template)).
+ * Base path under which the new NeoIPC-Reporting service is mounted in
+ * the DHIS2 deployment: its reverse proxy forwards this prefix to that
+ * service, so changing it here alone breaks the mount.
  * Distinct from `/reporting/api` (legacy `neoipc-reporting-net`),
  * which keeps serving the legacy reportapp-js until end-of-2026.
  */

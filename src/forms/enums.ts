@@ -4,7 +4,7 @@ import i18n from '@dhis2/d2-i18n'
  * Vendored copies of the reporting service's report-parameter enums and
  * content flags:
  *
- *   - {@link ConfidenceIntervalModeValues}: its confidence-interval mode
+ *   - {@link ConfidenceIntervalModeValues}: its `ConfidenceIntervalMode.cs`
  *   - {@link includeElementKeys}: the per-element `includeX` render flags
  *     on the Partner- and Reference-Report parameter surfaces
  *
