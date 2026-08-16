@@ -57,9 +57,8 @@ type PartnerReportMode = 'online' | 'dataFile'
  * minus the file body (carried separately in `dataFile` mode) and the
  * locale override (lives in {@link PartnerReportFormValues.locale}).
  *
- * Drift-checked against
- * `repos/NeoIPC-Reporting/src/NeoIPC.Reporting/PartnerReportApiParameters.cs`
- * by `scripts/check-schema-drift.mjs`.
+ * Drift-checked by `scripts/check-schema-drift.mjs` against the schema
+ * snapshot the reporting service publishes for this report.
  */
 export interface PartnerReportFormValues {
     mode: PartnerReportMode

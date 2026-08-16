@@ -72,8 +72,8 @@ const appendArray = (
  * `null` form values are dropped so the backend sees them as
  * "unspecified" rather than as zero / empty-string sentinels. When the
  * user picked a saved dataset, the live-fetch filters are skipped
- * unconditionally to match the backend's "no mixed mode" rule (see
- * [ReferenceReport.cs:86-95](repos/NeoIPC-Reporting/src/NeoIPC.Reporting/ReferenceReport.cs#L86-L95)).
+ * unconditionally: the saved dataset fixes the cohort, so the reporting
+ * service refuses those filters alongside it rather than ignoring them.
  */
 export const buildReferenceReportQuery = (
     values: ReferenceReportFormValues,
@@ -239,9 +239,8 @@ export const renderReferenceReport = async (
 /**
  * Render the Partner Report. Online mode is `GET /partner-report`;
  * dataFile mode is `POST /partner-report` with the JSON file as the
- * raw request body. The backend disables antiforgery on the POST per
- * [Program.cs:112](repos/NeoIPC-Reporting/src/NeoIPC.Reporting/Program.cs#L112)
- * so no CSRF token is needed.
+ * raw request body. The reporting service disables antiforgery on that
+ * route, so no CSRF token is needed.
  */
 export const renderPartnerReport = async (
     baseUrl: string,

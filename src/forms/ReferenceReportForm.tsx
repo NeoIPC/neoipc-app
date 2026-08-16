@@ -38,10 +38,9 @@ import {
 import styles from './formLayout.module.css'
 
 /**
- * Mirrors the on-the-wire shape the Reference-Report endpoint
- * accepts. Drift-checked against
- * `repos/NeoIPC-Reporting/src/NeoIPC.Reporting/ReferenceReportApiParameters.cs`
- * by `scripts/check-schema-drift.mjs`.
+ * Mirrors the on-the-wire shape the Reference-Report endpoint accepts.
+ * Drift-checked by `scripts/check-schema-drift.mjs` against the schema
+ * snapshot the reporting service publishes for this report.
  */
 export interface ReferenceReportFormValues {
     /** UID of a saved reference dataset (from {@link useAppContext}).
