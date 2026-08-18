@@ -118,7 +118,14 @@ export async function installApp(
  * does not create it (seeding stays in `Initialize-TestDhis2.ps1`).
  */
 export async function assertSeeded(ctx: APIRequestContext): Promise<void> {
-    for (const code of ['AT_TEST_TEST', 'CH_TEST_TEST']) {
+    // AT_TEST_TEST2 is as required as the other two: the reference-report
+    // live-fetch spec needs a department inside TEST_UNITS to observe the
+    // exclusion admitting one, and global setup reads its display name. The
+    // seeder's -TestUnitDepartmentCodes accepts an empty list, so a stack
+    // without it is a reachable configuration — and without this check the
+    // failure is a bare lookup error in setup that names neither the seeder
+    // nor the flag, and takes every spec on every engine down with it.
+    for (const code of ['AT_TEST_TEST', 'AT_TEST_TEST2', 'CH_TEST_TEST']) {
         const res = await ctx.get('/api/organisationUnits', {
             params: { filter: `code:eq:${code}`, fields: 'id' },
         })

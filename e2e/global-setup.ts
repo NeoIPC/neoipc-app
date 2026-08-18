@@ -75,8 +75,13 @@ async function globalSetup(): Promise<void> {
 
         await assertSeeded(ctx)
 
+        // AT_TEST_TEST2 is one of the seed's TEST_UNITS members, and AT_TEST_TEST is
+        // deliberately outside that group. The pair is what lets a spec observe a
+        // test-unit exclusion changing which departments are offered: one department
+        // is admitted by the toggle and one is present either way.
         const orgUnitDisplayNames = {
             AT_TEST_TEST: await orgUnitDisplayName(ctx, 'AT_TEST_TEST'),
+            AT_TEST_TEST2: await orgUnitDisplayName(ctx, 'AT_TEST_TEST2'),
             CH_TEST_TEST: await orgUnitDisplayName(ctx, 'CH_TEST_TEST'),
         }
 
