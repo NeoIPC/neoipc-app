@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import type { APIRequestContext } from '@playwright/test'
+import { TEST_UNITS_GROUP_CODE } from '../src/config/dhis2Constants'
 import { AUTH_DIR } from './users'
 
 /**
@@ -125,15 +126,47 @@ export async function assertSeeded(ctx: APIRequestContext): Promise<void> {
     // without it is a reachable configuration — and without this check the
     // failure is a bare lookup error in setup that names neither the seeder
     // nor the flag, and takes every spec on every engine down with it.
-    for (const code of ['AT_TEST_TEST', 'AT_TEST_TEST2', 'CH_TEST_TEST']) {
+    // The live-fetch spec depends on TEST_UNITS *membership*, not merely on the
+    // departments existing: it reads the exclusion by which of the two the
+    // Departments picker offers. Existence and membership fail differently and
+    // both are checked here, because a stack where AT_TEST_TEST2 exists outside
+    // the group — or where AT_TEST_TEST has been added to it — passes an
+    // existence check and then fails inside the spec on an option list, naming
+    // neither the group nor the seeder. That the exclusion depends on a property
+    // being *absent* from AT_TEST_TEST is exactly the kind of dependency nothing
+    // greps for, so it is asserted rather than assumed.
+    const wantTestUnit: Record<string, boolean> = {
+        AT_TEST_TEST: false,
+        AT_TEST_TEST2: true,
+        CH_TEST_TEST: false,
+    }
+    for (const [code, shouldBeTestUnit] of Object.entries(wantTestUnit)) {
         const res = await ctx.get('/api/organisationUnits', {
-            params: { filter: `code:eq:${code}`, fields: 'id' },
+            params: {
+                filter: `code:eq:${code}`,
+                fields: 'id,organisationUnitGroups[code]',
+            },
         })
         await ensureOk(res, `seed check (org unit ${code})`)
-        const body = (await res.json()) as { organisationUnits?: unknown[] }
-        if (!body.organisationUnits?.length) {
+        // `code` is nullable on a group, as `src/forms/fields/orgUnits.ts` types
+        // it: a group without one is simply not the group being looked for.
+        const body = (await res.json()) as {
+            organisationUnits?: {
+                organisationUnitGroups?: { code: string | null }[]
+            }[]
+        }
+        const unit = body.organisationUnits?.[0]
+        if (!unit) {
             throw new Error(
                 `seed missing: no org unit with code ${code}. Seed the stack with Initialize-TestDhis2.ps1 first.`
+            )
+        }
+        const isTestUnit = (unit.organisationUnitGroups ?? []).some(
+            (g) => g.code === TEST_UNITS_GROUP_CODE
+        )
+        if (isTestUnit !== shouldBeTestUnit) {
+            throw new Error(
+                `seed shape wrong: ${code} is ${isTestUnit ? '' : 'not '}in the ${TEST_UNITS_GROUP_CODE} group, but the reference-report live-fetch spec needs it ${shouldBeTestUnit ? 'in' : 'out of'} that group. Re-seed with Initialize-TestDhis2.ps1 (its -TestUnitDepartmentCodes controls this).`
             )
         }
     }

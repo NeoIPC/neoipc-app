@@ -46,16 +46,23 @@ import { gotoApp, setDateField, clickGenerate } from './report-actions'
 const openLiveFetchFilters = async (page: Page): Promise<void> => {
     await gotoApp(page, '/reports/reference')
 
-    // The select preselects a saved dataset asynchronously, so wait for it to
-    // settle before overriding: picking `(none)` first would be undone by a
-    // preselection that lands afterwards.
+    // The select preselects a saved dataset asynchronously. Wait for that to
+    // land before overriding it, or a preselection arriving afterwards undoes
+    // the choice made here.
+    //
+    // Then `Escape`, unconditionally. Re-picking an already-selected
+    // `@dhis2/ui` option is a no-op that leaves the menu — and its
+    // click-blocking backdrop — open, which swallows the next click; that is
+    // the hazard `selectReferenceDataset` documents, and it is reachable here
+    // whenever `(none)` was already the value, either because no dataset is
+    // stored or because the preselection has not landed. Escape on a closed
+    // menu does nothing, so this costs a keystroke and removes the case.
     const dataset = page.locator('[data-test="referenceDataId"]')
     await expect(dataset).toBeVisible()
     await dataset.click()
-    await page
-        .locator('#dhis2-portal-root')
-        .getByText('(none)', { exact: true })
-        .click()
+    const portal = page.locator('#dhis2-portal-root')
+    await portal.getByText('(none)', { exact: true }).click()
+    await page.keyboard.press('Escape')
 
     const toggle = page.getByRole('button', {
         name: 'Live-fetch filters (admins only)',
