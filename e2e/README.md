@@ -14,6 +14,7 @@ DHIS2 origin — production fidelity, not the `yarn start:dev` proxy.
 | `org-unit-picker` | Per-user department scoping (`withinUserHierarchy`): each report user sees only their country's department. |
 | `partner-report-online` | Online render: HTML mounts `#neoipc-rendered-report`; PDF triggers a `partner-report.pdf` download. |
 | `partner-report-data-file` | Render from an uploaded partner-data JSON, both formats. *(needs a real fixture — see [`fixtures/README.md`](fixtures/README.md); the spec self-skips without one)* |
+| `partner-report-json` | The JSON output round trip: download the department dataset the Partner Report is computed from, feed it back through the upload path, and get a report out — the one assertion that catches the R producer and the Quarto consumer drifting apart. |
 | `reference-report` | Render a stored reference dataset, both formats. *(needs a real fixture)* |
 | `reference-report-live-fetch` | The admin-only live-fetch filters, which the report-only persona never sees: that "Include test data" admits `TEST_UNITS` departments to the Departments picker only when checked, and that it and the department selection reach the request. |
 | `admin-crud` | reference-data list (upload → row → delete); validation-exceptions singleton (upload → current file → remove). |

@@ -31,7 +31,8 @@ Unreleased until it is versioned.
   namespace. The renamed bundle installs alongside an existing `neoipc-app` install rather than
   replacing it.
 - The Partner Report form names a partner's single selectable department instead of offering a
-  picker with one entry; the picker returns as soon as there is a real choice.
+  picker with one entry, its label and value paired as a description list; the picker returns as
+  soon as there is a real choice.
 - The Reference Report's hospitals filter is a departments filter, which is the level surveillance
   is observed at.
 - A GitHub Release's body is this file's section for the released version; a release cannot be cut
@@ -43,8 +44,6 @@ Unreleased until it is versioned.
   excluded test units and *Exclude* admitted them. It is now a checkbox, "Include test data", that
   names the outcome it produces.
 - The header bar's unread-count badges fell below the WCAG AA contrast threshold.
-- A collapsed department field carried its label through an attribute a paragraph may not carry, so
-  a screen reader was given a name and a value with nothing joining them.
 
 ## [0.0.1-alpha] - 2026-07-06
 
