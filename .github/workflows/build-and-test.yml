@@ -165,6 +165,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: actions/setup-node@v5
+        # The version read below runs on the pinned Node, as the release workflow's does.
+        with:
+          node-version: 20
       - name: CHANGELOG.md describes package.json's version
         shell: bash
         run: |

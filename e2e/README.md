@@ -16,7 +16,7 @@ DHIS2 origin — production fidelity, not the `yarn start:dev` proxy.
 | `partner-report-data-file` | Render from an uploaded partner-data JSON, both formats. *(needs a real fixture — see [`fixtures/README.md`](fixtures/README.md); the spec self-skips without one)* |
 | `partner-report-json` | The JSON output round trip: download the department dataset the Partner Report is computed from, feed it back through the upload path, and get a report out — the one assertion that catches the R producer and the Quarto consumer drifting apart. |
 | `reference-report` | Render a stored reference dataset, both formats. *(needs a real fixture)* |
-| `reference-report-live-fetch` | The admin-only live-fetch filters, which the report-only persona never sees: that "Include test data" admits `TEST_UNITS` departments to the Departments picker only when checked, and that it and the department selection reach the request. |
+| `reference-report-live-fetch` | The admin-only live-fetch filters, which the report-only persona never sees: that "Include test data" admits `TEST_UNITS` departments to the Departments picker only when checked, and that it and the department selection reach the request. *(runs with or without a stored dataset: with none, the dataset picker gives way to a notice and the form is already in live mode)* |
 | `admin-crud` | reference-data list (upload → row → delete); validation-exceptions singleton (upload → current file → remove). |
 | `locale-switch` | `keyUiLocale=de` + reload flips the translated nav label. |
 | `a11y` | axe-core (WCAG 2.1 A + AA) over the main routes per persona, tolerating only known `@dhis2/ui` component defects. Chromium only — axe evaluates the DOM, which is identical across engines. |
@@ -83,8 +83,8 @@ render can take ~10 min).
 
 ## Fixtures
 
-See [`fixtures/README.md`](fixtures/README.md). Two dataset fixtures are committed as
-placeholders and their dependent specs skip until real captures are dropped in.
+See [`fixtures/README.md`](fixtures/README.md). Both dataset fixtures are real captures from a
+seeded stack; reset either to the `__placeholder__` sentinel and its dependent specs skip.
 
 ## First-run notes
 
