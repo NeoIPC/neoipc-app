@@ -16,8 +16,8 @@ suffix like `v0.0.1-alpha` is valid). The version in `package.json` is the sourc
    - verifies the tag (minus `v`) equals `package.json`'s version (a mismatch fails the release);
    - runs `yarn build`, producing the installable bundle `build/bundle/NeoIPC-<version>.zip` (the
      archive is named from `d2.config.js`'s `name`, not from `package.json`'s);
-   - creates the GitHub Release with that version's `CHANGELOG.md` section as its body — marked
-     **pre-release** when the version carries a pre-release suffix — and fails without one;
+   - creates the GitHub Release, marked **pre-release** when the version carries a pre-release
+     suffix, with that version's `CHANGELOG.md` section as its body, and fails without a section;
    - attaches the `.zip` to the Release. A Release that already exists for the tag, whether from an
      earlier run or published by hand, is given the same body and the freshly built bundle.
 
