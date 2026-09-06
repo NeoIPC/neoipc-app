@@ -36,7 +36,7 @@ Unreleased until it is versioned.
 - The Reference Report's hospitals filter is a departments filter, which is the level surveillance
   is observed at.
 - A GitHub Release's body is this file's section for the released version; a release cannot be cut
-  without one.
+  while that section is missing or empty.
 
 ### Fixed
 

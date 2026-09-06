@@ -8,8 +8,8 @@ suffix like `v0.0.1-alpha` is valid). The version in `package.json` is the sourc
 
 1. **Bump `package.json`'s `version`** on `main` (via a PR) to the version you intend to release,
    and **describe that version in [`CHANGELOG.md`](CHANGELOG.md)** under a `## [<version>]`
-   heading. A pull-request check fails while the section is missing, because a tag is immutable
-   and a section found missing after tagging costs a version number rather than an edit.
+   heading. A pull-request check fails while the section is missing or empty, because a tag is
+   immutable and a section found missing after tagging costs a version number rather than an edit.
 2. **Push the release tag** `v<that-version>` (e.g. `v0.0.1-alpha`). That single push triggers the
    release — there is no separate "publish a Release" step.
 3. CI (`.github/workflows/release.yml`) then:
@@ -17,7 +17,8 @@ suffix like `v0.0.1-alpha` is valid). The version in `package.json` is the sourc
    - runs `yarn build`, producing the installable bundle `build/bundle/NeoIPC-<version>.zip` (the
      archive is named from `d2.config.js`'s `name`, not from `package.json`'s);
    - creates the GitHub Release, marked **pre-release** when the version carries a pre-release
-     suffix, with that version's `CHANGELOG.md` section as its body, and fails without a section;
+     suffix, with that version's `CHANGELOG.md` section as its body, and fails when that section is
+     missing or empty;
    - attaches the `.zip` to the Release. A Release that already exists for the tag, whether from an
      earlier run or published by hand, is given the same body and the freshly built bundle.
 
