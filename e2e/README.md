@@ -29,11 +29,16 @@ DHIS2 origin — production fidelity, not the `yarn start:dev` proxy.
    play package imported (departments `AT_TEST_TEST`, `AT_TEST_TEST2` and
    `CH_TEST_TEST`, users `play.admin`, `play.at.report1`, `play.ch.report1`)
    and synthetic patients under `AT_TEST_TEST`. `AT_TEST_TEST2` must be in the
-   `TEST_UNITS` group and `AT_TEST_TEST` must not: the reference-report
-   live-fetch spec reads the exclusion by which of the two the Departments
-   picker offers, so a stack seeded with `-TestUnitDepartmentCodes @()` is
-   rejected. Global setup **installs the app bundle** into DHIS2 and asserts
-   the seed is present; it does not seed.
+   `TEST_UNITS` group, and `AT_TEST_TEST` and `CH_TEST_TEST` must not, because
+   the specs depend on that membership in both directions: the Partner Report
+   form drops `TEST_UNITS` members from its department picker unless "Include
+   test data" is checked, so the org-unit-picker and partner-report specs reach
+   `AT_TEST_TEST` and `CH_TEST_TEST` only while both are outside the group; and
+   the reference-report live-fetch spec reads the exclusion by which of
+   `AT_TEST_TEST` and `AT_TEST_TEST2` the Departments picker offers. Global
+   setup asserts that shape, so a stack seeded with
+   `-TestUnitDepartmentCodes @()` is rejected. Global setup **installs the app
+   bundle** into DHIS2 and asserts the seed is present; it does not seed.
 3. **A built bundle** at `build/bundle/NeoIPC-<version>.zip` (`yarn build`).
 
 ## Auth model

@@ -91,8 +91,9 @@ jobs:
         run: yarn build
 
       - name: Create the Release and attach the bundle
-        # Tag-driven: after a successful build, create the GitHub Release (generated notes; pre-release
-        # when the version carries a pre-release suffix, e.g. -alpha) and attach the bundle .zip.
+        # Tag-driven: after a successful build, create the GitHub Release — its body this version's
+        # CHANGELOG.md section; pre-release when the version carries a pre-release suffix, e.g. -alpha —
+        # and attach the bundle .zip.
         if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -107,10 +108,13 @@ jobs:
           # fallback to --generate-notes, which would silently restore what this replaces. The
           # heading is matched as a literal prefix, not as a pattern — a version carries `.` and `-`,
           # which a regex built from it would interpret, and the closing `]` is what stops
-          # `0.0.1` matching the `0.0.1-alpha` heading.
+          # `0.0.1` matching the `0.0.1-alpha` heading. A section ends at the next version heading
+          # or at the first link-reference definition (`[x.y.z]: https://…`), so the definitions
+          # that follow the last section never become part of its release body.
           section="$(awk -v want="## [$ver]" '
             index($0, want) == 1 { inside = 1; next }
             inside && index($0, "## [") == 1 { exit }
+            inside && $0 ~ /^\[[^]]+\]: / { exit }
             inside { print }
           ' CHANGELOG.md)"
           if [ -z "$(printf '%s' "$section" | tr -d '[:space:]')" ]; then

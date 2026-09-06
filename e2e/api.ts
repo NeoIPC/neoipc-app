@@ -126,21 +126,35 @@ export async function assertSeeded(ctx: APIRequestContext): Promise<void> {
     // without it is a reachable configuration — and without this check the
     // failure is a bare lookup error in setup that names neither the seeder
     // nor the flag, and takes every spec on every engine down with it.
-    // The live-fetch spec depends on TEST_UNITS *membership*, not merely on the
-    // departments existing: it reads the exclusion by which of the two the
-    // Departments picker offers. Existence and membership fail differently and
-    // both are checked here, because a stack where AT_TEST_TEST2 exists outside
-    // the group — or where AT_TEST_TEST has been added to it — passes an
-    // existence check and then fails inside the spec on an option list, naming
-    // neither the group nor the seeder. That the exclusion depends on a property
-    // being *absent* from AT_TEST_TEST is exactly the kind of dependency nothing
-    // greps for, so it is asserted rather than assumed.
-    const wantTestUnit: Record<string, boolean> = {
-        AT_TEST_TEST: false,
-        AT_TEST_TEST2: true,
-        CH_TEST_TEST: false,
+    // The specs depend on TEST_UNITS *membership*, not merely on the departments
+    // existing, and each code is wanted in its state for a reason of its own,
+    // so the reason travels with the expectation into the failure message.
+    // Existence and membership fail differently and both are checked here,
+    // because a stack where AT_TEST_TEST2 exists outside the group — or where
+    // AT_TEST_TEST or CH_TEST_TEST has been added to it — passes an existence
+    // check and then fails inside a spec on an option list or a collapsed
+    // picker, naming neither the group nor the seeder. That two of the three
+    // dependencies are on a property being *absent* is exactly the kind nothing
+    // greps for, so they are asserted rather than assumed.
+    const partnerPickerDefault =
+        'the Partner Report form drops TEST_UNITS members from its department picker unless "Include test data" is checked'
+    const wantTestUnit: Record<string, { testUnit: boolean; because: string }> = {
+        AT_TEST_TEST: {
+            testUnit: false,
+            because: `${partnerPickerDefault}, and the org-unit-picker and partner-report specs reach AT_TEST_TEST through it; the reference-report live-fetch spec also reads the exclusion by AT_TEST_TEST staying on offer`,
+        },
+        AT_TEST_TEST2: {
+            testUnit: true,
+            because: 'the reference-report live-fetch spec needs a TEST_UNITS member that "Include test data" admits to the Departments picker',
+        },
+        CH_TEST_TEST: {
+            testUnit: false,
+            because: `${partnerPickerDefault}, and the org-unit-picker spec reaches CH_TEST_TEST through it as the CH report user`,
+        },
     }
-    for (const [code, shouldBeTestUnit] of Object.entries(wantTestUnit)) {
+    for (const [code, { testUnit: shouldBeTestUnit, because }] of Object.entries(
+        wantTestUnit
+    )) {
         const res = await ctx.get('/api/organisationUnits', {
             params: {
                 filter: `code:eq:${code}`,
@@ -166,7 +180,7 @@ export async function assertSeeded(ctx: APIRequestContext): Promise<void> {
         )
         if (isTestUnit !== shouldBeTestUnit) {
             throw new Error(
-                `seed shape wrong: ${code} is ${isTestUnit ? '' : 'not '}in the ${TEST_UNITS_GROUP_CODE} group, but the reference-report live-fetch spec needs it ${shouldBeTestUnit ? 'in' : 'out of'} that group. Re-seed with Initialize-TestDhis2.ps1 (its -TestUnitDepartmentCodes controls this).`
+                `seed shape wrong: ${code} is ${isTestUnit ? '' : 'not '}in the ${TEST_UNITS_GROUP_CODE} group, but it must be ${shouldBeTestUnit ? 'in' : 'out of'} that group: ${because}. Re-seed with Initialize-TestDhis2.ps1 (its -TestUnitDepartmentCodes controls this).`
             )
         }
     }

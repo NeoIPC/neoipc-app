@@ -171,10 +171,13 @@ jobs:
           ver="$(node -p "require('./package.json').version")"
           # Literal prefix match, as in the release workflow: a version carries `.` and `-`, which a
           # regex built from it would interpret, and the closing `]` is what stops `0.0.1` matching
-          # the `0.0.1-alpha` heading.
+          # the `0.0.1-alpha` heading. A section ends at the next version heading or at the first
+          # link-reference definition (`[x.y.z]: https://…`), so the definitions after the last
+          # section are not counted as its content.
           section="$(awk -v want="## [$ver]" '
             index($0, want) == 1 { inside = 1; next }
             inside && index($0, "## [") == 1 { exit }
+            inside && $0 ~ /^\[[^]]+\]: / { exit }
             inside { print }
           ' CHANGELOG.md)"
           if [ -z "$(printf '%s' "$section" | tr -d '[:space:]')" ]; then

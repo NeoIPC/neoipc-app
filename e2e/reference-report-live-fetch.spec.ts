@@ -46,23 +46,34 @@ import { gotoApp, setDateField, clickGenerate } from './report-actions'
 const openLiveFetchFilters = async (page: Page): Promise<void> => {
     await gotoApp(page, '/reports/reference')
 
-    // The select preselects a saved dataset asynchronously. Wait for that to
-    // land before overriding it, or a preselection arriving afterwards undoes
-    // the choice made here.
-    //
-    // Then `Escape`, unconditionally. Re-picking an already-selected
-    // `@dhis2/ui` option is a no-op that leaves the menu — and its
-    // click-blocking backdrop — open, which swallows the next click; that is
-    // the hazard `selectReferenceDataset` documents, and it is reachable here
-    // whenever `(none)` was already the value, either because no dataset is
-    // stored or because the preselection has not landed. Escape on a closed
-    // menu does nothing, so this costs a keystroke and removes the case.
+    // The form preselects a saved dataset asynchronously, and a preselection
+    // arriving after the override would undo it. The select's own visibility
+    // does not say it has arrived: the select appears with the dataset listing,
+    // and the preselection is a passive effect of that same render that the
+    // select shows nothing of while it is still pending. What does show it is
+    // the metadata card `ReferenceDataSelect` renders beside the select, only
+    // while a dataset is selected — so the card being on screen is the
+    // preselection having landed, and that is what is waited for.
     const dataset = page.locator('[data-test="referenceDataId"]')
     await expect(dataset).toBeVisible()
+    const selectedDatasetCard = page.locator(
+        '[data-test="referenceDataId"] ~ [data-test="dhis2-uicore-card"]'
+    )
+    await expect(selectedDatasetCard).toBeVisible()
+
     await dataset.click()
     const portal = page.locator('#dhis2-portal-root')
     await portal.getByText('(none)', { exact: true }).click()
+    // `Escape`, unconditionally, as `selectReferenceDataset` does: re-picking
+    // an already-selected `@dhis2/ui` option is a no-op that leaves the menu —
+    // and its click-blocking backdrop — open, which swallows the next click.
+    // Escape on a closed menu does nothing, so the guard costs a keystroke and
+    // does not depend on the wait above being what keeps `(none)` from already
+    // being the value.
     await page.keyboard.press('Escape')
+    // The pick took: the card renders for a selected dataset and for nothing
+    // else, so its absence is the override having replaced the preselection.
+    await expect(selectedDatasetCard).toHaveCount(0)
 
     const toggle = page.getByRole('button', {
         name: 'Live-fetch filters (admins only)',

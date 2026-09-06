@@ -6,13 +6,17 @@ suffix like `v0.0.1-alpha` is valid). The version in `package.json` is the sourc
 
 ## How a release works
 
-1. **Bump `package.json`'s `version`** on `main` (via a PR) to the version you intend to release.
+1. **Bump `package.json`'s `version`** on `main` (via a PR) to the version you intend to release,
+   and **describe that version in [`CHANGELOG.md`](CHANGELOG.md)** under a `## [<version>]`
+   heading. A pull-request check fails while the section is missing, because a tag is immutable
+   and a section found missing after tagging costs a version number rather than an edit.
 2. **Publish a GitHub Release** whose tag is `v<that-version>` (e.g. `v0.0.1-alpha`). Mark it
    **pre-release** while the app is alpha. Creating the Release is a deliberate human step.
 3. CI (`.github/workflows/release.yml`) then, on the published Release:
    - verifies the tag (minus `v`) equals `package.json`'s version (a mismatch fails the release);
    - runs `yarn build`, producing the installable bundle `build/bundle/NeoIPC-<version>.zip` (the
      archive is named from `d2.config.js`'s `name`, not from `package.json`'s);
+   - takes the Release body from that version's `CHANGELOG.md` section, and fails without one;
    - attaches the `.zip` to the Release.
 
 Manual `workflow_dispatch` builds the bundle without attaching (a build smoke-test).
